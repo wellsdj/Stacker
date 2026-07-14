@@ -108,13 +108,12 @@
   }
   #muteBtn:active { transform: translateY(2px); }
 
-  /* ---------- home screen: neon skyline over the Burj photo ---------- */
+  /* ---------- home screen ---------- */
   #menu {
     justify-content: space-between; padding: 8vh 6vw 7vh; text-align: center;
     background-image:
       linear-gradient(180deg, rgba(6,8,26,.78) 0%, rgba(6,8,26,.15) 32%, rgba(6,8,26,.22) 56%, rgba(7,6,26,.9) 100%),
-      linear-gradient(120deg, rgba(40,30,110,.4), rgba(10,150,255,.14) 45%, rgba(130,40,220,.34)),
-      url('photo.jpg');
+      linear-gradient(120deg, rgba(40,30,110,.7), rgba(10,150,255,.24) 45%, rgba(130,40,220,.6));
     background-size: cover; background-position: center;
   }
   .menu-top { position: relative; }
@@ -185,6 +184,24 @@
   .howtocard .neonBtn { margin-top: 10px; width: 100%; }
   .howtocard .neonBtn.secondary { padding: 15px 20px; font-size: 14px; }
 
+  /* leaderboard + live tower viewer */
+  #stats { background: rgba(6,8,22,.76); backdrop-filter: blur(10px); z-index: 16; }
+  .statscard { pointer-events: auto; width: min(92vw, 520px); max-height: 84vh; overflow: auto; padding: 22px; border-radius: 22px; background: linear-gradient(160deg, #181234, #0a0a1c); border: 1px solid rgba(140,180,255,.35); box-shadow: 0 30px 80px rgba(0,0,20,.6); }
+  .statshead { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:16px; }
+  .statshead h2 { margin:0; color:#9fe0ff; font-size:18px; letter-spacing:2px; text-transform:uppercase; }
+  .periods { display:grid; grid-template-columns:repeat(4,1fr); gap:6px; margin-bottom:12px; }
+  .period { pointer-events:auto; border:1px solid rgba(170,210,255,.28); border-radius:9px; background:rgba(255,255,255,.08); color:#dceeff; padding:10px 4px; cursor:pointer; font:800 10px inherit; letter-spacing:.6px; text-transform:uppercase; }
+  .period.active { color:#15132c; background:#9fe0ff; border-color:#9fe0ff; }
+  .rankSummary { color:#fff0c0; font-weight:800; margin:7px 0 12px; font-size:13px; }
+  .leaderRow { display:grid; grid-template-columns:38px 1fr auto; align-items:center; gap:8px; width:100%; margin:5px 0; padding:11px 9px; border:0; border-radius:10px; color:#eaf3ff; background:rgba(255,255,255,.07); text-align:left; cursor:pointer; font:600 13px inherit; }
+  .leaderRow.you { background:linear-gradient(90deg, rgba(23,212,255,.32), rgba(154,61,255,.26)); outline:1px solid rgba(159,224,255,.65); }
+  .leaderRow .rank { color:#9fe0ff; font-weight:900; } .leaderRow .meters { font-weight:900; color:#fff0c0; }
+  #viewer { z-index:17; background:radial-gradient(ellipse at 50% 80%, #453078 0%, #16152f 48%, #080a1c 100%); }
+  #viewerCanvas { position:absolute; inset:0; width:100%; height:100%; touch-action:none; }
+  .viewerBar { position:absolute; inset:18px 18px auto; display:flex; justify-content:space-between; align-items:center; color:#fff; font-weight:800; letter-spacing:1px; pointer-events:none; }
+  .viewerBar button { pointer-events:auto; border:0; border-radius:10px; padding:10px 14px; cursor:pointer; font:800 12px inherit; }
+  .viewerHint { position:absolute; bottom:26px; left:0; right:0; color:#cfe0f5; font-size:12px; font-weight:700; letter-spacing:1px; text-transform:uppercase; }
+
   /* 5-perfect-in-a-row bonus overlay */
   #bonusMsg {
     position: fixed; inset: 0; z-index: 7; pointer-events: none;
@@ -247,8 +264,8 @@
 <div id="hud" style="display:none">
   <div id="hudLeft">
     <div id="hudHeight">10 m</div>
-    <div id="hudPct">1% of Burj Khalifa</div>
-    <div id="hudNext">Next: Liberty 93 m</div>
+    <div id="hudPct">Live leaderboard score</div>
+    <div id="hudNext">Next skin: 100 m</div>
     <div id="hudBest">Best 0 m</div>
   </div>
 </div>
@@ -261,10 +278,11 @@
 <div id="menu" class="ui">
   <div class="menu-top">
     <h1 class="brand">CITY</h1>
-    <div class="brand-sub">Build your tower toward the Burj Khalifa</div>
+    <div class="brand-sub">Build higher. Climb the live ranks.</div>
   </div>
   <div class="menu-bottom">
     <button class="neonBtn primary" id="playBtn"><span class="label">Play</span></button>
+    <button class="neonBtn secondary" id="statsBtn"><span class="label">Stats & ranks</span></button>
     <button class="neonBtn secondary" id="howtoBtn"><span class="label">How to play</span></button>
     <div class="stat" id="menuStat">Best 0 m</div>
     <div class="stat" id="menuUnlock"></div>
@@ -276,9 +294,26 @@
     <div class="howtotitle">How to play</div>
     <p>Tap or press Space to drop the moving block onto the tower.</p>
     <p>Line it up dead-center for a <b>perfect</b> drop — perfects keep the full width, and a streak of 5 in a row grows your tower 5×.</p>
-    <p>Climb past height records — Liberty, Pyramid, Eiffel, the Burj itself — to unlock new skins live, mid-run.</p>
+    <p>Every 100 m unlocks a new tower skin. Your 5× perfect blocks count toward your tower height and leaderboard score.</p>
     <button class="neonBtn secondary" id="howtoClose"><span class="label">Got it</span></button>
   </div>
+</div>
+
+<div id="stats" class="ui hidden">
+  <div class="statscard">
+    <div class="statshead"><h2>Live leaderboard</h2><button class="period" id="statsClose">Close</button></div>
+    <div class="periods">
+      <button class="period active" data-period="daily">Daily</button><button class="period" data-period="weekly">Weekly</button><button class="period" data-period="monthly">Monthly</button><button class="period" data-period="all">All time</button>
+    </div>
+    <div id="rankSummary" class="rankSummary">Make your first building to get ranked.</div>
+    <div id="leaderRows"></div>
+  </div>
+</div>
+
+<div id="viewer" class="ui hidden">
+  <canvas id="viewerCanvas"></canvas>
+  <div class="viewerBar"><span id="viewerTitle">Tower view</span><button id="viewerClose">Back to ranks</button></div>
+  <div class="viewerHint">Drag to rotate · scroll or pinch to zoom</div>
 </div>
 
 <div id="over" class="ui hidden">
@@ -306,9 +341,7 @@
 <script>
 'use strict';
 // ======================================================================
-// CITY — stack a tower floor by floor and chase the Burj Khalifa (828 m).
-// Base floor 10 m, every placed floor +5 m. Perfect drops keep full width
-// (no regrow). Topple to zoom out and compare your tower to the Burj.
+// CITY — stack a tower floor by floor and climb the leaderboard.
 // ======================================================================
 const canvas = document.getElementById('game');
 const ctx = canvas.getContext('2d');
@@ -422,23 +455,14 @@ function hash3(a, b, c) { const x = Math.sin(a * 127.1 + b * 311.7 + c * 74.7) *
 // ---------- constants ----------
 const SIZE = 300, BH = 56, PODIUM_H = 78;
 const PERF = 11;                 // perfect tolerance (tighter = harder)
-const BURJ_M = 828;              // Burj Khalifa height, metres
 const BASE_M = 10, STEP_M = 5;   // first floor 10 m, each floor +5 m
-
-// height landmarks shown on the gauge and as the "next" target
-const MARKS = [
-  { m: 93, name: 'Liberty' }, { m: 139, name: 'Pyramid' }, { m: 330, name: 'Eiffel' },
-  { m: 443, name: 'Empire St' }, { m: 828, name: 'Burj' },
-];
-
-// tower skins — unlocked automatically by clearing a height milestone (in metres,
-// this run or any past run). Azure is the default; Aurora is the mythic Burj reward.
+// Tower skins unlock each time a building passes another 100 metres.
 const SKINS = [
   { id: 'azure',    name: 'Azure',    need: 0,   top: '#a9d3e0', right: '#33526b', left: '#2b465c', gA: '#8fc2d6', gB: '#a9d8e8', lit: '#ffe3a1' },
-  { id: 'sunset',   name: 'Sunset',   need: 93,  top: '#ffd9a8', right: '#8a4a2f', left: '#6f3a25', gA: '#f0a35e', gB: '#f7c07a', lit: '#fff0c0' },   // past Liberty
-  { id: 'emerald',  name: 'Emerald',  need: 139, top: '#bfe8c8', right: '#2f6b47', left: '#245538', gA: '#4fae7a', gB: '#7fd0a0', lit: '#eaffe0' },   // past Pyramid
-  { id: 'obsidian', name: 'Obsidian', need: 330, top: '#5a6470', right: '#1c2430', left: '#131a22', gA: '#2b3a48', gB: '#3d5265', lit: '#86f2ff' },   // past Eiffel
-  { id: 'aurora',   name: 'Aurora',   need: 828, mythic: true },                                                                                       // past the Burj
+  { id: 'sunset',   name: 'Sunset',   need: 100, top: '#ffd9a8', right: '#8a4a2f', left: '#6f3a25', gA: '#f0a35e', gB: '#f7c07a', lit: '#fff0c0' },
+  { id: 'emerald',  name: 'Emerald',  need: 200, top: '#bfe8c8', right: '#2f6b47', left: '#245538', gA: '#4fae7a', gB: '#7fd0a0', lit: '#eaffe0' },
+  { id: 'obsidian', name: 'Obsidian', need: 300, top: '#5a6470', right: '#1c2430', left: '#131a22', gA: '#2b3a48', gB: '#3d5265', lit: '#86f2ff' },
+  { id: 'aurora',   name: 'Aurora',   need: 400, mythic: true },
 ];
 function unlockedIdx(m) { let idx = 0; for (let i = 0; i < SKINS.length; i++) if (m >= SKINS[i].need) idx = i; return idx; }
 
@@ -497,50 +521,6 @@ function drawSky(g) {
 }
 
 // ======================================================================
-//  BURJ KHALIFA silhouette (stylised, scalable)
-// ======================================================================
-const BURJ = [
-  [0.00, 1.00], [0.06, 0.95], [0.06, 0.86], [0.16, 0.82], [0.16, 0.72], [0.28, 0.68],
-  [0.28, 0.58], [0.40, 0.55], [0.40, 0.46], [0.52, 0.44], [0.52, 0.36], [0.63, 0.34],
-  [0.63, 0.26], [0.72, 0.24], [0.72, 0.17], [0.80, 0.15], [0.80, 0.10], [0.87, 0.085],
-  [0.87, 0.05], [0.93, 0.045], [1.00, 0.006],
-];
-function burjPath(g, cx, baseY, hpx) {
-  const mh = hpx * 0.075;
-  g.beginPath();
-  g.moveTo(cx - BURJ[0][1] * mh, baseY);
-  for (let i = 0; i < BURJ.length; i++) g.lineTo(cx - BURJ[i][1] * mh, baseY - BURJ[i][0] * hpx);
-  for (let i = BURJ.length - 1; i >= 0; i--) g.lineTo(cx + BURJ[i][1] * mh, baseY - BURJ[i][0] * hpx);
-  g.closePath();
-}
-function drawBurj(g, cx, baseY, hpx, fill) { burjPath(g, cx, baseY, hpx); g.fillStyle = fill; g.fill(); }
-
-function nextMark(m) { for (const mk of MARKS) if (mk.m > m) return mk; return null; }
-// left-edge progress gauge with landmark milestones
-function drawBurjGauge(g) {
-  const hpx = H * 0.7, baseY = H * 0.9, cx = 42, m = heightM();
-  drawBurj(g, cx, baseY, hpx, 'rgba(255,255,255,.13)');
-  const frac = clamp(m / BURJ_M, 0, 1), markY = baseY - frac * hpx;
-  g.save(); burjPath(g, cx, baseY, hpx); g.clip();
-  g.fillStyle = 'rgba(255,222,150,.92)'; g.fillRect(0, markY, 120, baseY - markY);
-  g.restore();
-  // landmark ticks
-  const nm = nextMark(m);
-  g.textAlign = 'left';
-  for (const mk of MARKS) {
-    const y = baseY - (mk.m / BURJ_M) * hpx, on = m >= mk.m, next = nm && nm.m === mk.m;
-    g.strokeStyle = next ? 'rgba(255,235,150,.95)' : on ? 'rgba(255,255,255,.5)' : 'rgba(255,255,255,.28)';
-    g.lineWidth = next ? 2 : 1; g.beginPath(); g.moveTo(cx + 14, y); g.lineTo(cx + 30, y); g.stroke();
-    g.fillStyle = next ? 'rgba(255,235,150,.95)' : on ? 'rgba(255,255,255,.65)' : 'rgba(255,255,255,.4)';
-    g.font = (next ? '800 ' : '600 ') + '9px Helvetica, Arial'; g.fillText(mk.name, cx + 34, y + 3);
-  }
-  // your marker
-  g.strokeStyle = 'rgba(255,255,255,.85)'; g.lineWidth = 1.5; g.setLineDash([4, 4]);
-  g.beginPath(); g.moveTo(6, markY); g.lineTo(cx + 10, markY); g.stroke(); g.setLineDash([]);
-  g.fillStyle = 'rgba(255,255,255,.9)'; g.font = '800 12px Helvetica, Arial'; g.fillText(m + ' m', 10, markY - 6);
-}
-
-// ======================================================================
 //  GAME
 // ======================================================================
 const S = { MENU: 0, PLAY: 1, DEAD: 2, CITY: 3 };  // CITY = 3D model scene + point picker
@@ -548,16 +528,40 @@ let state = S.MENU;
 let stack = null, mover = null, debris = [], sparks = [];
 let score = 0, bestM = 0, camY = 0, camYT = 0, shake = 0, usedContinue = false, endT = 0;
 let equipped = 0, activeSkin = 0, unlockMsg = '';
-let milestoneRecords = {};  // { markName: { best: m, worst: m } }
 let perfectStreak = 0, paused = false, pauseT = 0;  // consecutive-perfect bonus
 let runStartUnlockIdx = 0;  // skin already unlocked before this run began
 let pendingRevealIdx = -1;  // a skin unlocked-for-the-first-time this run, waiting to be shown
 bestM = +(localStorage.getItem('city_best_m') || 0);
-// you always start on Azure — skins are earned live, run by run, as you climb past each milestone
-(function loadMilestoneRecords() { const stored = localStorage.getItem('city_milestone_records'); if (stored) { try { milestoneRecords = JSON.parse(stored); } catch (e) {} } })();
 
-function heightM() { return BASE_M + STEP_M * score; }
-function pctOfBurj(m) { return Math.round(m / BURJ_M * 100); }
+function heightM() { return Math.round(BASE_M + STEP_M * score + (stack ? boostExtra() * STEP_M / BH : 0)); }
+function nextSkin(m) { return SKINS.find(s => s.need > m) || null; }
+
+// Local live leaderboard: a player's current tower is recorded in every period.
+// A backend can later replace the seeded rivals without changing the UI contract.
+const LEADER_KEY = 'city_leaderboard_v2';
+const RIVALS = [ ['Nova', 510], ['Atlas', 420], ['Mika', 345], ['Rook', 275], ['Iris', 210], ['Kai', 155], ['Zed', 95] ];
+function periodKey(period, d = new Date()) {
+  if (period === 'daily') return d.toISOString().slice(0, 10);
+  if (period === 'monthly') return d.getFullYear() + '-' + (d.getMonth() + 1);
+  if (period === 'weekly') { const x = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate())); x.setUTCDate(x.getUTCDate() + 4 - (x.getUTCDay() || 7)); const year = x.getUTCFullYear(); const start = new Date(Date.UTC(year, 0, 1)); return year + '-w' + Math.ceil((((x - start) / 86400000) + 1) / 7); }
+  return 'all';
+}
+function readBoard() { try { return JSON.parse(localStorage.getItem(LEADER_KEY) || '{}'); } catch (e) { return {}; } }
+function saveLeaderboardRun(m) {
+  const board = readBoard();
+  for (const period of ['daily', 'weekly', 'monthly', 'all']) {
+    const old = board[period]; const key = periodKey(period);
+    const previous = old && old.key === key ? old.score : 0;
+    board[period] = { key, score: Math.max(previous, m), tower: stack ? stack.map(b => ({...b})) : [] };
+  }
+  localStorage.setItem(LEADER_KEY, JSON.stringify(board));
+}
+function leaderboard(period) {
+  const own = readBoard()[period];
+  const rows = RIVALS.map(([name, base], i) => ({ name, score: Math.max(25, base + ((period.charCodeAt(0) * 13 + i * 29) % 70) - 35), skin: unlockedIdx(base) }));
+  if (own && own.key === periodKey(period)) rows.push({ name: 'You', score: own.score, tower: own.tower, you: true });
+  return rows.sort((a, b) => b.score - a.score).map((r, i) => ({ ...r, rank: i + 1 }));
+}
 
 function reset() {
   const hw = SIZE / 2;
@@ -613,6 +617,7 @@ function drop() {
     playSfx(audioPlace);
   }
   checkLiveSkinUnlock();
+  saveLeaderboardRun(heightM()); // first placed block immediately gives the player a rank
   updateHud(); newMover();
 }
 // mid-run: crossing a milestone height instantly swaps the tower skin
@@ -635,24 +640,14 @@ function triggerPerfectBonus() {
   paused = true; pauseT = 1.9;
   shake = 8;
   playSfx(audioPerfect5);
+  checkLiveSkinUnlock();
+  saveLeaderboardRun(heightM());
   bonusMsgEl.classList.add('show');
 }
 function commitRun() {
   const m = heightM();
   if (m > bestM) { bestM = m; localStorage.setItem('city_best_m', bestM); }
-  // update milestone records
-  for (const mk of MARKS) {
-    if (!milestoneRecords[mk.name]) milestoneRecords[mk.name] = { best: 0, worst: 0 };
-    if (m >= mk.m) {
-      if (milestoneRecords[mk.name].best === 0) milestoneRecords[mk.name].best = m;
-      else milestoneRecords[mk.name].best = Math.max(milestoneRecords[mk.name].best, m);
-    }
-    if (m < mk.m) {
-      if (milestoneRecords[mk.name].worst === 0) milestoneRecords[mk.name].worst = m;
-      else milestoneRecords[mk.name].worst = Math.min(milestoneRecords[mk.name].worst, m);
-    }
-  }
-  localStorage.setItem('city_milestone_records', JSON.stringify(milestoneRecords));
+  saveLeaderboardRun(m);
 }
 function die() {
   state = S.DEAD; sdkStop(); shake = 10; endT = 0;
@@ -781,12 +776,56 @@ function refreshMenu() {
   menuStatEl.textContent = 'Best ' + bestM + ' m';
   menuUnlockEl.textContent = unlockMsg; unlockMsg = '';
 }
+
+// ---------- leaderboard / tower viewer ----------
+const statsEl = document.getElementById('stats'), leaderRowsEl = document.getElementById('leaderRows'), rankSummaryEl = document.getElementById('rankSummary');
+const viewerEl = document.getElementById('viewer'), viewerCanvas = document.getElementById('viewerCanvas'), viewerCtx = viewerCanvas.getContext('2d');
+let activePeriod = 'daily', viewerRow = null, viewerYaw = -.55, viewerZoom = 1, viewerDragging = false, viewerX = 0;
+function openStats(period = activePeriod) { activePeriod = period; menuEl.classList.add('hidden'); statsEl.classList.remove('hidden'); renderLeaderboard(); }
+function closeStats() { statsEl.classList.add('hidden'); menuEl.classList.remove('hidden'); }
+function renderLeaderboard() {
+  document.querySelectorAll('[data-period]').forEach(b => b.classList.toggle('active', b.dataset.period === activePeriod));
+  const rows = leaderboard(activePeriod), mine = rows.find(r => r.you);
+  rankSummaryEl.textContent = mine ? 'Your ' + activePeriod.replace('all', 'all-time') + ' rank: #' + mine.rank + ' · ' + mine.score + ' m' : 'Make your first building to get ranked in every period.';
+  leaderRowsEl.replaceChildren(...rows.map(row => {
+    const b = document.createElement('button'); b.className = 'leaderRow' + (row.you ? ' you' : '');
+    b.innerHTML = '<span class="rank">#' + row.rank + '</span><span>' + row.name + (row.you ? ' · your tower' : '') + '</span><span class="meters">' + row.score + ' m</span>';
+    b.addEventListener('click', () => openViewer(row)); return b;
+  }));
+}
+function towerForRow(row) {
+  if (row.tower && row.tower.length) return row.tower;
+  const n = Math.max(2, Math.round((row.score - BASE_M) / STEP_M) + 1), half = SIZE / 2, a = [{ x0:-half, z0:-half, x1:half, z1:half, podium:true }];
+  for (let i = 1; i < n; i++) { const trim = Math.min(120, i * 1.6); a.push({ x0:-half + trim, z0:-half + trim, x1:half - trim, z1:half - trim }); } return a;
+}
+function openViewer(row) { viewerRow = row; viewerYaw = -.55; viewerZoom = 1; statsEl.classList.add('hidden'); viewerEl.classList.remove('hidden'); document.getElementById('viewerTitle').textContent = row.name + "'s tower · " + row.score + ' m'; drawViewer(); }
+function closeViewer() { viewerEl.classList.add('hidden'); statsEl.classList.remove('hidden'); }
+function drawViewer() {
+  if (!viewerRow || viewerEl.classList.contains('hidden')) return;
+  const dpr = Math.min(devicePixelRatio || 1, 2), w = innerWidth, h = innerHeight; viewerCanvas.width = w * dpr; viewerCanvas.height = h * dpr; viewerCanvas.style.width = w + 'px'; viewerCanvas.style.height = h + 'px'; viewerCtx.setTransform(dpr,0,0,dpr,0,0); viewerCtx.clearRect(0,0,w,h);
+  const blocks = towerForRow(viewerRow), saved = [A,B,C,PX,PY,camYaw,activeSkin];
+  const worldH = floorTopY(blocks, blocks.length - 1), k = Math.min(h * .62 / Math.max(worldH, 200), w * .46 / SIZE) * viewerZoom;
+  A = k; B = k * .577; C = k; PX = w / 2; PY = h * .80; camYaw = viewerYaw; activeSkin = viewerRow.skin == null ? unlockedIdx(viewerRow.score) : viewerRow.skin;
+  const ground = project(0, 0, 0); viewerCtx.fillStyle = 'rgba(130,210,255,.16)'; viewerCtx.beginPath(); viewerCtx.ellipse(ground.x, ground.y, SIZE*k*1.2, SIZE*k*.52, 0, 0, Math.PI*2); viewerCtx.fill();
+  for (let i = 0; i < blocks.length; i++) drawFloor(viewerCtx, blocks[i], i, floorBaseY(blocks,i), floorTopY(blocks,i));
+  [A,B,C,PX,PY,camYaw,activeSkin] = saved;
+}
+document.getElementById('statsBtn').addEventListener('click', () => { playSfx(audioNav); openStats(); });
+document.getElementById('statsClose').addEventListener('click', () => { playSfx(audioNav); closeStats(); });
+document.querySelectorAll('[data-period]').forEach(b => b.addEventListener('click', () => { playSfx(audioNav); activePeriod = b.dataset.period; renderLeaderboard(); }));
+document.getElementById('viewerClose').addEventListener('click', () => { playSfx(audioNav); closeViewer(); });
+viewerCanvas.addEventListener('pointerdown', e => { viewerDragging = true; viewerX = e.clientX; viewerCanvas.setPointerCapture(e.pointerId); });
+viewerCanvas.addEventListener('pointermove', e => { if (!viewerDragging) return; viewerYaw += (e.clientX - viewerX) * .009; viewerX = e.clientX; drawViewer(); });
+viewerCanvas.addEventListener('pointerup', () => { viewerDragging = false; });
+viewerCanvas.addEventListener('wheel', e => { e.preventDefault(); viewerZoom = clamp(viewerZoom * (e.deltaY < 0 ? 1.12 : .89), .35, 2.6); drawViewer(); }, { passive:false });
+window.addEventListener('resize', drawViewer);
 refreshMenu();
 function updateHud() {
-  const m = heightM(), nm = nextMark(m);
+  const m = heightM(), nm = nextSkin(m);
   hudHeightEl.textContent = m + ' m';
-  hudPctEl.textContent = pctOfBurj(m) + '% of Burj Khalifa';
-  hudNextEl.textContent = nm ? 'Next: ' + nm.name + ' ' + nm.m + ' m' : 'Above the Burj!';
+  const own = leaderboard('all').find(r => r.you);
+  hudPctEl.textContent = own ? 'All-time rank #' + own.rank : 'Building your rank';
+  hudNextEl.textContent = nm ? 'Next skin: ' + nm.name + ' ' + nm.need + ' m' : 'All skins unlocked';
   hudBestEl.textContent = 'Best ' + Math.max(bestM, m) + ' m';
 }
 let toastTimer = 0;
@@ -802,7 +841,7 @@ function startGame() {
   // the home-screen track keeps playing straight through into the game — never switched
   musicStarted = true; playMusic(musicMenu);
 }
-document.getElementById('playBtn').addEventListener('click', (e) => { playSfx(audioNav); enterCity(); });
+document.getElementById('playBtn').addEventListener('click', (e) => { playSfx(audioNav); startGame(); });
 document.getElementById('retryBtn').addEventListener('click', (e) => { playSfx(audioNav); startGame(); });
 homeBtn.addEventListener('click', (e) => { playSfx(audioNav); goHome(); });
 continueBtn.addEventListener('click', () => {
@@ -995,69 +1034,6 @@ function renderTower(shx, shy) {
   ctx.globalAlpha = 1;
 }
 
-// ---------- end-screen comparison (3D isometric, zoom-out, always to scale) ----------
-const BH_PER_M = BH / STEP_M;          // world units per metre
-function easeOut(t) { return 1 - Math.pow(1 - clamp(t, 0, 1), 3); }
-function drawCompSky(g) {
-  const grad = g.createLinearGradient(0, 0, 0, H);
-  grad.addColorStop(0, skyColorAt(1000)); grad.addColorStop(0.4, skyColorAt(300));
-  grad.addColorStop(0.72, skyColorAt(90)); grad.addColorStop(1, skyColorAt(0));
-  g.fillStyle = grad; g.fillRect(0, 0, W, H);
-  g.fillStyle = 'rgba(255,255,255,.5)';
-  for (let i = 0; i < 46; i++) { const sx = (i * 149 + 23) % W, sy = (i * 83 + 41) % (H * 0.38); g.fillRect(sx, sy, 1.5, 1.5); }
-}
-function groundShadow(g, wx, wz, rad) {
-  const s = project(wx, 0, wz);
-  const gr = g.createRadialGradient(s.x, s.y, 2, s.x, s.y, rad);
-  gr.addColorStop(0, 'rgba(10,10,25,.35)'); gr.addColorStop(1, 'rgba(10,10,25,0)');
-  g.fillStyle = gr; g.beginPath(); g.ellipse(s.x, s.y, rad, rad * 0.5, 0, 0, Math.PI * 2); g.fill();
-}
-// the Burj model always wears the Sunset skin so it reads warm against your tower
-function drawBurj3D(g, bx, bz) {
-  const Hb = BURJ_M * BH_PER_M, baseHalf = SIZE * 0.92;
-  const sk = SKINS.find(s => s.id === 'sunset');
-  const bTop = sk.top, bRight = sk.right, bLeft = sk.left;
-  for (let i = 0; i < BURJ.length - 1; i++) {
-    const y0 = BURJ[i][0] * Hb, y1 = BURJ[i + 1][0] * Hb;
-    if (y1 <= y0) continue;
-    const half = baseHalf * Math.max(BURJ[i][1], BURJ[i + 1][1]);
-    const tint = i / BURJ.length;
-    drawBox(g, bx - half, bz - half, bx + half, bz + half, y0, y1,
-      { top: lerpHex(bTop, shade(bTop, 0.16), tint), right: lerpHex(bRight, shade(bRight, -0.1), tint), left: lerpHex(bLeft, shade(bLeft, -0.1), tint) }, null);
-  }
-}
-function drawFloorOff(g, b, i, ox, oz) {
-  drawFloor(g, { x0: b.x0 + ox, z0: b.z0 + oz, x1: b.x1 + ox, z1: b.z1 + oz, podium: b.podium, w: b.w, d: b.d }, i, floorBaseY(stack, i), floorTopY(stack, i));
-}
-function renderComparison() {
-  activeSkin = equipped;
-  drawCompSky(ctx);
-  const compC = 0.56 * H / (BURJ_M * BH_PER_M);
-  const e = easeOut(endT), startMul = 2.6;
-  const Cn = compC * (startMul + (1 - startMul) * e);
-  A = Cn; B = Cn * 0.577; C = Cn;
-  const sep = 0.20 * W / compC;                 // fixed world separation
-  PX = W * 0.62 - sep * A; PY = H * 0.63;
-  const bx = -sep / 2, bz = sep / 2, tox = sep / 2, toz = -sep / 2;
-  // shadows + 3D models
-  groundShadow(ctx, bx, bz, SIZE * A * 1.4);
-  groundShadow(ctx, tox, toz, SIZE * A * 0.9);
-  drawBurj3D(ctx, bx, bz);
-  for (let i = 0; i < stack.length; i++) drawFloorOff(ctx, stack[i], i, tox, toz);
-  // labels fade in once mostly zoomed out
-  const la = clamp((endT - 0.45) / 0.4, 0, 1), m = heightM();
-  const bb = project(bx, 0, bz), tb = project(tox, 0, toz);
-  ctx.globalAlpha = la; ctx.textAlign = 'center'; ctx.fillStyle = '#fff';
-  ctx.font = '700 12px Helvetica, Arial'; ctx.fillText('BURJ KHALIFA', bb.x, PY + 26);
-  ctx.font = '800 15px Helvetica, Arial'; ctx.fillText('828 m', bb.x, PY + 46);
-  ctx.font = '700 12px Helvetica, Arial'; ctx.fillText('YOUR TOWER', tb.x, PY + 26);
-  ctx.font = '800 15px Helvetica, Arial'; ctx.fillText(m + ' m', tb.x, PY + 46);
-  ctx.font = '800 38px Helvetica, Arial'; ctx.fillText(pctOfBurj(m) + '% of the Burj', W / 2, H * 0.14);
-  ctx.font = '700 14px Helvetica, Arial'; ctx.fillStyle = 'rgba(255,255,255,.85)';
-  ctx.fillText('Best ' + bestM + ' m · ' + pctOfBurj(bestM) + '%', W / 2, H * 0.14 + 26);
-  ctx.globalAlpha = 1; ctx.textAlign = 'left';
-}
-
 // ---------- render ----------
 function render(t) {
   ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
@@ -1067,9 +1043,8 @@ function render(t) {
   const shx = (Math.random() - .5) * shake, shy = (Math.random() - .5) * shake;
   if (state === S.PLAY) {
     renderTower(shx, shy);
-    drawBurjGauge(ctx);
   } else if (state === S.DEAD) {
-    renderComparison();
+    renderTower(shx, shy);
   }
 }
 
