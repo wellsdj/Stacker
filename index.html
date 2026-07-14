@@ -50,6 +50,15 @@
   }
   #homeBtn:active { transform: translateY(2px); }
 
+  /* persistent mute button — always available, above every screen/modal */
+  #muteBtn {
+    position: fixed; top: 16px; left: 16px; z-index: 21; pointer-events: auto;
+    width: 46px; height: 46px; border: 0; border-radius: 13px; cursor: pointer;
+    background: rgba(255,255,255,.9); box-shadow: 0 5px 16px rgba(20,10,30,.3);
+    font-size: 21px; line-height: 1; display: flex; align-items: center; justify-content: center;
+  }
+  #muteBtn:active { transform: translateY(2px); }
+
   /* ---------- home screen: neon skyline over the Burj photo ---------- */
   #menu {
     justify-content: space-between; padding: 8vh 6vw 7vh; text-align: center;
@@ -185,6 +194,7 @@
   </div>
 </div>
 <button id="homeBtn" aria-label="Home" style="display:none">⌂</button>
+<button id="muteBtn" aria-label="Mute">🔊</button>
 <div id="toast"></div>
 
 <div id="menu" class="ui">
@@ -262,6 +272,9 @@ function applyGameScale() {
 }
 window.addEventListener('resize', resize);
 
+// ---------- mute (single toggle: silences music + all sound effects) ----------
+let muted = localStorage.getItem('city_muted') === '1';
+
 // ---------- audio effects ----------
 let audioPlace = null, audioDeath = null, audioNav = null, audioSkin = null;
 let audioPerfectSeq = [], audioPerfect5 = null;
@@ -282,7 +295,7 @@ function initAudio() {
   audioPerfectSeq.forEach(a => a.volume = 0.26);
   audioPerfect5 = new Audio('sfx-perfect5.mp3'); audioPerfect5.volume = 0.32;
 }
-function playSfx(audio) { if (audio) { audio.currentTime = 0; audio.play().catch(() => {}); } }
+function playSfx(audio) { if (audio && !muted) { audio.currentTime = 0; audio.play().catch(() => {}); } }
 initAudio();
 
 // ---------- music (looping, menu vs per-skin gameplay) ----------
@@ -303,10 +316,10 @@ function gameplayMusicFor(idx) {
   return musicTracks.default;
 }
 function playMusic(audio) {
-  if (currentMusic === audio) { if (audio && audio.paused) audio.play().catch(() => {}); return; }
+  if (currentMusic === audio) { if (audio && audio.paused && !muted) audio.play().catch(() => {}); return; }
   if (currentMusic) { currentMusic.pause(); }
   currentMusic = audio;
-  if (audio) { audio.currentTime = 0; audio.play().catch(() => {}); }
+  if (audio) { audio.currentTime = 0; if (!muted) audio.play().catch(() => {}); }
 }
 // browsers block autoplay until a gesture — kick the menu track on first interaction
 function armMusicAutostart() {
@@ -315,6 +328,13 @@ function armMusicAutostart() {
 }
 window.addEventListener('pointerdown', armMusicAutostart, { once: true });
 window.addEventListener('keydown', armMusicAutostart, { once: true });
+function toggleMute() {
+  muted = !muted;
+  localStorage.setItem('city_muted', muted ? '1' : '0');
+  muteBtn.textContent = muted ? '🔇' : '🔊';
+  if (muted) { if (currentMusic) currentMusic.pause(); }
+  else if (currentMusic && musicStarted) { currentMusic.play().catch(() => {}); }
+}
 
 // ---------- CrazyGames SDK (graceful fallback) ----------
 let cgSdk = null;
@@ -641,6 +661,9 @@ window.addEventListener('keydown', press);
 const menuEl = document.getElementById('menu'), overEl = document.getElementById('over'), hudEl = document.getElementById('hud');
 const hudHeightEl = document.getElementById('hudHeight'), hudPctEl = document.getElementById('hudPct'), hudNextEl = document.getElementById('hudNext'), hudBestEl = document.getElementById('hudBest');
 const toastEl = document.getElementById('toast'), continueBtn = document.getElementById('continueBtn'), homeBtn = document.getElementById('homeBtn');
+const muteBtn = document.getElementById('muteBtn');
+muteBtn.textContent = muted ? '🔇' : '🔊';
+muteBtn.addEventListener('click', () => toggleMute());
 const bonusMsgEl = document.getElementById('bonusMsg');
 const menuStatEl = document.getElementById('menuStat'), menuUnlockEl = document.getElementById('menuUnlock');
 function refreshMenu() {
