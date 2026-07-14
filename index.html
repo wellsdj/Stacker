@@ -73,29 +73,9 @@
   #over { justify-content: flex-end; padding-bottom: 7vh; }
   #over .btnrow { display: flex; flex-direction: column; align-items: center; }
 
-  /* shop */
-  #shop { background: rgba(14,8,22,.55); backdrop-filter: blur(4px); }
-  .shopcard {
-    position: relative; pointer-events: auto; width: min(88vw, 360px);
-    background: rgba(255,255,255,.96); color: #22283a; border-radius: 22px;
-    padding: 26px 22px 22px; box-shadow: 0 30px 80px rgba(10,8,24,.5);
-    display: flex; flex-direction: column; align-items: center;
-  }
-  #shopClose { position: absolute; top: 12px; right: 14px; border: 0; background: none; font-size: 20px; color: #9aa1af; cursor: pointer; pointer-events: auto; }
-  .shoptitle { font-weight: 800; letter-spacing: 3px; text-transform: uppercase; font-size: 15px; color: #6b7180; margin-bottom: 12px; }
-  .shoprow { display: flex; align-items: center; gap: 8px; width: 100%; justify-content: center; }
   .arrow { pointer-events: auto; cursor: pointer; border: 0; width: 46px; height: 46px; border-radius: 50%; background: #eef0f4; color: #3a4152; font-size: 18px; box-shadow: 0 3px 10px rgba(20,20,40,.14); flex: none; }
   .arrow:active { transform: translateY(2px); }
   .arrow:disabled { opacity: .3; cursor: default; }
-  .skinview { display: flex; flex-direction: column; align-items: center; flex: 1; }
-  #shopPreview { width: 200px; height: 220px; }
-  .skinname { font-weight: 800; font-size: 22px; letter-spacing: 1px; margin-top: 2px; }
-  .skinstatus { font-weight: 700; font-size: 12px; letter-spacing: 1px; text-transform: uppercase; color: #8a91a0; margin-top: 3px; }
-  .skinbar { width: 78%; height: 8px; border-radius: 5px; background: #e6e8ee; margin-top: 12px; overflow: hidden; }
-  .skinbar.hide { visibility: hidden; }
-  #skinBarFill { height: 100%; width: 0%; background: linear-gradient(90deg, #ffcf6a, #f6a52e); border-radius: 5px; }
-  #equipBtn { margin-top: 20px; min-width: 200px; }
-  #equipBtn:disabled { opacity: .5; cursor: default; filter: grayscale(.3); }
 
   /* stats screen */
   #stats { background: rgba(14,8,22,.55); backdrop-filter: blur(4px); }
@@ -192,28 +172,9 @@
     <h1 class="brand">CITY</h1>
     <div class="brand-sub">Build your tower toward the Burj Khalifa</div>
     <button class="btn" id="playBtn">Play</button>
-    <button class="btn ghost" id="shopBtn">Shop</button>
     <button class="btn ghost" id="statsBtn">Stats</button>
-    <div class="stat" id="menuStat">Best 0 m · 0 m built</div>
+    <div class="stat" id="menuStat">Best 0 m</div>
     <div class="stat" id="menuUnlock"></div>
-  </div>
-</div>
-
-<div id="shop" class="ui hidden">
-  <div class="shopcard">
-    <button id="shopClose" aria-label="Close">✕</button>
-    <div class="shoptitle">Skins</div>
-    <div class="shoprow">
-      <button class="arrow" id="shopPrev" aria-label="Previous">◀</button>
-      <div class="skinview">
-        <canvas id="shopPreview" width="220" height="240"></canvas>
-        <div id="skinName" class="skinname">Azure</div>
-        <div id="skinStatus" class="skinstatus">Equipped</div>
-        <div id="skinBar" class="skinbar"><div id="skinBarFill"></div></div>
-      </div>
-      <button class="arrow" id="shopNext" aria-label="Next">▶</button>
-    </div>
-    <button class="btn" id="equipBtn">Equip</button>
   </div>
 </div>
 
@@ -302,17 +263,17 @@ function initAudio() {
   audioDeath = new Audio('sfx-death.mp3');
   audioNav = new Audio('sfx-nav.mp3');
   audioSkin = new Audio('sfx-skin.mp3');
-  audioPlace.volume = 0.4;
-  audioDeath.volume = 0.2;
-  audioNav.volume = 0.3;
-  audioSkin.volume = 0.4;
+  audioPlace.volume = 0.22;
+  audioDeath.volume = 0.11;
+  audioNav.volume = 0.16;
+  audioSkin.volume = 0.22;
   // consecutive-perfect stingers (1st..4th), then the 5-in-a-row payoff
   audioPerfectSeq = [
     new Audio('sfx-perfect1.mp3'), new Audio('sfx-perfect2.mp3'),
     new Audio('sfx-perfect3.mp3'), new Audio('sfx-perfect4.mp3'),
   ];
-  audioPerfectSeq.forEach(a => a.volume = 0.5);
-  audioPerfect5 = new Audio('sfx-perfect5.mp3'); audioPerfect5.volume = 0.6;
+  audioPerfectSeq.forEach(a => a.volume = 0.26);
+  audioPerfect5 = new Audio('sfx-perfect5.mp3'); audioPerfect5.volume = 0.32;
 }
 function playSfx(audio) { if (audio) { audio.currentTime = 0; audio.play().catch(() => {}); } }
 initAudio();
@@ -325,7 +286,7 @@ function initMusic() {
   musicTracks.sunset  = new Audio('music-sunset.mp3');       // Baby Sweet
   musicTracks.emerald = new Audio('music-emerald.mp3');      // Wonder
   musicTracks.aurora  = new Audio('music-aurora.mp3');       // Hope — best skin
-  [musicMenu, ...Object.values(musicTracks)].forEach(a => { a.loop = true; a.volume = 0.32; });
+  [musicMenu, ...Object.values(musicTracks)].forEach(a => { a.loop = true; a.volume = 0.22; });
 }
 initMusic();
 // gameplay theme follows the equipped skin; obsidian (future "Garden") uses default
@@ -388,15 +349,16 @@ const MARKS = [
   { m: 443, name: 'Empire St' }, { m: 828, name: 'Burj' },
 ];
 
-// tower skins, unlocked by cumulative metres built across all runs
+// tower skins — unlocked automatically by clearing a height milestone (in metres,
+// this run or any past run). Azure is the default; Aurora is the mythic Burj reward.
 const SKINS = [
-  { id: 'azure',    name: 'Azure',    need: 0,     top: '#a9d3e0', right: '#33526b', left: '#2b465c', gA: '#8fc2d6', gB: '#a9d8e8', lit: '#ffe3a1' },
-  { id: 'sunset',   name: 'Sunset',   need: 1000,  top: '#ffd9a8', right: '#8a4a2f', left: '#6f3a25', gA: '#f0a35e', gB: '#f7c07a', lit: '#fff0c0' },
-  { id: 'emerald',  name: 'Emerald',  need: 4000,  top: '#bfe8c8', right: '#2f6b47', left: '#245538', gA: '#4fae7a', gB: '#7fd0a0', lit: '#eaffe0' },
-  { id: 'obsidian', name: 'Obsidian', need: 10000, top: '#5a6470', right: '#1c2430', left: '#131a22', gA: '#2b3a48', gB: '#3d5265', lit: '#86f2ff' },
-  { id: 'aurora',   name: 'Aurora',   need: 25000, mythic: true },
+  { id: 'azure',    name: 'Azure',    need: 0,   top: '#a9d3e0', right: '#33526b', left: '#2b465c', gA: '#8fc2d6', gB: '#a9d8e8', lit: '#ffe3a1' },
+  { id: 'sunset',   name: 'Sunset',   need: 93,  top: '#ffd9a8', right: '#8a4a2f', left: '#6f3a25', gA: '#f0a35e', gB: '#f7c07a', lit: '#fff0c0' },   // past Liberty
+  { id: 'emerald',  name: 'Emerald',  need: 139, top: '#bfe8c8', right: '#2f6b47', left: '#245538', gA: '#4fae7a', gB: '#7fd0a0', lit: '#eaffe0' },   // past Pyramid
+  { id: 'obsidian', name: 'Obsidian', need: 330, top: '#5a6470', right: '#1c2430', left: '#131a22', gA: '#2b3a48', gB: '#3d5265', lit: '#86f2ff' },   // past Eiffel
+  { id: 'aurora',   name: 'Aurora',   need: 828, mythic: true },                                                                                       // past the Burj
 ];
-function skinUnlockCount(total) { let n = 0; for (const s of SKINS) if (total >= s.need) n++; return n; }
+function unlockedIdx(m) { let idx = 0; for (let i = 0; i < SKINS.length; i++) if (m >= SKINS[i].need) idx = i; return idx; }
 
 // ---------- draw primitives ----------
 function fillQuad(g, a, b, c, d, color) { g.fillStyle = color; g.beginPath(); g.moveTo(a.x, a.y); g.lineTo(b.x, b.y); g.lineTo(c.x, c.y); g.lineTo(d.x, d.y); g.closePath(); g.fill(); }
@@ -668,13 +630,13 @@ const S = { MENU: 0, PLAY: 1, DEAD: 2 };
 let state = S.MENU;
 let stack = null, mover = null, debris = [], sparks = [];
 let score = 0, bestM = 0, camY = 0, camYT = 0, shake = 0, usedContinue = false, endT = 0;
-let totalM = 0, equipped = 0, committedM = 0, activeSkin = 0, shopIdx = 0, statsIdx = 0, unlockMsg = '';
+let equipped = 0, activeSkin = 0, statsIdx = 0, unlockMsg = '';
 let milestoneRecords = {};  // { markName: { best: m, worst: m } }
 let perfectStreak = 0, paused = false, pauseT = 0;  // consecutive-perfect bonus
-let pendingRevealIdx = -1;  // a skin unlocked this run, waiting to be shown
+let runStartUnlockIdx = 0;  // skin already unlocked before this run began
+let pendingRevealIdx = -1;  // a skin unlocked-for-the-first-time this run, waiting to be shown
 bestM = +(localStorage.getItem('city_best_m') || 0);
-totalM = +(localStorage.getItem('city_total_m') || 0);
-(function loadSkin() { const sid = localStorage.getItem('city_skin'); const i = SKINS.findIndex(s => s.id === sid); if (i >= 0 && totalM >= SKINS[i].need) equipped = i; })();
+equipped = unlockedIdx(bestM); activeSkin = equipped;
 (function loadMilestoneRecords() { const stored = localStorage.getItem('city_milestone_records'); if (stored) { try { milestoneRecords = JSON.parse(stored); } catch (e) {} } })();
 
 function heightM() { return BASE_M + STEP_M * score; }
@@ -733,7 +695,18 @@ function drop() {
   } else {
     playSfx(audioPlace);
   }
+  checkLiveSkinUnlock();
   updateHud(); newMover();
+}
+// mid-run: crossing a milestone height instantly swaps the tower skin + music
+function checkLiveSkinUnlock() {
+  const idx = unlockedIdx(heightM());
+  if (idx <= equipped) return;
+  equipped = idx; activeSkin = idx;
+  playMusic(gameplayMusicFor(equipped));
+  playSfx(audioSkin);
+  toast((SKINS[idx].mythic ? '✦ ' : '') + SKINS[idx].name.toUpperCase() + ' UNLOCKED');
+  if (idx > runStartUnlockIdx) { unlockMsg = '✦ New skin unlocked: ' + SKINS[idx].name; pendingRevealIdx = idx; }
 }
 // extra world-height added by any boosted (5-in-a-row) blocks
 function boostExtra() { let e = 0; for (let k = 1; k < stack.length; k++) if (stack[k].h) e += stack[k].h - BH; return e; }
@@ -749,13 +722,7 @@ function triggerPerfectBonus() {
   bonusMsgEl.classList.add('show');
 }
 function commitRun() {
-  const m = heightM(), add = Math.max(0, m - committedM);
-  if (add > 0) {
-    const before = skinUnlockCount(totalM);
-    totalM += add; committedM = m; localStorage.setItem('city_total_m', totalM);
-    const after = skinUnlockCount(totalM);
-    if (after > before) { unlockMsg = '✦ New skin unlocked: ' + SKINS[after - 1].name; pendingRevealIdx = after - 1; }
-  }
+  const m = heightM();
   if (m > bestM) { bestM = m; localStorage.setItem('city_best_m', bestM); }
   // update milestone records
   for (const mk of MARKS) {
@@ -770,6 +737,7 @@ function commitRun() {
     }
   }
   localStorage.setItem('city_milestone_records', JSON.stringify(milestoneRecords));
+  buildHomeCity();
 }
 function die() {
   state = S.DEAD; sdkStop(); shake = 10; endT = 0;
@@ -788,7 +756,7 @@ function goHome() {
   if (state === S.PLAY) commitRun();
   state = S.MENU; sdkStop();
   paused = false; bonusMsgEl.classList.remove('show');
-  overEl.classList.add('hidden'); shopEl.classList.add('hidden'); statsEl.classList.add('hidden'); hudEl.style.display = 'none'; homeBtn.style.display = 'none';
+  overEl.classList.add('hidden'); statsEl.classList.add('hidden'); hudEl.style.display = 'none'; homeBtn.style.display = 'none';
   menuEl.classList.remove('hidden'); tutorialEl.classList.add('visible'); refreshMenu();
   musicStarted = true; playMusic(musicMenu);
   checkPendingReveal();
@@ -810,8 +778,8 @@ function floorColors(i) {
 function drawFloor(g, b, i, yb, yt) {
   const w = b.x1 - b.x0, d = b.z1 - b.z0;
   if (b.podium) { drawBox(g, b.x0, b.z0, b.x1, b.z1, yb, yt, { top: '#b9b3a6', right: '#8f887b', left: '#7c766a' }, null); return; }
-  if (Math.min(w, d) < 76) { drawBox(g, b.x0, b.z0, b.x1, b.z1, yb, yt, { top: '#c6cdd1', right: '#93a3ac', left: '#7d8d97' }, null); return; }
   const c = floorColors(i);
+  if (Math.min(w, d) < 76) { drawBox(g, b.x0, b.z0, b.x1, b.z1, yb, yt, { top: c.top, right: c.right, left: c.left }, null); return; }
   drawBox(g, b.x0, b.z0, b.x1, b.z1, yb, yt, { top: c.top, right: c.right, left: c.left },
     { colsR: clamp(Math.round(d / 42), 2, 7), colsL: clamp(Math.round(w / 42), 2, 7), rows: clamp(Math.round((yt - yb) / BH), 1, 8), glass: c.glass, lit: c.lit, litP: 0.16, seed: (i * 13) % 999 });
 }
@@ -829,13 +797,13 @@ canvas.addEventListener('pointerdown', press, { passive: false });
 window.addEventListener('keydown', press);
 
 // ---------- UI ----------
-const menuEl = document.getElementById('menu'), overEl = document.getElementById('over'), hudEl = document.getElementById('hud'), shopEl = document.getElementById('shop');
+const menuEl = document.getElementById('menu'), overEl = document.getElementById('over'), hudEl = document.getElementById('hud');
 const hudHeightEl = document.getElementById('hudHeight'), hudPctEl = document.getElementById('hudPct'), hudNextEl = document.getElementById('hudNext'), hudBestEl = document.getElementById('hudBest');
 const toastEl = document.getElementById('toast'), continueBtn = document.getElementById('continueBtn'), homeBtn = document.getElementById('homeBtn');
 const bonusMsgEl = document.getElementById('bonusMsg');
 const menuStatEl = document.getElementById('menuStat'), menuUnlockEl = document.getElementById('menuUnlock');
 function refreshMenu() {
-  menuStatEl.textContent = 'Best ' + bestM + ' m · ' + totalM + ' m built · ' + SKINS[equipped].name;
+  menuStatEl.textContent = 'Best ' + bestM + ' m · ' + SKINS[equipped].name;
   menuUnlockEl.textContent = unlockMsg; unlockMsg = '';
 }
 refreshMenu();
@@ -850,8 +818,9 @@ let toastTimer = 0;
 function toast(msg) { toastEl.textContent = msg; toastEl.style.opacity = 1; toastEl.style.transform = 'scale(1.1)'; clearTimeout(toastTimer); toastTimer = setTimeout(() => { toastEl.style.opacity = 0; toastEl.style.transform = 'scale(1)'; }, 650); }
 function startGame() {
   applyGameScale();
-  reset(); committedM = 0; state = S.PLAY;
-  menuEl.classList.add('hidden'); overEl.classList.add('hidden'); shopEl.classList.add('hidden'); statsEl.classList.add('hidden');
+  reset(); state = S.PLAY;
+  equipped = unlockedIdx(bestM); activeSkin = equipped; runStartUnlockIdx = equipped;
+  menuEl.classList.add('hidden'); overEl.classList.add('hidden'); statsEl.classList.add('hidden');
   tutorialEl.classList.remove('visible'); bonusMsgEl.classList.remove('show');
   hudEl.style.display = 'flex'; homeBtn.style.display = 'flex'; updateHud(); newMover(); sdkStart();
   musicStarted = true; playMusic(gameplayMusicFor(equipped));
@@ -881,13 +850,7 @@ continueBtn.addEventListener('click', () => {
   });
 });
 
-// ---------- shop ----------
-const shopPreview = document.getElementById('shopPreview'), spCtx = shopPreview.getContext('2d');
-const skinNameEl = document.getElementById('skinName'), skinStatusEl = document.getElementById('skinStatus');
-const skinBarEl = document.getElementById('skinBar'), skinBarFillEl = document.getElementById('skinBarFill'), equipBtn = document.getElementById('equipBtn');
-function openShop() { shopIdx = equipped; menuEl.classList.add('hidden'); tutorialEl.classList.remove('visible'); shopEl.classList.remove('hidden'); renderShop(); }
-function closeShop() { shopEl.classList.add('hidden'); menuEl.classList.remove('hidden'); tutorialEl.classList.add('visible'); refreshMenu(); }
-// render a small skin tower into any canvas context (shop card + unlock reveal)
+// render a small skin tower into any canvas context (used by the unlock reveal)
 function drawTowerInto(g, w, h, idx, transparent) {
   g.clearRect(0, 0, w, h);
   if (!transparent) { const bg = g.createLinearGradient(0, 0, 0, h); bg.addColorStop(0, '#e9ecf3'); bg.addColorStop(1, '#cfd5e0'); g.fillStyle = bg; g.fillRect(0, 0, w, h); }
@@ -901,25 +864,6 @@ function drawTowerInto(g, w, h, idx, transparent) {
   for (let i = 0; i < stackN; i++) drawFloor(g, tmp[i], i, floorBaseY(tmp, i), floorTopY(tmp, i));
   A = sA; B = sB; C = sC; PX = sPX; PY = sPY; activeSkin = sAct;
 }
-function drawSkinPreview(idx) { drawTowerInto(spCtx, shopPreview.width, shopPreview.height, idx, false); }
-function renderShop() {
-  const sk = SKINS[shopIdx], unlocked = totalM >= sk.need, isEq = shopIdx === equipped;
-  drawSkinPreview(shopIdx);
-  skinNameEl.textContent = sk.name + (sk.mythic ? '  ✦' : '');
-  skinNameEl.style.color = sk.mythic ? '#a05bd6' : '#22283a';
-  skinStatusEl.textContent = isEq ? 'Equipped' : unlocked ? 'Unlocked' : (sk.mythic ? 'Mythic — Locked' : 'Locked');
-  if (unlocked) { skinBarEl.classList.add('hide'); }
-  else { skinBarEl.classList.remove('hide'); skinBarFillEl.style.width = clamp(totalM / sk.need * 100, 0, 100) + '%'; skinStatusEl.textContent = totalM + ' / ' + sk.need + ' m built'; }
-  equipBtn.disabled = !unlocked || isEq;
-  equipBtn.textContent = isEq ? 'Equipped' : unlocked ? 'Equip' : 'Need ' + sk.need + ' m';
-  document.getElementById('shopPrev').disabled = shopIdx === 0;
-  document.getElementById('shopNext').disabled = shopIdx === SKINS.length - 1;
-}
-document.getElementById('shopBtn').addEventListener('click', (e) => { playSfx(audioNav); openShop(); });
-document.getElementById('shopClose').addEventListener('click', (e) => { playSfx(audioNav); closeShop(); });
-document.getElementById('shopPrev').addEventListener('click', () => { playSfx(audioNav); if (shopIdx > 0) { shopIdx--; renderShop(); } });
-document.getElementById('shopNext').addEventListener('click', () => { playSfx(audioNav); if (shopIdx < SKINS.length - 1) { shopIdx++; renderShop(); } });
-equipBtn.addEventListener('click', () => { if (totalM >= SKINS[shopIdx].need) { equipped = shopIdx; localStorage.setItem('city_skin', SKINS[shopIdx].id); playSfx(audioSkin); buildHomeCity(); renderShop(); } });
 
 // ---------- new-skin reveal (confetti + spinning tower) ----------
 const skinRevealEl = document.getElementById('skinReveal');
@@ -952,8 +896,7 @@ function confStep(now) {
 }
 function stopConfetti() { cancelAnimationFrame(confRAF); confCtx.clearRect(0, 0, confettiCanvas.width, confettiCanvas.height); }
 function showSkinReveal(idx) {
-  equipped = idx; localStorage.setItem('city_skin', SKINS[idx].id);  // auto-equip the freshly unlocked skin
-  buildHomeCity();
+  buildHomeCity();  // equipped/bestM are already updated live (checkLiveSkinUnlock + commitRun)
   drawTowerInto(revealCtx, revealTowerCanvas.width, revealTowerCanvas.height, idx, true);
   revealNameEl.textContent = SKINS[idx].name + (SKINS[idx].mythic ? ' ✦' : '');
   skinRevealEl.classList.remove('hidden');
@@ -1062,15 +1005,18 @@ function groundShadow(g, wx, wz, rad) {
   gr.addColorStop(0, 'rgba(10,10,25,.35)'); gr.addColorStop(1, 'rgba(10,10,25,0)');
   g.fillStyle = gr; g.beginPath(); g.ellipse(s.x, s.y, rad, rad * 0.5, 0, 0, Math.PI * 2); g.fill();
 }
+// the Burj model is rendered in the same skin currently equipped, so both towers match
 function drawBurj3D(g, bx, bz) {
   const Hb = BURJ_M * BH_PER_M, baseHalf = SIZE * 0.92;
+  const sk = SKINS[equipped];
+  const bTop = sk.mythic ? '#e6d6ff' : sk.top, bRight = sk.mythic ? '#9a63d6' : sk.right, bLeft = sk.mythic ? '#7847a8' : sk.left;
   for (let i = 0; i < BURJ.length - 1; i++) {
     const y0 = BURJ[i][0] * Hb, y1 = BURJ[i + 1][0] * Hb;
     if (y1 <= y0) continue;
     const half = baseHalf * Math.max(BURJ[i][1], BURJ[i + 1][1]);
     const tint = i / BURJ.length;
     drawBox(g, bx - half, bz - half, bx + half, bz + half, y0, y1,
-      { top: lerpHex('#e7edf3', '#cfe0ea', tint), right: lerpHex('#a9bccb', '#93aec0', tint), left: lerpHex('#8ea3b4', '#7c98ab', tint) }, null);
+      { top: lerpHex(bTop, shade(bTop, 0.16), tint), right: lerpHex(bRight, shade(bRight, -0.1), tint), left: lerpHex(bLeft, shade(bLeft, -0.1), tint) }, null);
   }
 }
 function drawFloorOff(g, b, i, ox, oz) {
