@@ -298,23 +298,13 @@ function initAudio() {
 function playSfx(audio) { if (audio && !muted) { audio.currentTime = 0; audio.play().catch(() => {}); } }
 initAudio();
 
-// ---------- music (looping, menu vs per-skin gameplay) ----------
-let musicMenu = null, musicTracks = {}, currentMusic = null, musicStarted = false;
+// ---------- music (one looping track, starts on the home screen and never switches) ----------
+let musicMenu = null, currentMusic = null, musicStarted = false;
 function initMusic() {
-  musicMenu = new Audio('music-menu.mp3');           // Puzzle VIP — lobby
-  musicTracks.default = new Audio('music-play-default.mp3'); // Puzzle 2024 — azure / reserved
-  musicTracks.sunset  = new Audio('music-sunset.mp3');       // Baby Sweet
-  musicTracks.emerald = new Audio('music-emerald.mp3');      // Wonder
-  musicTracks.aurora  = new Audio('music-aurora.mp3');       // Hope — best skin
-  [musicMenu, ...Object.values(musicTracks)].forEach(a => { a.loop = true; a.volume = 0.22; });
+  musicMenu = new Audio('music-menu.mp3');   // Puzzle VIP — plays everywhere
+  musicMenu.loop = true; musicMenu.volume = 0.22;
 }
 initMusic();
-// gameplay theme follows the equipped skin; obsidian (future "Garden") uses default
-function gameplayMusicFor(idx) {
-  const id = SKINS[idx].id;
-  if (musicTracks[id]) return musicTracks[id];
-  return musicTracks.default;
-}
 function playMusic(audio) {
   if (currentMusic === audio) { if (audio && audio.paused && !muted) audio.play().catch(() => {}); return; }
   if (currentMusic) { currentMusic.pause(); }
@@ -559,12 +549,11 @@ function drop() {
   checkLiveSkinUnlock();
   updateHud(); newMover();
 }
-// mid-run: crossing a milestone height instantly swaps the tower skin + music
+// mid-run: crossing a milestone height instantly swaps the tower skin
 function checkLiveSkinUnlock() {
   const idx = unlockedIdx(heightM());
   if (idx <= equipped) return;
   equipped = idx; activeSkin = idx;
-  playMusic(gameplayMusicFor(equipped));
   playSfx(audioSkin);
   toast((SKINS[idx].mythic ? '✦ ' : '') + SKINS[idx].name.toUpperCase() + ' UNLOCKED');
   if (idx > runStartUnlockIdx) { unlockMsg = '✦ New skin unlocked: ' + SKINS[idx].name; pendingRevealIdx = idx; }
@@ -687,7 +676,8 @@ function startGame() {
   menuEl.classList.add('hidden'); overEl.classList.add('hidden');
   bonusMsgEl.classList.remove('show');
   hudEl.style.display = 'flex'; homeBtn.style.display = 'flex'; updateHud(); newMover(); sdkStart();
-  musicStarted = true; playMusic(gameplayMusicFor(equipped));
+  // the home-screen track keeps playing straight through into the game — never switched
+  musicStarted = true; playMusic(musicMenu);
 }
 document.getElementById('playBtn').addEventListener('click', (e) => { playSfx(audioNav); startGame(); });
 document.getElementById('retryBtn').addEventListener('click', (e) => { playSfx(audioNav); startGame(); });
