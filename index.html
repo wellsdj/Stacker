@@ -253,7 +253,7 @@
   #hudHeight { color:#f5ffff; text-shadow:0 0 8px var(--cyan),0 0 24px rgba(168,85,255,.72); }
   #hudPct { color:var(--cyan); } #hudNext { color:#ff9bea; } #hudBest { color:#bcecff; opacity:.9; }
   #menu { background-image:radial-gradient(circle at 50% 22%,rgba(48,90,190,.42),transparent 28%),radial-gradient(circle at 80% 70%,rgba(192,32,190,.2),transparent 34%),linear-gradient(155deg,#040615 0%,#0a1235 45%,#21082f 100%); }
-  #menu::before { content:''; position:absolute; inset:0; pointer-events:none; opacity:.35; background-image:linear-gradient(rgba(83,246,255,.13) 1px,transparent 1px),linear-gradient(90deg,rgba(83,246,255,.13) 1px,transparent 1px); background-size:42px 42px; transform:perspective(500px) rotateX(62deg) scale(1.6) translateY(32%); transform-origin:center bottom; }
+  #menu::before { display:none; }
   .brand { background:linear-gradient(180deg,#fff 0%,#66f7ff 35%,#9a62ff 70%,#ff3fd5 100%); -webkit-background-clip:text; background-clip:text; filter:drop-shadow(0 0 9px rgba(83,246,255,.95)) drop-shadow(0 0 32px rgba(168,85,255,.8)); }
   .brand-sub { color:#9df9ff; }
   .neonBtn.primary { background:linear-gradient(135deg,#0aa7c7 0%,#5a39e0 50%,#d123a6 100%); }
@@ -266,11 +266,36 @@
   .leaderRow.you { background:linear-gradient(90deg,rgba(13,135,165,.42),rgba(151,35,176,.4)); outline:1px solid var(--cyan); }
   #viewer { background:radial-gradient(circle at 50% 70%,rgba(35,87,166,.55),transparent 30%),radial-gradient(circle at 50% 50%,#17143e,#050611 72%); }
   #over { background:linear-gradient(180deg,transparent 35%,rgba(4,5,20,.82)); }
+
+  /* live build signal: miniature tower + height charge */
+  #buildMeter {
+    position:fixed; right:22px; top:50%; transform:translateY(-44%); z-index:8;
+    width:210px; height:286px; padding:14px 12px 12px; box-sizing:border-box;
+    display:grid; grid-template-columns:1fr 34px; grid-template-rows:auto 1fr auto; column-gap:9px;
+    background:linear-gradient(150deg,rgba(7,19,49,.78),rgba(38,8,61,.76));
+    border:1px solid rgba(83,246,255,.46); clip-path:polygon(16px 0,100% 0,100% calc(100% - 16px),calc(100% - 16px) 100%,0 100%,0 16px);
+    box-shadow:inset 0 0 28px rgba(83,246,255,.08),0 0 18px rgba(83,246,255,.16),0 0 42px rgba(168,85,255,.16);
+    pointer-events:none;
+  }
+  .meterTitle { grid-column:1/-1; color:#8ffaff; font-size:9px; font-weight:900; letter-spacing:2.5px; text-transform:uppercase; text-align:left; margin:0 0 5px 4px; text-shadow:0 0 9px rgba(83,246,255,.8); }
+  #miniTower { grid-column:1; grid-row:2; width:148px; height:218px; align-self:end; }
+  .meterRail { grid-column:2; grid-row:2; position:relative; width:22px; height:204px; align-self:center; justify-self:center; padding:3px; box-sizing:border-box; border:1px solid rgba(144,246,255,.55); background:rgba(3,7,28,.86); box-shadow:inset 0 0 9px rgba(0,0,0,.8),0 0 10px rgba(83,246,255,.24); clip-path:polygon(5px 0,100% 0,100% calc(100% - 5px),calc(100% - 5px) 100%,0 100%,0 5px); }
+  .meterRail::after { content:''; position:absolute; inset:5px 2px; z-index:2; background:repeating-linear-gradient(to top,transparent 0 18px,rgba(255,255,255,.28) 18px 19px); }
+  #meterFill { position:absolute; z-index:1; left:3px; right:3px; bottom:3px; height:2%; min-height:6px; background:linear-gradient(to top,#7c35ff,#ff40d2 48%,#53f6ff); box-shadow:0 0 9px #53f6ff,0 0 20px rgba(255,63,213,.75); transition:height .38s cubic-bezier(.2,.8,.2,1); }
+  #meterFill::before { content:''; position:absolute; left:-2px; right:-2px; top:-2px; height:4px; background:#edffff; box-shadow:0 0 10px #53f6ff; }
+  #meterMeters { grid-column:1/-1; grid-row:3; justify-self:center; margin-top:0; color:#fff; font-size:18px; font-weight:900; letter-spacing:1px; text-shadow:0 0 8px #53f6ff,0 0 18px #a855ff; }
+  #meterBoost { color:#ff85ea; font-size:9px; letter-spacing:1.4px; margin-left:5px; opacity:0; transition:opacity .2s ease; }
+  #buildMeter.boost #meterBoost { opacity:1; }
   @media (max-width:520px) {
     #hud { padding:14px; } #hudLeft { margin-left:54px; }
     #hudHeight { font-size:42px; }
     #homeBtn, #muteBtn { width:44px; height:44px; top:14px; }
     .statscard { width:min(94vw,520px); padding:16px; }
+    #buildMeter { right:8px; top:auto; bottom:12px; transform:none; width:148px; height:204px; padding:9px 8px 8px; grid-template-columns:1fr 25px; column-gap:5px; }
+    .meterTitle { font-size:7px; letter-spacing:1.6px; }
+    #miniTower { width:105px; height:148px; }
+    .meterRail { width:16px; height:142px; }
+    #meterMeters { font-size:13px; }
   }
 </style>
 </head>
@@ -293,6 +318,12 @@
     <div id="hudPct">Live leaderboard score</div>
     <div id="hudNext">Next skin: 100 m</div>
     <div id="hudBest">Best 0 m</div>
+  </div>
+  <div id="buildMeter" aria-label="Live building height">
+    <div class="meterTitle">Build signal</div>
+    <canvas id="miniTower" width="296" height="436"></canvas>
+    <div class="meterRail"><div id="meterFill"></div></div>
+    <div id="meterMeters">10 m <span id="meterBoost">5× BOOST</span></div>
   </div>
 </div>
 <button id="homeBtn" aria-label="Home" style="display:none">⌂</button>
@@ -517,7 +548,7 @@ function drawBox(g, x0, z0, x1, z1, yb, yt, col, win) {
 }
 
 // ======================================================================
-//  FUTURE VOID — deep space, neon haze and a distant energy grid
+//  FUTURE VOID — clean neon colour haze
 // ======================================================================
 const SKY = [
   [0, '#17072d'], [80, '#111342'], [220, '#0a1434'], [420, '#080d25'],
@@ -541,16 +572,6 @@ function drawSky(g) {
   const glowB = g.createRadialGradient(W * .84, H * .46, 0, W * .84, H * .46, W * .44);
   glowB.addColorStop(0, 'rgba(221,45,255,.16)'); glowB.addColorStop(1, 'rgba(221,45,255,0)');
   g.fillStyle = glowB; g.fillRect(0,0,W,H);
-  const pulse = .35 + .18 * Math.sin(performance.now() * .0012);
-  for (let i = 0; i < 72; i++) {
-    const sx = (i * 149 + 23) % W, sy = (i * 83 + 41) % (H * .78), r = i % 11 === 0 ? 1.8 : 1;
-    g.fillStyle = i % 4 ? 'rgba(180,235,255,.48)' : `rgba(255,107,232,${pulse})`;
-    g.fillRect(sx, sy, r, r);
-  }
-  const horizon = H * .78;
-  g.strokeStyle = 'rgba(83,246,255,.11)'; g.lineWidth = 1;
-  for (let y = horizon; y < H; y += Math.max(16, (y - horizon) * .22 + 10)) { g.beginPath(); g.moveTo(0,y); g.lineTo(W,y); g.stroke(); }
-  for (let x = -W; x <= W * 2; x += W / 12) { g.beginPath(); g.moveTo(W/2,horizon); g.lineTo(x,H); g.stroke(); }
 }
 
 // ======================================================================
@@ -775,6 +796,8 @@ window.addEventListener('keydown', press);
 const menuEl = document.getElementById('menu'), overEl = document.getElementById('over'), hudEl = document.getElementById('hud');
 const hudHeightEl = document.getElementById('hudHeight'), hudPctEl = document.getElementById('hudPct'), hudNextEl = document.getElementById('hudNext'), hudBestEl = document.getElementById('hudBest');
 const toastEl = document.getElementById('toast'), continueBtn = document.getElementById('continueBtn'), homeBtn = document.getElementById('homeBtn');
+const buildMeterEl = document.getElementById('buildMeter'), meterFillEl = document.getElementById('meterFill'), meterMetersEl = document.getElementById('meterMeters');
+const miniTowerCanvas = document.getElementById('miniTower'), miniTowerCtx = miniTowerCanvas.getContext('2d');
 const muteBtn = document.getElementById('muteBtn');
 muteBtn.textContent = muted ? '🔇' : '🔊';
 muteBtn.addEventListener('click', () => toggleMute());
@@ -835,6 +858,32 @@ function updateHud() {
   hudPctEl.textContent = own ? 'All-time rank #' + own.rank : 'Building your rank';
   hudNextEl.textContent = nm ? 'Next skin: ' + nm.name + ' ' + nm.need + ' m' : 'All skins unlocked';
   hudBestEl.textContent = 'Best ' + Math.max(bestM, m) + ' m';
+  updateBuildMeter(m);
+}
+
+function updateBuildMeter(m) {
+  // Exponential scale keeps every gain visible without introducing a final height goal.
+  const progress = clamp(1 - Math.exp(-m / 260), .025, 1);
+  meterFillEl.style.height = (progress * 100).toFixed(1) + '%';
+  const boosted = stack && stack.length > 1 && (stack[stack.length - 1].h || BH) > BH;
+  buildMeterEl.classList.toggle('boost', !!boosted);
+  meterMetersEl.innerHTML = m + ' m <span id="meterBoost">5× BOOST</span>';
+  drawMiniTower();
+}
+
+function drawMiniTower() {
+  const g = miniTowerCtx, w = miniTowerCanvas.width, h = miniTowerCanvas.height;
+  g.clearRect(0,0,w,h);
+  if (!stack || !stack.length) return;
+  const saved = [A,B,C,PX,PY,camYaw,camZoom,activeSkin];
+  const worldH = floorTopY(stack, stack.length - 1);
+  const k = Math.min((h * .70) / Math.max(worldH, 190), (w * .36) / SIZE);
+  A = k; B = k * .577; C = k; PX = w * .50; PY = h * .84; camYaw = -.48; camZoom = 1; activeSkin = equipped;
+  const glow = g.createRadialGradient(w*.5,h*.78,4,w*.5,h*.78,w*.38);
+  glow.addColorStop(0,'rgba(83,246,255,.18)'); glow.addColorStop(1,'rgba(83,246,255,0)');
+  g.fillStyle=glow; g.fillRect(0,0,w,h);
+  for (let i=0;i<stack.length;i++) drawFloor(g,stack[i],i,floorBaseY(stack,i),floorTopY(stack,i));
+  [A,B,C,PX,PY,camYaw,camZoom,activeSkin] = saved;
 }
 let toastTimer = 0;
 function toast(msg) { toastEl.textContent = msg; toastEl.style.opacity = 1; toastEl.style.transform = 'scale(1.1)'; clearTimeout(toastTimer); toastTimer = setTimeout(() => { toastEl.style.opacity = 0; toastEl.style.transform = 'scale(1)'; }, 650); }
