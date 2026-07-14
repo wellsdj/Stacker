@@ -636,7 +636,7 @@ let perfectStreak = 0, paused = false, pauseT = 0;  // consecutive-perfect bonus
 let runStartUnlockIdx = 0;  // skin already unlocked before this run began
 let pendingRevealIdx = -1;  // a skin unlocked-for-the-first-time this run, waiting to be shown
 bestM = +(localStorage.getItem('city_best_m') || 0);
-equipped = unlockedIdx(bestM); activeSkin = equipped;
+// you always start on Azure — skins are earned live, run by run, as you climb past each milestone
 (function loadMilestoneRecords() { const stored = localStorage.getItem('city_milestone_records'); if (stored) { try { milestoneRecords = JSON.parse(stored); } catch (e) {} } })();
 
 function heightM() { return BASE_M + STEP_M * score; }
@@ -756,6 +756,7 @@ function goHome() {
   if (state === S.PLAY) commitRun();
   state = S.MENU; sdkStop();
   paused = false; bonusMsgEl.classList.remove('show');
+  equipped = 0; activeSkin = 0; buildHomeCity();  // home always shows the default Azure skin/background
   overEl.classList.add('hidden'); statsEl.classList.add('hidden'); hudEl.style.display = 'none'; homeBtn.style.display = 'none';
   menuEl.classList.remove('hidden'); tutorialEl.classList.add('visible'); refreshMenu();
   musicStarted = true; playMusic(musicMenu);
@@ -803,7 +804,7 @@ const toastEl = document.getElementById('toast'), continueBtn = document.getElem
 const bonusMsgEl = document.getElementById('bonusMsg');
 const menuStatEl = document.getElementById('menuStat'), menuUnlockEl = document.getElementById('menuUnlock');
 function refreshMenu() {
-  menuStatEl.textContent = 'Best ' + bestM + ' m · ' + SKINS[equipped].name;
+  menuStatEl.textContent = 'Best ' + bestM + ' m';
   menuUnlockEl.textContent = unlockMsg; unlockMsg = '';
 }
 refreshMenu();
@@ -819,7 +820,7 @@ function toast(msg) { toastEl.textContent = msg; toastEl.style.opacity = 1; toas
 function startGame() {
   applyGameScale();
   reset(); state = S.PLAY;
-  equipped = unlockedIdx(bestM); activeSkin = equipped; runStartUnlockIdx = equipped;
+  equipped = 0; activeSkin = 0; runStartUnlockIdx = unlockedIdx(bestM);
   menuEl.classList.add('hidden'); overEl.classList.add('hidden'); statsEl.classList.add('hidden');
   tutorialEl.classList.remove('visible'); bonusMsgEl.classList.remove('show');
   hudEl.style.display = 'flex'; homeBtn.style.display = 'flex'; updateHud(); newMover(); sdkStart();
@@ -896,7 +897,6 @@ function confStep(now) {
 }
 function stopConfetti() { cancelAnimationFrame(confRAF); confCtx.clearRect(0, 0, confettiCanvas.width, confettiCanvas.height); }
 function showSkinReveal(idx) {
-  buildHomeCity();  // equipped/bestM are already updated live (checkLiveSkinUnlock + commitRun)
   drawTowerInto(revealCtx, revealTowerCanvas.width, revealTowerCanvas.height, idx, true);
   revealNameEl.textContent = SKINS[idx].name + (SKINS[idx].mythic ? ' ✦' : '');
   skinRevealEl.classList.remove('hidden');
