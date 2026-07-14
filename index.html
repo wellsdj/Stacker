@@ -177,12 +177,22 @@
   .period { pointer-events:auto; border:1px solid rgba(170,210,255,.28); border-radius:9px; background:rgba(255,255,255,.08); color:#dceeff; padding:10px 4px; cursor:pointer; font:800 10px inherit; letter-spacing:.6px; text-transform:uppercase; }
   .period.active { color:#15132c; background:#9fe0ff; border-color:#9fe0ff; }
   .rankSummary { color:#fff0c0; font-weight:800; margin:7px 0 12px; font-size:13px; }
-  .leaderRow { display:grid; grid-template-columns:38px 1fr auto; align-items:center; gap:8px; width:100%; margin:5px 0; padding:11px 9px; border:0; border-radius:10px; color:#eaf3ff; background:rgba(255,255,255,.07); text-align:left; cursor:pointer; font:600 13px inherit; }
+  .leaderRow { display:grid; grid-template-columns:34px 34px 1fr auto; align-items:center; gap:8px; width:100%; margin:5px 0; padding:11px 9px; border:0; border-radius:10px; color:#eaf3ff; background:rgba(255,255,255,.07); text-align:left; cursor:pointer; font:600 13px inherit; }
   .leaderRow.you { background:linear-gradient(90deg, rgba(23,212,255,.32), rgba(154,61,255,.26)); outline:1px solid rgba(159,224,255,.65); }
   .leaderRow .rank { color:#9fe0ff; font-weight:900; } .leaderRow .meters { font-weight:900; color:#fff0c0; }
+  .landmarkGlyph { position:relative; width:24px; height:30px; justify-self:center; background:linear-gradient(180deg,#eaffff,#53f6ff 45%,#a855ff); filter:drop-shadow(0 0 5px rgba(83,246,255,.75)); clip-path:polygon(38% 0,62% 0,68% 32%,82% 52%,75% 100%,25% 100%,18% 52%,32% 32%); }
+  .landmarkGlyph.pyramid { clip-path:polygon(50% 0,100% 100%,0 100%); }
+  .landmarkGlyph.arch { clip-path:polygon(10% 0,90% 0,100% 100%,68% 100%,68% 48%,32% 48%,32% 100%,0 100%); }
+  .landmarkGlyph.statue { clip-path:polygon(45% 0,57% 0,59% 19%,78% 9%,84% 14%,63% 31%,70% 73%,83% 100%,17% 100%,31% 73%,38% 31%); }
+  .landmarkGlyph.dome { clip-path:polygon(45% 0,55% 0,57% 22%,78% 35%,88% 58%,83% 72%,74% 72%,78% 100%,22% 100%,26% 72%,17% 72%,12% 58%,22% 35%,43% 22%); }
+  .landmarkGlyph.lattice { clip-path:polygon(46% 0,54% 0,62% 36%,84% 100%,62% 100%,50% 68%,38% 100%,16% 100%,38% 36%); }
+  .landmarkGlyph.needle { clip-path:polygon(48% 0,52% 0,55% 31%,86% 39%,78% 54%,58% 57%,64% 100%,36% 100%,42% 57%,22% 54%,14% 39%,45% 31%); }
+  .landmarkGlyph.spire,.landmarkGlyph.burj { clip-path:polygon(48% 0,54% 0,54% 18%,66% 18%,66% 38%,78% 38%,78% 63%,90% 63%,90% 100%,10% 100%,10% 75%,22% 75%,22% 52%,34% 52%,34% 28%,46% 28%); }
+  .landmarkGlyph.twist { clip-path:polygon(38% 0,72% 0,58% 25%,74% 48%,55% 70%,70% 100%,22% 100%,40% 72%,25% 50%,44% 26%); }
+  .landmarkGlyph.yours { clip-path:polygon(16% 0,84% 0,84% 100%,16% 100%); background:linear-gradient(180deg,#fff,#ff6bdf 45%,#7c5cff); }
   #viewer { z-index:17; background:radial-gradient(ellipse at 50% 80%, #453078 0%, #16152f 48%, #080a1c 100%); }
   #viewerCanvas { position:absolute; inset:0; width:100%; height:100%; touch-action:none; }
-  .viewerBar { position:absolute; inset:18px 18px auto; display:flex; justify-content:space-between; align-items:center; color:#fff; font-weight:800; letter-spacing:1px; pointer-events:none; }
+  .viewerBar { position:absolute; top:18px; right:18px; left:82px; display:flex; justify-content:space-between; align-items:center; color:#fff; font-weight:800; letter-spacing:1px; pointer-events:none; }
   .viewerBar button { pointer-events:auto; border:0; border-radius:10px; padding:10px 14px; cursor:pointer; font:800 12px inherit; }
   .viewerHint { position:absolute; bottom:26px; left:0; right:0; color:#cfe0f5; font-size:12px; font-weight:700; letter-spacing:1px; text-transform:uppercase; }
 
@@ -327,15 +337,15 @@
 <div id="hud" style="display:none">
   <div id="hudLeft">
     <div id="hudHeight">10 m</div>
-    <div id="hudPct">Live leaderboard score</div>
-    <div id="hudNext">Next skin: 100 m</div>
+    <div id="hudPct">1% to Burj Khalifa</div>
+    <div id="hudNext">Next landmark: Christ the Redeemer · 38 m</div>
     <div id="hudBest">Best 0 m</div>
   </div>
   <div id="buildMeter" aria-label="Live building height">
-    <div class="meterTitle">Build signal</div>
+    <div class="meterTitle">Burj ascent</div>
     <canvas id="miniTower" width="296" height="436"></canvas>
     <div class="meterRail"><div id="meterFill"></div></div>
-    <div id="meterMeters">10 m <span id="meterBoost">5× BOOST</span></div>
+    <div id="meterMeters">10 / 828 m <span id="meterBoost">5× BOOST</span></div>
   </div>
   <button id="undoAdBtn" type="button" aria-label="Undo last floor with an ad">
     <span class="undoIcon">↶</span><span class="undoCopy">Undo last floor<small>Ad · CrazyGames soon</small></span>
@@ -347,12 +357,12 @@
 
 <div id="menu" class="ui">
   <div class="menu-top">
-    <h1 class="brand">CITY</h1>
-    <div class="brand-sub">Build higher. Climb the live ranks.</div>
+    <h1 class="brand">BURJ</h1>
+    <div class="brand-sub">Build the Burj Khalifa · 828 m</div>
   </div>
   <div class="menu-bottom">
     <button class="neonBtn primary" id="playBtn"><span class="label">Play</span></button>
-    <button class="neonBtn secondary" id="statsBtn"><span class="label">Stats & ranks</span></button>
+    <button class="neonBtn secondary" id="statsBtn"><span class="label">World height ladder</span></button>
     <button class="neonBtn secondary" id="howtoBtn"><span class="label">How to play</span></button>
     <div class="stat" id="menuStat">Best 0 m</div>
     <div class="stat" id="menuUnlock"></div>
@@ -364,18 +374,16 @@
     <div class="howtotitle">How to play</div>
     <p>Tap or press Space to drop the moving block onto the tower.</p>
     <p>Line it up dead-center for a <b>perfect</b> drop — perfects keep the full width, and a streak of 5 in a row grows your tower 5×.</p>
-    <p>Every 100 m unlocks a new tower skin. Your 5× perfect blocks count toward your tower height and leaderboard score.</p>
+    <p>Pass real landmarks one by one, from Christ the Redeemer to the Burj Khalifa at 828 m. Your best tower is placed directly into the world height ladder.</p>
+    <p>Every 100 m still unlocks a new tower skin, and every metre from a 5× perfect counts toward the Burj.</p>
     <button class="neonBtn secondary" id="howtoClose"><span class="label">Got it</span></button>
   </div>
 </div>
 
 <div id="stats" class="ui hidden">
   <div class="statscard">
-    <div class="statshead"><h2>Live leaderboard</h2><button class="period" id="statsClose">Close</button></div>
-    <div class="periods">
-      <button class="period active" data-period="daily">Daily</button><button class="period" data-period="weekly">Weekly</button><button class="period" data-period="monthly">Monthly</button><button class="period" data-period="all">All time</button>
-    </div>
-    <div id="rankSummary" class="rankSummary">Make your first building to get ranked.</div>
+    <div class="statshead"><h2>World height ladder</h2><button class="period" id="statsClose">Close</button></div>
+    <div id="rankSummary" class="rankSummary">Build once to place your tower beside the world's landmarks.</div>
     <div id="leaderRows"></div>
   </div>
 </div>
@@ -383,7 +391,7 @@
 <div id="viewer" class="ui hidden">
   <canvas id="viewerCanvas"></canvas>
   <div class="viewerBar"><span id="viewerTitle">Tower view</span><button id="viewerClose">Back to ranks</button></div>
-  <div class="viewerHint">Drag to rotate · scroll or pinch to zoom</div>
+  <div class="viewerHint" id="viewerHint">Drag to rotate · scroll or pinch to zoom</div>
 </div>
 
 <div id="over" class="ui hidden">
@@ -525,6 +533,24 @@ function hash3(a, b, c) { const x = Math.sin(a * 127.1 + b * 311.7 + c * 74.7) *
 const SIZE = 300, BH = 56, PODIUM_H = 78;
 const PERF = 11;                 // perfect tolerance (tighter = harder)
 const BASE_M = 10, STEP_M = 5;   // first floor 10 m, each floor +5 m
+const BURJ_M = 828;
+const LANDMARKS = [
+  { name:'Christ the Redeemer', score:38, type:'statue' },
+  { name:'Arc de Triomphe', score:50, type:'arch' },
+  { name:'Leaning Tower of Pisa', score:57, type:'tower' },
+  { name:'Statue of Liberty', score:93, type:'statue' },
+  { name:'Big Ben', score:96, type:'clock' },
+  { name:"St Paul's Cathedral", score:111, type:'dome' },
+  { name:'Great Pyramid of Giza', score:139, type:'pyramid' },
+  { name:'Blackpool Tower', score:158, type:'lattice' },
+  { name:'Space Needle', score:184, type:'needle' },
+  { name:'Chrysler Building', score:319, type:'spire' },
+  { name:'Eiffel Tower', score:330, type:'lattice' },
+  { name:'Empire State Building', score:443, type:'spire' },
+  { name:'One World Trade Center', score:541, type:'spire' },
+  { name:'Shanghai Tower', score:632, type:'twist' },
+  { name:'Burj Khalifa', score:BURJ_M, type:'burj' },
+].map(x => ({ ...x, landmark:true }));
 // Tower skins unlock each time a building passes another 100 metres.
 const SKINS = [
   { id: 'azure',    name: 'Azure',    need: 0,   top: '#8cf8ff', right: '#124c78', left: '#172d70', gA: '#1ccff0', gB: '#607dff', lit: '#e8ffff' },
@@ -600,35 +626,18 @@ let perfectStreak = 0, paused = false, pauseT = 0;  // consecutive-perfect bonus
 let runStartUnlockIdx = 0;  // skin already unlocked before this run began
 let pendingRevealIdx = -1;  // a skin unlocked-for-the-first-time this run, waiting to be shown
 bestM = +(localStorage.getItem('city_best_m') || 0);
+let bestTower = [];
+try { bestTower = JSON.parse(localStorage.getItem('city_best_tower') || '[]'); } catch (e) { bestTower = []; }
 
 function heightM() { return Math.round(BASE_M + STEP_M * score + (stack ? boostExtra() * STEP_M / BH : 0)); }
 function nextSkin(m) { return SKINS.find(s => s.need > m) || null; }
 
-// Local live leaderboard: a player's current tower is recorded in every period.
-// A backend can later replace the seeded rivals without changing the UI contract.
-const LEADER_KEY = 'city_leaderboard_v2';
-const RIVALS = [ ['Nova', 510], ['Atlas', 420], ['Mika', 345], ['Rook', 275], ['Iris', 210], ['Kai', 155], ['Zed', 95] ];
-function periodKey(period, d = new Date()) {
-  if (period === 'daily') return d.toISOString().slice(0, 10);
-  if (period === 'monthly') return d.getFullYear() + '-' + (d.getMonth() + 1);
-  if (period === 'weekly') { const x = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate())); x.setUTCDate(x.getUTCDate() + 4 - (x.getUTCDay() || 7)); const year = x.getUTCFullYear(); const start = new Date(Date.UTC(year, 0, 1)); return year + '-w' + Math.ceil((((x - start) / 86400000) + 1) / 7); }
-  return 'all';
-}
-function readBoard() { try { return JSON.parse(localStorage.getItem(LEADER_KEY) || '{}'); } catch (e) { return {}; } }
-function saveLeaderboardRun(m) {
-  const board = readBoard();
-  for (const period of ['daily', 'weekly', 'monthly', 'all']) {
-    const old = board[period]; const key = periodKey(period);
-    const previous = old && old.key === key ? old.score : 0;
-    board[period] = { key, score: Math.max(previous, m), tower: stack ? stack.map(b => ({...b})) : [] };
-  }
-  localStorage.setItem(LEADER_KEY, JSON.stringify(board));
-}
-function leaderboard(period) {
-  const own = readBoard()[period];
-  const rows = RIVALS.map(([name, base], i) => ({ name, score: Math.max(25, base + ((period.charCodeAt(0) * 13 + i * 29) % 70) - 35), skin: unlockedIdx(base) }));
-  if (own && own.key === periodKey(period)) rows.push({ name: 'You', score: own.score, tower: own.tower, you: true });
-  return rows.sort((a, b) => b.score - a.score).map((r, i) => ({ ...r, rank: i + 1 }));
+function reachedLandmark(m) { return [...LANDMARKS].reverse().find(x => m >= x.score) || null; }
+function nextLandmark(m) { return LANDMARKS.find(x => m < x.score) || null; }
+function landmarkLadder() {
+  const rows = LANDMARKS.map(x => ({ ...x }));
+  if (bestM > 0) rows.push({ name:'Your best tower', score:bestM, tower:bestTower, you:true, type:'yours' });
+  return rows.sort((a,b) => b.score - a.score || (a.you ? -1 : 1)).map((r,i) => ({ ...r, rank:i + 1 }));
 }
 
 function reset() {
@@ -685,7 +694,6 @@ function drop() {
     playSfx(audioPlace);
   }
   checkLiveSkinUnlock();
-  saveLeaderboardRun(heightM()); // first placed block immediately gives the player a rank
   updateHud(); newMover();
 }
 // mid-run: crossing a milestone height instantly swaps the tower skin
@@ -709,13 +717,16 @@ function triggerPerfectBonus() {
   shake = 8;
   playSfx(audioPerfect5);
   checkLiveSkinUnlock();
-  saveLeaderboardRun(heightM());
   bonusMsgEl.classList.add('show');
 }
 function commitRun() {
   const m = heightM();
-  if (m > bestM) { bestM = m; localStorage.setItem('city_best_m', bestM); }
-  saveLeaderboardRun(m);
+  if (m > bestM) {
+    bestM = m;
+    bestTower = stack ? stack.map(b => ({...b})) : [];
+    localStorage.setItem('city_best_m', bestM);
+    localStorage.setItem('city_best_tower', JSON.stringify(bestTower));
+  }
 }
 function die() {
   state = S.DEAD; sdkStop(); shake = 10; endT = 0;
@@ -817,23 +828,25 @@ muteBtn.addEventListener('click', () => toggleMute());
 const bonusMsgEl = document.getElementById('bonusMsg');
 const menuStatEl = document.getElementById('menuStat'), menuUnlockEl = document.getElementById('menuUnlock');
 function refreshMenu() {
-  menuStatEl.textContent = 'Best ' + bestM + ' m';
+  const reached = reachedLandmark(bestM), next = nextLandmark(bestM);
+  menuStatEl.textContent = 'Best ' + bestM + ' m' + (reached ? ' · Passed ' + reached.name : ' · First target 38 m');
+  if (!unlockMsg && next) unlockMsg = 'Next: ' + next.name + ' · ' + next.score + ' m';
+  if (!unlockMsg && !next) unlockMsg = 'Burj Khalifa reached';
   menuUnlockEl.textContent = unlockMsg; unlockMsg = '';
 }
 
 // ---------- leaderboard / tower viewer ----------
 const statsEl = document.getElementById('stats'), leaderRowsEl = document.getElementById('leaderRows'), rankSummaryEl = document.getElementById('rankSummary');
 const viewerEl = document.getElementById('viewer'), viewerCanvas = document.getElementById('viewerCanvas'), viewerCtx = viewerCanvas.getContext('2d');
-let activePeriod = 'daily', viewerRow = null, viewerYaw = -.55, viewerZoom = 1, viewerDragging = false, viewerX = 0;
-function openStats(period = activePeriod) { activePeriod = period; menuEl.classList.add('hidden'); statsEl.classList.remove('hidden'); renderLeaderboard(); }
+let viewerRow = null, viewerYaw = -.55, viewerZoom = 1, viewerDragging = false, viewerX = 0;
+function openStats() { menuEl.classList.add('hidden'); statsEl.classList.remove('hidden'); renderLeaderboard(); }
 function closeStats() { statsEl.classList.add('hidden'); menuEl.classList.remove('hidden'); }
 function renderLeaderboard() {
-  document.querySelectorAll('[data-period]').forEach(b => b.classList.toggle('active', b.dataset.period === activePeriod));
-  const rows = leaderboard(activePeriod), mine = rows.find(r => r.you);
-  rankSummaryEl.textContent = mine ? 'Your ' + activePeriod.replace('all', 'all-time') + ' rank: #' + mine.rank + ' · ' + mine.score + ' m' : 'Make your first building to get ranked in every period.';
+  const rows = landmarkLadder(), reached = reachedLandmark(bestM), next = nextLandmark(bestM);
+  rankSummaryEl.textContent = bestM ? 'Your best: ' + bestM + ' m' + (reached ? ' · Passed ' + reached.name : '') + (next ? ' · Next ' + next.name : ' · Burj Khalifa reached') : 'Build once to place your tower beside the world’s landmarks.';
   leaderRowsEl.replaceChildren(...rows.map(row => {
     const b = document.createElement('button'); b.className = 'leaderRow' + (row.you ? ' you' : '');
-    b.innerHTML = '<span class="rank">#' + row.rank + '</span><span>' + row.name + (row.you ? ' · your tower' : '') + '</span><span class="meters">' + row.score + ' m</span>';
+    b.innerHTML = '<span class="rank">#' + row.rank + '</span><span class="landmarkGlyph ' + row.type + '"></span><span>' + row.name + (row.you ? ' · highest achieved' : '') + '</span><span class="meters">' + row.score + ' m</span>';
     b.addEventListener('click', () => openViewer(row)); return b;
   }));
 }
@@ -842,11 +855,12 @@ function towerForRow(row) {
   const n = Math.max(2, Math.round((row.score - BASE_M) / STEP_M) + 1), half = SIZE / 2, a = [{ x0:-half, z0:-half, x1:half, z1:half, podium:true }];
   for (let i = 1; i < n; i++) { const trim = Math.min(120, i * 1.6); a.push({ x0:-half + trim, z0:-half + trim, x1:half - trim, z1:half - trim }); } return a;
 }
-function openViewer(row) { viewerRow = row; viewerYaw = -.55; viewerZoom = 1; statsEl.classList.add('hidden'); viewerEl.classList.remove('hidden'); document.getElementById('viewerTitle').textContent = row.name + "'s tower · " + row.score + ' m'; drawViewer(); }
+function openViewer(row) { viewerRow = row; viewerYaw = -.55; viewerZoom = 1; statsEl.classList.add('hidden'); viewerEl.classList.remove('hidden'); document.getElementById('viewerTitle').textContent = row.name + ' · ' + row.score + ' m'; document.getElementById('viewerHint').textContent = row.landmark ? 'Drag to orbit · neon landmark recreation' : 'Drag to rotate · your highest tower'; drawViewer(); }
 function closeViewer() { viewerEl.classList.add('hidden'); statsEl.classList.remove('hidden'); }
 function drawViewer() {
   if (!viewerRow || viewerEl.classList.contains('hidden')) return;
   const dpr = Math.min(devicePixelRatio || 1, 2), w = innerWidth, h = innerHeight; viewerCanvas.width = w * dpr; viewerCanvas.height = h * dpr; viewerCanvas.style.width = w + 'px'; viewerCanvas.style.height = h + 'px'; viewerCtx.setTransform(dpr,0,0,dpr,0,0); viewerCtx.clearRect(0,0,w,h);
+  if (viewerRow.landmark) { drawLandmarkViewer(viewerCtx,w,h,viewerRow); return; }
   const blocks = towerForRow(viewerRow), saved = [A,B,C,PX,PY,camYaw,activeSkin];
   const worldH = floorTopY(blocks, blocks.length - 1), k = Math.min(h * .62 / Math.max(worldH, 200), w * .46 / SIZE) * viewerZoom;
   A = k; B = k * .577; C = k; PX = w / 2; PY = h * .80; camYaw = viewerYaw; activeSkin = viewerRow.skin == null ? unlockedIdx(viewerRow.score) : viewerRow.skin;
@@ -854,9 +868,41 @@ function drawViewer() {
   for (let i = 0; i < blocks.length; i++) drawFloor(viewerCtx, blocks[i], i, floorBaseY(blocks,i), floorTopY(blocks,i));
   [A,B,C,PX,PY,camYaw,activeSkin] = saved;
 }
+function drawLandmarkViewer(g,w,h,row) {
+  const totalH = Math.min(h*.66,w*.68) * viewerZoom, baseY = h*.82, cx = w*.5;
+  const orbit = .78 + Math.abs(Math.cos(viewerYaw))*.22, ww = totalH*.34*orbit;
+  const topY = baseY-totalH, left = cx-ww/2, right = cx+ww/2;
+  g.save();
+  const haze = g.createRadialGradient(cx,baseY-totalH*.38,0,cx,baseY-totalH*.38,totalH*.72);
+  haze.addColorStop(0,'rgba(83,246,255,.17)'); haze.addColorStop(.55,'rgba(168,85,255,.1)'); haze.addColorStop(1,'rgba(255,63,213,0)'); g.fillStyle=haze; g.fillRect(0,0,w,h);
+  g.fillStyle='rgba(83,246,255,.11)'; g.beginPath(); g.moveTo(cx-ww*.85,baseY); g.lineTo(cx,baseY+ww*.24); g.lineTo(cx+ww*.85,baseY); g.lineTo(cx,baseY-ww*.24); g.closePath(); g.fill();
+  g.strokeStyle='rgba(83,246,255,.72)'; g.lineWidth=2; g.stroke();
+  g.shadowColor='#53f6ff'; g.shadowBlur=22; g.strokeStyle='#7df8ff'; g.lineWidth=Math.max(2,totalH*.006); g.fillStyle='rgba(30,74,139,.74)';
+  const poly = pts => { g.beginPath(); pts.forEach((p,i) => i ? g.lineTo(p[0],p[1]) : g.moveTo(p[0],p[1])); g.closePath(); g.fill(); g.stroke(); };
+  const rect = (x,y,rw,rh) => { g.fillRect(x,y,rw,rh); g.strokeRect(x,y,rw,rh); };
+  if (row.type === 'pyramid') {
+    poly([[cx,topY],[right,baseY],[left,baseY]]); g.beginPath(); g.moveTo(cx,topY); g.lineTo(cx+ww*.07,baseY); g.stroke();
+  } else if (row.type === 'arch') {
+    rect(left,topY,ww,totalH); g.globalCompositeOperation='destination-out'; g.shadowBlur=0; g.fillStyle='rgba(0,0,0,1)'; g.beginPath(); g.arc(cx,baseY-totalH*.43,ww*.22,Math.PI,0); g.lineTo(cx+ww*.22,baseY); g.lineTo(cx-ww*.22,baseY); g.closePath(); g.fill(); g.globalCompositeOperation='source-over'; g.strokeStyle='#7df8ff'; g.shadowColor='#53f6ff'; g.shadowBlur=16; g.beginPath(); g.arc(cx,baseY-totalH*.43,ww*.22,Math.PI,0); g.lineTo(cx+ww*.22,baseY); g.moveTo(cx-ww*.22,baseY); g.lineTo(cx-ww*.22,baseY-totalH*.43); g.stroke();
+  } else if (row.type === 'statue') {
+    rect(cx-ww*.36,baseY-totalH*.17,ww*.72,totalH*.17); poly([[cx-ww*.25,baseY-totalH*.17],[cx-ww*.13,topY+totalH*.25],[cx-ww*.25,topY+totalH*.05],[cx,topY],[cx+ww*.17,topY+totalH*.25],[cx+ww*.23,baseY-totalH*.17]]); g.beginPath(); g.moveTo(cx+ww*.04,topY+totalH*.27); g.lineTo(cx+ww*.42,topY-totalH*.02); g.stroke(); g.fillStyle='#fff5d2'; g.beginPath(); g.arc(cx+ww*.43,topY-totalH*.035,totalH*.026,0,Math.PI*2); g.fill();
+  } else if (row.type === 'dome') {
+    rect(left+ww*.12,baseY-totalH*.48,ww*.76,totalH*.48); g.beginPath(); g.arc(cx,baseY-totalH*.48,ww*.38,Math.PI,0); g.closePath(); g.fill(); g.stroke(); rect(cx-ww*.08,topY,ww*.16,totalH*.20);
+  } else if (row.type === 'needle') {
+    rect(cx-ww*.07,topY+totalH*.24,ww*.14,totalH*.76); poly([[cx-ww*.42,topY+totalH*.30],[cx-ww*.26,topY+totalH*.18],[cx+ww*.26,topY+totalH*.18],[cx+ww*.42,topY+totalH*.30],[cx+ww*.22,topY+totalH*.40],[cx-ww*.22,topY+totalH*.40]]); g.beginPath(); g.moveTo(cx,topY+totalH*.18); g.lineTo(cx,topY); g.stroke();
+  } else if (row.type === 'lattice') {
+    poly([[cx,topY],[right,baseY],[left,baseY]]); g.strokeStyle='#ff67dc'; g.lineWidth=Math.max(1.5,totalH*.003); for(let i=1;i<6;i++){ const t=i/6,y=topY+totalH*t,half=ww*.5*t; g.beginPath(); g.moveTo(cx-half,y); g.lineTo(cx+half,y); g.stroke(); } g.beginPath(); g.moveTo(left,baseY); g.lineTo(cx+ww*.25,topY+totalH*.5); g.lineTo(right,baseY); g.moveTo(right,baseY); g.lineTo(cx-ww*.25,topY+totalH*.5); g.lineTo(left,baseY); g.stroke();
+  } else if (row.type === 'twist') {
+    poly([[cx-ww*.28,baseY],[cx-ww*.42,topY+totalH*.72],[cx-ww*.18,topY+totalH*.42],[cx-ww*.3,topY+totalH*.16],[cx-ww*.08,topY],[cx+ww*.22,topY],[cx+ww*.10,topY+totalH*.25],[cx+ww*.34,topY+totalH*.53],[cx+ww*.28,baseY]]); for(let i=1;i<8;i++){ const y=topY+totalH*i/8; g.beginPath(); g.moveTo(cx-ww*.28,y); g.lineTo(cx+ww*.28,y); g.stroke(); }
+  } else if (row.type === 'burj') {
+    poly([[cx,topY],[cx+ww*.045,topY+totalH*.20],[cx+ww*.14,topY+totalH*.20],[cx+ww*.14,topY+totalH*.36],[cx+ww*.25,topY+totalH*.36],[cx+ww*.25,topY+totalH*.56],[cx+ww*.38,topY+totalH*.56],[right,baseY],[left,baseY],[cx-ww*.38,topY+totalH*.64],[cx-ww*.23,topY+totalH*.64],[cx-ww*.23,topY+totalH*.43],[cx-ww*.12,topY+totalH*.43],[cx-ww*.12,topY+totalH*.24],[cx-ww*.04,topY+totalH*.24]]);
+  } else {
+    const tiers = row.type === 'clock' ? 4 : 7; poly([[cx-ww*.22,topY+totalH*.08],[cx+ww*.22,topY+totalH*.08],[right,baseY],[left,baseY]]); g.beginPath(); g.moveTo(cx,topY-totalH*.08); g.lineTo(cx,topY+totalH*.08); g.stroke(); for(let i=1;i<tiers;i++){ const y=topY+totalH*(.08+.92*i/tiers); g.beginPath(); g.moveTo(left+ww*.04,y); g.lineTo(right-ww*.04,y); g.stroke(); } if(row.type==='clock'){ g.fillStyle='#fff5d2'; g.beginPath(); g.arc(cx,topY+totalH*.25,ww*.13,0,Math.PI*2); g.fill(); g.stroke(); }
+  }
+  g.restore();
+}
 document.getElementById('statsBtn').addEventListener('click', () => { playSfx(audioNav); openStats(); });
 document.getElementById('statsClose').addEventListener('click', () => { playSfx(audioNav); closeStats(); });
-document.querySelectorAll('[data-period]').forEach(b => b.addEventListener('click', () => { playSfx(audioNav); activePeriod = b.dataset.period; renderLeaderboard(); }));
 document.getElementById('viewerClose').addEventListener('click', () => { playSfx(audioNav); closeViewer(); });
 viewerCanvas.addEventListener('pointerdown', e => { viewerDragging = true; viewerX = e.clientX; viewerCanvas.setPointerCapture(e.pointerId); });
 viewerCanvas.addEventListener('pointermove', e => { if (!viewerDragging) return; viewerYaw += (e.clientX - viewerX) * .009; viewerX = e.clientX; drawViewer(); });
@@ -865,22 +911,20 @@ viewerCanvas.addEventListener('wheel', e => { e.preventDefault(); viewerZoom = c
 window.addEventListener('resize', drawViewer);
 refreshMenu();
 function updateHud() {
-  const m = heightM(), nm = nextSkin(m);
+  const m = heightM(), next = nextLandmark(m), reached = reachedLandmark(m);
   hudHeightEl.textContent = m + ' m';
-  const own = leaderboard('all').find(r => r.you);
-  hudPctEl.textContent = own ? 'All-time rank #' + own.rank : 'Building your rank';
-  hudNextEl.textContent = nm ? 'Next skin: ' + nm.name + ' ' + nm.need + ' m' : 'All skins unlocked';
-  hudBestEl.textContent = 'Best ' + Math.max(bestM, m) + ' m';
+  hudPctEl.textContent = Math.min(100,Math.round(m/BURJ_M*100)) + '% to Burj Khalifa';
+  hudNextEl.textContent = next ? 'Next: ' + next.name + ' · ' + next.score + ' m' : 'Burj Khalifa reached';
+  hudBestEl.textContent = 'Best ' + Math.max(bestM, m) + ' m' + (reached ? ' · ' + reached.name : '');
   updateBuildMeter(m);
 }
 
 function updateBuildMeter(m) {
-  // Exponential scale keeps every gain visible without introducing a final height goal.
-  const progress = clamp(1 - Math.exp(-m / 260), .025, 1);
+  const progress = clamp(m / BURJ_M, .012, 1);
   meterFillEl.style.height = (progress * 100).toFixed(1) + '%';
   const boosted = stack && stack.length > 1 && (stack[stack.length - 1].h || BH) > BH;
   buildMeterEl.classList.toggle('boost', !!boosted);
-  meterMetersEl.innerHTML = m + ' m <span id="meterBoost">5× BOOST</span>';
+  meterMetersEl.innerHTML = m + ' / ' + BURJ_M + ' m <span id="meterBoost">5× BOOST</span>';
   drawMiniTower();
 }
 
