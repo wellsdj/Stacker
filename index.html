@@ -83,22 +83,6 @@
   }
   #homeBtn:active { transform: translateY(2px); }
 
-  /* camera / orbit toggle — sits under the home button during play */
-  #camBtn {
-    position: fixed; top: 70px; right: 16px; z-index: 9; pointer-events: auto;
-    width: 46px; height: 46px; border: 0; border-radius: 13px; cursor: pointer;
-    background: rgba(255,255,255,.9); box-shadow: 0 5px 16px rgba(20,10,30,.3);
-    font-size: 20px; line-height: 1; display: flex; align-items: center; justify-content: center;
-  }
-  #camBtn.active { background: linear-gradient(135deg, #17d4ff, #9a3dff); box-shadow: 0 0 18px rgba(120,120,255,.7); }
-  #camBtn:active { transform: translateY(2px); }
-  #camHint {
-    position: fixed; bottom: 22px; left: 0; right: 0; text-align: center; z-index: 8;
-    color: #fff; font-size: 12px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase;
-    text-shadow: 0 2px 10px rgba(0,0,0,.7); pointer-events: none; opacity: 0; transition: opacity .2s ease;
-  }
-  #camHint.show { opacity: .92; }
-
   /* persistent mute button — always available, above every screen/modal */
   #muteBtn {
     position: fixed; top: 16px; left: 16px; z-index: 21; pointer-events: auto;
@@ -246,6 +230,48 @@
     #skinReveal.show #revealTower { animation: revealFade .4s ease both; }
     #skinReveal.show .revealLabel, #skinReveal.show .revealName, #skinReveal.show #revealBtn { animation: revealFade .3s ease both; }
   }
+
+  /* ---------- unified neon-future theme ---------- */
+  :root { --cyan:#53f6ff; --violet:#a855ff; --pink:#ff3fd5; --ink:#070717; --panel:rgba(9,10,35,.88); }
+  .btn, .neonBtn, .period, .viewerBar button, #homeBtn, #muteBtn {
+    color:#efffff; border:1px solid rgba(83,246,255,.72); border-radius:0;
+    clip-path:polygon(13px 0, calc(100% - 5px) 0, 100% 5px, 100% calc(100% - 13px), calc(100% - 13px) 100%, 5px 100%, 0 calc(100% - 5px), 0 13px);
+    background:linear-gradient(135deg, rgba(14,25,66,.96), rgba(72,20,116,.94));
+    box-shadow:inset 0 0 22px rgba(83,246,255,.12), 0 0 10px rgba(83,246,255,.38), 0 0 28px rgba(168,85,255,.28);
+    text-shadow:0 0 8px rgba(83,246,255,.9); transition:transform .12s ease, filter .12s ease, box-shadow .12s ease;
+  }
+  .btn:hover, .neonBtn:hover, .period:hover, .viewerBar button:hover, #homeBtn:hover, #muteBtn:hover {
+    filter:brightness(1.28); box-shadow:inset 0 0 25px rgba(83,246,255,.2), 0 0 14px rgba(83,246,255,.7), 0 0 38px rgba(255,63,213,.38);
+  }
+  .btn:active, .neonBtn:active, .period:active, .viewerBar button:active, #homeBtn:active, #muteBtn:active { transform:scale(.96); }
+  .btn { background:linear-gradient(135deg,#0d79a2,#7121b2 58%,#bd278f); color:#fff; }
+  .btn.ghost { background:linear-gradient(135deg,rgba(8,18,48,.96),rgba(48,14,76,.96)); color:#dffcff; }
+  #homeBtn, #muteBtn { width:50px; height:50px; padding:0; font-size:20px; }
+  #homeBtn { right:18px; } #muteBtn { left:18px; }
+  #hud { padding:20px 22px; }
+  #hudLeft { margin-left:64px; }
+  #hudHeight { color:#f5ffff; text-shadow:0 0 8px var(--cyan),0 0 24px rgba(168,85,255,.72); }
+  #hudPct { color:var(--cyan); } #hudNext { color:#ff9bea; } #hudBest { color:#bcecff; opacity:.9; }
+  #menu { background-image:radial-gradient(circle at 50% 22%,rgba(48,90,190,.42),transparent 28%),radial-gradient(circle at 80% 70%,rgba(192,32,190,.2),transparent 34%),linear-gradient(155deg,#040615 0%,#0a1235 45%,#21082f 100%); }
+  #menu::before { content:''; position:absolute; inset:0; pointer-events:none; opacity:.35; background-image:linear-gradient(rgba(83,246,255,.13) 1px,transparent 1px),linear-gradient(90deg,rgba(83,246,255,.13) 1px,transparent 1px); background-size:42px 42px; transform:perspective(500px) rotateX(62deg) scale(1.6) translateY(32%); transform-origin:center bottom; }
+  .brand { background:linear-gradient(180deg,#fff 0%,#66f7ff 35%,#9a62ff 70%,#ff3fd5 100%); -webkit-background-clip:text; background-clip:text; filter:drop-shadow(0 0 9px rgba(83,246,255,.95)) drop-shadow(0 0 32px rgba(168,85,255,.8)); }
+  .brand-sub { color:#9df9ff; }
+  .neonBtn.primary { background:linear-gradient(135deg,#0aa7c7 0%,#5a39e0 50%,#d123a6 100%); }
+  .neonBtn.secondary { background:linear-gradient(135deg,rgba(7,32,66,.98),rgba(67,18,104,.98)); }
+  .howtocard, .statscard { background:linear-gradient(150deg,rgba(7,14,42,.98),rgba(25,6,45,.98)); border:1px solid rgba(83,246,255,.5); border-radius:4px; clip-path:polygon(22px 0,100% 0,100% calc(100% - 22px),calc(100% - 22px) 100%,0 100%,0 22px); box-shadow:0 0 28px rgba(83,246,255,.2),0 0 70px rgba(168,85,255,.25); }
+  #stats, #howto { background:rgba(3,4,18,.8); }
+  .period.active { background:linear-gradient(135deg,var(--cyan),#7d72ff); color:#071225; text-shadow:none; }
+  .leaderRow { border:1px solid rgba(83,246,255,.18); border-radius:0; clip-path:polygon(9px 0,100% 0,100% calc(100% - 9px),calc(100% - 9px) 100%,0 100%,0 9px); background:linear-gradient(90deg,rgba(10,25,60,.86),rgba(35,12,61,.86)); }
+  .leaderRow:hover { border-color:var(--cyan); box-shadow:inset 0 0 18px rgba(83,246,255,.12),0 0 12px rgba(83,246,255,.2); }
+  .leaderRow.you { background:linear-gradient(90deg,rgba(13,135,165,.42),rgba(151,35,176,.4)); outline:1px solid var(--cyan); }
+  #viewer { background:radial-gradient(circle at 50% 70%,rgba(35,87,166,.55),transparent 30%),radial-gradient(circle at 50% 50%,#17143e,#050611 72%); }
+  #over { background:linear-gradient(180deg,transparent 35%,rgba(4,5,20,.82)); }
+  @media (max-width:520px) {
+    #hud { padding:14px; } #hudLeft { margin-left:54px; }
+    #hudHeight { font-size:42px; }
+    #homeBtn, #muteBtn { width:44px; height:44px; top:14px; }
+    .statscard { width:min(94vw,520px); padding:16px; }
+  }
 </style>
 </head>
 <body>
@@ -270,9 +296,7 @@
   </div>
 </div>
 <button id="homeBtn" aria-label="Home" style="display:none">⌂</button>
-<button id="camBtn" aria-label="Camera" style="display:none">📷</button>
 <button id="muteBtn" aria-label="Mute">🔊</button>
-<div id="camHint">Drag to orbit · scroll / pinch to zoom</div>
 <div id="toast"></div>
 
 <div id="menu" class="ui">
@@ -458,10 +482,10 @@ const PERF = 11;                 // perfect tolerance (tighter = harder)
 const BASE_M = 10, STEP_M = 5;   // first floor 10 m, each floor +5 m
 // Tower skins unlock each time a building passes another 100 metres.
 const SKINS = [
-  { id: 'azure',    name: 'Azure',    need: 0,   top: '#a9d3e0', right: '#33526b', left: '#2b465c', gA: '#8fc2d6', gB: '#a9d8e8', lit: '#ffe3a1' },
-  { id: 'sunset',   name: 'Sunset',   need: 100, top: '#ffd9a8', right: '#8a4a2f', left: '#6f3a25', gA: '#f0a35e', gB: '#f7c07a', lit: '#fff0c0' },
-  { id: 'emerald',  name: 'Emerald',  need: 200, top: '#bfe8c8', right: '#2f6b47', left: '#245538', gA: '#4fae7a', gB: '#7fd0a0', lit: '#eaffe0' },
-  { id: 'obsidian', name: 'Obsidian', need: 300, top: '#5a6470', right: '#1c2430', left: '#131a22', gA: '#2b3a48', gB: '#3d5265', lit: '#86f2ff' },
+  { id: 'azure',    name: 'Azure',    need: 0,   top: '#8cf8ff', right: '#124c78', left: '#172d70', gA: '#1ccff0', gB: '#607dff', lit: '#e8ffff' },
+  { id: 'sunset',   name: 'Sunset',   need: 100, top: '#ff92e6', right: '#9a196d', left: '#5d1a88', gA: '#ff3fba', gB: '#ff796d', lit: '#fff1fc' },
+  { id: 'emerald',  name: 'Emerald',  need: 200, top: '#8dffe0', right: '#087b78', left: '#155d76', gA: '#16e0a4', gB: '#34e8ff', lit: '#efffff' },
+  { id: 'obsidian', name: 'Obsidian', need: 300, top: '#bd9cff', right: '#4e288f', left: '#241b64', gA: '#815cff', gB: '#c34cff', lit: '#ffffff' },
   { id: 'aurora',   name: 'Aurora',   need: 400, mythic: true },
 ];
 function unlockedIdx(m) { let idx = 0; for (let i = 0; i < SKINS.length; i++) if (m >= SKINS[i].need) idx = i; return idx; }
@@ -493,11 +517,11 @@ function drawBox(g, x0, z0, x1, z1, yb, yt, col, win) {
 }
 
 // ======================================================================
-//  SKY — red/purple at the base fading up into a blue night (never black)
+//  FUTURE VOID — deep space, neon haze and a distant energy grid
 // ======================================================================
 const SKY = [
-  [0, '#d6472f'], [55, '#b23a5c'], [130, '#7c3d86'], [240, '#4a3c81'],
-  [400, '#2e3767'], [640, '#212a50'], [1000, '#1a2346'],
+  [0, '#17072d'], [80, '#111342'], [220, '#0a1434'], [420, '#080d25'],
+  [700, '#06091b'], [1000, '#040611'],
 ];
 function skyColorAt(m) {
   m = Math.max(0, m);
@@ -511,13 +535,22 @@ function drawSky(g) {
   const grad = g.createLinearGradient(0, 0, 0, H);
   for (let k = 0; k <= 8; k++) { const sy = H * k / 8; grad.addColorStop(k / 8, skyColorAt(altAtScreenY(sy))); }
   g.fillStyle = grad; g.fillRect(0, 0, W, H);
-  // stars fade in high up (kept faint; never full black anyway)
-  const topAlt = altAtScreenY(0);
-  if (topAlt > 220) {
-    const a = clamp((topAlt - 220) / 500, 0, 0.7);
-    g.fillStyle = 'rgba(255,255,255,' + a + ')';
-    for (let i = 0; i < 60; i++) { const sx = (i * 149 + 23) % W, sy = (i * 83 + 41) % (H * 0.55); g.fillRect(sx, sy, 1.6, 1.6); }
+  const glowA = g.createRadialGradient(W * .18, H * .28, 0, W * .18, H * .28, W * .48);
+  glowA.addColorStop(0, 'rgba(35,224,255,.18)'); glowA.addColorStop(1, 'rgba(35,224,255,0)');
+  g.fillStyle = glowA; g.fillRect(0,0,W,H);
+  const glowB = g.createRadialGradient(W * .84, H * .46, 0, W * .84, H * .46, W * .44);
+  glowB.addColorStop(0, 'rgba(221,45,255,.16)'); glowB.addColorStop(1, 'rgba(221,45,255,0)');
+  g.fillStyle = glowB; g.fillRect(0,0,W,H);
+  const pulse = .35 + .18 * Math.sin(performance.now() * .0012);
+  for (let i = 0; i < 72; i++) {
+    const sx = (i * 149 + 23) % W, sy = (i * 83 + 41) % (H * .78), r = i % 11 === 0 ? 1.8 : 1;
+    g.fillStyle = i % 4 ? 'rgba(180,235,255,.48)' : `rgba(255,107,232,${pulse})`;
+    g.fillRect(sx, sy, r, r);
   }
+  const horizon = H * .78;
+  g.strokeStyle = 'rgba(83,246,255,.11)'; g.lineWidth = 1;
+  for (let y = horizon; y < H; y += Math.max(16, (y - horizon) * .22 + 10)) { g.beginPath(); g.moveTo(0,y); g.lineTo(W,y); g.stroke(); }
+  for (let x = -W; x <= W * 2; x += W / 12) { g.beginPath(); g.moveTo(W/2,horizon); g.lineTo(x,H); g.stroke(); }
 }
 
 // ======================================================================
@@ -651,12 +684,12 @@ function commitRun() {
 }
 function die() {
   state = S.DEAD; sdkStop(); shake = 10; endT = 0;
-  setCameraMode(false); camYaw = 0; camZoom = 1;
+  camYaw = 0; camZoom = 1;
   commitRun();
   const r = moverRect(); debris.push({ ...r, vy: 20, fall: 0 });
   playSfx(audioDeath);
   continueBtn.style.display = usedContinue ? 'none' : '';
-  overEl.classList.remove('hidden'); hudEl.style.display = 'none'; camBtn.style.display = 'none';
+  overEl.classList.remove('hidden'); hudEl.style.display = 'none';
   checkPendingReveal();
 }
 // show the unbox animation for any skin unlocked during the run just committed
@@ -669,8 +702,8 @@ function goHome() {
   state = S.MENU; sdkStop();
   paused = false; bonusMsgEl.classList.remove('show');
   equipped = 0; activeSkin = 0;  // home always shows the default Azure skin
-  setCameraMode(false); camYaw = 0; camZoom = 1;
-  overEl.classList.add('hidden'); hudEl.style.display = 'none'; homeBtn.style.display = 'none'; camBtn.style.display = 'none';
+  camYaw = 0; camZoom = 1;
+  overEl.classList.add('hidden'); hudEl.style.display = 'none'; homeBtn.style.display = 'none';
   menuEl.classList.remove('hidden'); refreshMenu();
   musicStarted = true; playMusic(musicMenu);
   checkPendingReveal();
@@ -680,7 +713,7 @@ function goHome() {
 function enterCity() {
   state = S.CITY;
   menuEl.classList.add('hidden'); overEl.classList.add('hidden');
-  hudEl.style.display = 'none'; camBtn.style.display = 'none';
+  hudEl.style.display = 'none';
   homeBtn.style.display = 'flex';
   if (window.City3D) window.City3D.enter();
   else console.warn('City3D module not ready yet');
@@ -712,48 +745,31 @@ function drawFloor(g, b, i, yb, yt) {
   drawBox(g, b.x0, b.z0, b.x1, b.z1, yb, yt, { top: c.top, right: c.right, left: c.left },
     { colsR: clamp(Math.round(d / 42), 1, 7), colsL: clamp(Math.round(w / 42), 1, 7), rows: clamp(Math.round((yt - yb) / BH), 1, 8), glass: c.glass, lit: c.lit, litP: 0.16, seed: (i * 13) % 999 });
 }
-// the starting block is a stone plaza that outlines the build area, sitting in the park
+// the starting block is a floating neon build platform
 function drawPlaza(g, b, yb, yt) {
-  drawBox(g, b.x0, b.z0, b.x1, b.z1, yb, yt, { top: '#c8cdd2', right: '#8f9aa2', left: '#7c868e' }, null);
-  // inset outline marking the designated tower footprint
+  const c = project(0, 0, 0), glow = g.createRadialGradient(c.x,c.y,10,c.x,c.y,230*A);
+  glow.addColorStop(0,'rgba(83,246,255,.28)'); glow.addColorStop(1,'rgba(83,246,255,0)');
+  g.fillStyle = glow; g.beginPath(); g.ellipse(c.x,c.y,260*A,120*A,0,0,Math.PI*2); g.fill();
+  drawBox(g, b.x0, b.z0, b.x1, b.z1, yb, yt, { top: '#153957', right: '#121543', left: '#241143' }, null);
   const inset = 22, ty = yt;
   const p0 = project(b.x0 + inset, ty, b.z0 + inset), p1 = project(b.x1 - inset, ty, b.z0 + inset);
   const p2 = project(b.x1 - inset, ty, b.z1 - inset), p3 = project(b.x0 + inset, ty, b.z1 - inset);
-  g.strokeStyle = 'rgba(255,255,255,.5)'; g.lineWidth = 2;
+  g.save(); g.shadowColor = '#53f6ff'; g.shadowBlur = 16; g.strokeStyle = '#53f6ff'; g.lineWidth = 2.2;
   g.beginPath(); g.moveTo(p0.x, p0.y); g.lineTo(p1.x, p1.y); g.lineTo(p2.x, p2.y); g.lineTo(p3.x, p3.y); g.closePath(); g.stroke();
+  g.restore();
 }
 // cumulative Y so a boosted (taller) block pushes everything above it up
 function floorBaseY(blocks, i) { let y = 0; for (let k = 0; k < i; k++) y += (k === 0 ? PODIUM_H : (blocks[k].h || BH)); return y; }
 function floorTopY(blocks, i) { return floorBaseY(blocks, i) + (i === 0 ? PODIUM_H : (blocks[i].h || BH)); }
 
 // ---------- input (instant, no latency) ----------
-let cameraMode = false;
 function press(e) {
   if (e && e.type === 'keydown' && e.code !== 'Space') return;
   if (e) e.preventDefault();
-  if (cameraMode) return;                 // in orbit mode taps move the camera, not the block
   if (state === S.PLAY && !paused) drop();
 }
 canvas.addEventListener('pointerdown', press, { passive: false });
 window.addEventListener('keydown', press);
-
-// ---------- free-look camera (orbit + zoom) ----------
-const camPointers = new Map();
-let pinchDist = 0;
-canvas.addEventListener('pointerdown', (e) => { if (cameraMode) camPointers.set(e.pointerId, { x: e.clientX, y: e.clientY }); });
-canvas.addEventListener('pointermove', (e) => {
-  if (!cameraMode) return;
-  const p = camPointers.get(e.pointerId); if (!p) return;
-  const dx = e.clientX - p.x; p.x = e.clientX; p.y = e.clientY;
-  if (camPointers.size >= 2) {
-    const [a, b] = [...camPointers.values()], d = Math.hypot(a.x - b.x, a.y - b.y);
-    if (pinchDist) camZoom = clamp(camZoom * d / pinchDist, 0.4, 3.2); pinchDist = d;
-  } else {
-    camYaw -= dx * 0.008;
-  }
-}, { passive: false });
-window.addEventListener('pointerup', (e) => { camPointers.delete(e.pointerId); if (camPointers.size < 2) pinchDist = 0; });
-canvas.addEventListener('wheel', (e) => { if (!cameraMode) return; e.preventDefault(); camZoom = clamp(camZoom * (e.deltaY < 0 ? 1.1 : 0.9), 0.4, 3.2); }, { passive: false });
 
 // ---------- UI ----------
 const menuEl = document.getElementById('menu'), overEl = document.getElementById('over'), hudEl = document.getElementById('hud');
@@ -762,14 +778,6 @@ const toastEl = document.getElementById('toast'), continueBtn = document.getElem
 const muteBtn = document.getElementById('muteBtn');
 muteBtn.textContent = muted ? '🔇' : '🔊';
 muteBtn.addEventListener('click', () => toggleMute());
-const camBtn = document.getElementById('camBtn'), camHintEl = document.getElementById('camHint');
-function setCameraMode(on) {
-  cameraMode = on;
-  camBtn.classList.toggle('active', on);
-  camHintEl.classList.toggle('show', on);
-  if (!on) { camPointers.clear(); pinchDist = 0; }   // targets ease back to default in update()
-}
-camBtn.addEventListener('click', () => { playSfx(audioNav); setCameraMode(!cameraMode); });
 const bonusMsgEl = document.getElementById('bonusMsg');
 const menuStatEl = document.getElementById('menuStat'), menuUnlockEl = document.getElementById('menuUnlock');
 function refreshMenu() {
@@ -836,8 +844,8 @@ function startGame() {
   equipped = 0; activeSkin = 0; runStartUnlockIdx = unlockedIdx(bestM);
   menuEl.classList.add('hidden'); overEl.classList.add('hidden');
   bonusMsgEl.classList.remove('show');
-  setCameraMode(false); camYaw = 0; camZoom = 1;
-  hudEl.style.display = 'flex'; homeBtn.style.display = 'flex'; camBtn.style.display = 'flex'; updateHud(); newMover(); sdkStart();
+  camYaw = 0; camZoom = 1;
+  hudEl.style.display = 'flex'; homeBtn.style.display = 'flex'; updateHud(); newMover(); sdkStart();
   // the home-screen track keeps playing straight through into the game — never switched
   musicStarted = true; playMusic(musicMenu);
 }
@@ -860,7 +868,6 @@ continueBtn.addEventListener('click', () => {
     overEl.classList.add('hidden');
     hudEl.style.display = 'flex';
     homeBtn.style.display = 'flex';
-    camBtn.style.display = 'flex';
     updateHud();
     newMover();
     sdkStart();
@@ -933,15 +940,10 @@ let last = performance.now();
 function loop(now) { const dt = Math.min((now - last) / 1000, 0.05); last = now; update(dt, now / 1000); render(now / 1000); requestAnimationFrame(loop); }
 function update(dt, t) {
   camY += (camYT - camY) * Math.min(1, dt * 6);
-  // ease orbit/zoom back to the default view whenever camera mode is off
-  if (!cameraMode) {
-    camYaw += (0 - camYaw) * Math.min(1, dt * 8); if (Math.abs(camYaw) < 0.002) camYaw = 0;
-    camZoom += (1 - camZoom) * Math.min(1, dt * 8); if (Math.abs(camZoom - 1) < 0.004) camZoom = 1;
-  }
   if (shake > 0) shake = Math.max(0, shake - dt * 26);
   if (state === S.DEAD) endT = Math.min(1, endT + dt * 1.8);
   if (paused) { pauseT -= dt; if (pauseT <= 0) { paused = false; bonusMsgEl.classList.remove('show'); } }
-  if (state === S.PLAY && mover && !paused && !cameraMode) {
+  if (state === S.PLAY && mover && !paused) {
     const wob = 1 + 0.2 * Math.sin(t * 2 + mover.wob);
     mover.off += mover.dir * mover.spd * wob * dt;
     if (mover.off < -430) { mover.off = -430; mover.dir = 1; }
@@ -953,68 +955,14 @@ function update(dt, t) {
   sparks = sparks.filter(p => p.life > 0);
 }
 
-// ---------- park at the base (grass, trees, benches, a small neighbourhood) ----------
-const PARK_TREES = [
-  [-250,-250],[-320,-30],[-280,180],[-90,-300],[70,-300],[250,-250],[300,-40],
-  [280,190],[190,290],[-30,310],[-210,290],[-320,70],[150,250],[-160,250],[240,120],[-120,-250],
-];
-const PARK_BENCHES = [[-205,55],[55,205],[205,-70],[-70,-205]];
-const PARK_BLDGS = [  // small neighbourhood, kept in the back hemisphere (x+z < 0)
-  [-370,-330,72,200],[-150,-410,82,250],[120,-410,64,150],[350,-330,86,215],
-  [-430,-150,58,165],[-300,-360,60,120],[220,-360,58,130],[-90,-440,52,95],
-];
-function parkDepth(x, z) { if (camYaw !== 0) { const c = Math.cos(camYaw), s = Math.sin(camYaw); return (x * c - z * s) + (x * s + z * c); } return x + z; }
-function drawGrass(g) {
-  const GR = 900;
-  const a = project(-GR, 0, -GR), b = project(GR, 0, -GR), c = project(GR, 0, GR), d = project(-GR, 0, GR);
-  fillQuad(g, a, b, c, d, '#3c7a37');
-  const cen = project(0, 0, 0), rad = GR * A * 1.4;
-  const rg = g.createRadialGradient(cen.x, cen.y, 10, cen.x, cen.y, rad);
-  rg.addColorStop(0, 'rgba(120,190,90,.28)'); rg.addColorStop(1, 'rgba(20,50,20,0)');
-  g.fillStyle = rg; g.beginPath(); g.moveTo(a.x, a.y); g.lineTo(b.x, b.y); g.lineTo(c.x, c.y); g.lineTo(d.x, d.y); g.closePath(); g.fill();
-}
-function drawTree(g, x, z) {
-  const s = project(x, 0, z);
-  g.fillStyle = 'rgba(10,30,10,.28)'; g.beginPath(); g.ellipse(s.x, s.y, 24 * A, 12 * A, 0, 0, 6.29); g.fill();
-  drawBox(g, x - 5, z - 5, x + 5, z + 5, 0, 34, { top: '#7b5230', right: '#5c3c22', left: '#4a3019' }, null);
-  const top = project(x, 58, z), rad = 34 * C;
-  g.fillStyle = '#2f7d3a'; g.beginPath(); g.arc(top.x - rad * .35, top.y + rad * .2, rad * .85, 0, 6.29); g.fill();
-  g.fillStyle = '#3a9147'; g.beginPath(); g.arc(top.x + rad * .4, top.y + rad * .15, rad * .8, 0, 6.29); g.fill();
-  g.fillStyle = '#49a854'; g.beginPath(); g.arc(top.x, top.y - rad * .4, rad * .9, 0, 6.29); g.fill();
-  g.fillStyle = '#5cc067'; g.beginPath(); g.arc(top.x - rad * .12, top.y - rad * .12, rad * .58, 0, 6.29); g.fill();
-}
-function drawBench(g, x, z) {
-  const s = project(x, 0, z);
-  g.fillStyle = 'rgba(10,20,10,.22)'; g.beginPath(); g.ellipse(s.x, s.y, 20 * A, 9 * A, 0, 0, 6.29); g.fill();
-  drawBox(g, x - 16, z - 7, x + 16, z + 7, 0, 9, { top: '#b07c44', right: '#7c5027', left: '#68421f' }, null);
-  drawBox(g, x - 16, z + 3, x + 16, z + 7, 9, 22, { top: '#8a5a2c', right: '#7c5027', left: '#68421f' }, null);
-}
-function drawSurround(g, x, z, hf, h) {
-  const s = project(x, 0, z);
-  g.fillStyle = 'rgba(5,8,18,.32)'; g.beginPath(); g.ellipse(s.x, s.y, hf * A * 1.5, hf * A * .7, 0, 0, 6.29); g.fill();
-  drawBox(g, x - hf, z - hf, x + hf, z + hf, 0, h, { top: '#39455e', right: '#212a3c', left: '#19212f' },
-    { colsR: clamp(Math.round(hf * 2 / 40), 2, 6), colsL: clamp(Math.round(hf * 2 / 40), 2, 6), rows: clamp(Math.round(h / 40), 2, 7), glass: '#26324a', lit: '#ffd27a', litP: 0.5, seed: (x * 7 + z) | 0 });
-}
-const parkProps = [];
-for (const [x, z] of PARK_TREES) parkProps.push({ x, z, f: g => drawTree(g, x, z) });
-for (const [x, z] of PARK_BENCHES) parkProps.push({ x, z, f: g => drawBench(g, x, z) });
-for (const [x, z, hf, h] of PARK_BLDGS) parkProps.push({ x, z, f: g => drawSurround(g, x, z, hf, h) });
-function drawPark(g, front) {
-  const list = parkProps.map(p => ({ p, d: parkDepth(p.x, p.z) })).sort((a, b) => a.d - b.d);
-  for (const { p, d } of list) if (front ? d > 0 : d <= 0) p.f(g);
-}
-
 // ---------- tower render (iso, during play) ----------
 function renderTower(shx, shy) {
   activeSkin = equipped;
   A = BASE_A * gameScale * camZoom; B = BASE_B * gameScale * camZoom; C = BASE_C * gameScale * camZoom;
   PX = W / 2 + shx; PY = groundY + camY * C + shy;
-  const showPark = camY < 660;
-  if (showPark) { drawGrass(ctx); drawPark(ctx, false); }
   for (const d of debris) { const yb = stack.length * BH + boostExtra() - d.fall; drawBox(ctx, d.x0, d.z0, d.x1, d.z1, yb, yb + BH, { top: '#c6cdd1', right: '#9aa7b0', left: '#84919b' }, null); }
   const firstVis = Math.max(0, stack.length - 26);
   for (let i = firstVis; i < stack.length; i++) drawFloor(ctx, stack[i], i, floorBaseY(stack, i), floorTopY(stack, i));
-  if (showPark) drawPark(ctx, true);
   if (state === S.PLAY && mover) {
     const r = moverRect(), base = floorTopY(stack, stack.length - 1);
     drawFloor(ctx, r, stack.length, base, base + BH);
