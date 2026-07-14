@@ -215,6 +215,20 @@
   .bonussub b { color: #ffe08a; }
   @media (prefers-reduced-motion: reduce) { #bonusMsg { transition: opacity .2s ease; } }
 
+  /* per-run landmark celebration */
+  #milestoneMsg { position:fixed; inset:0; z-index:12; pointer-events:none; display:grid; place-items:center; visibility:hidden; opacity:0; transform:scale(.86); transition:opacity .28s ease,transform .36s cubic-bezier(.18,1.35,.35,1); }
+  #milestoneMsg.show { visibility:visible; opacity:1; transform:scale(1); }
+  .milestoneCard { width:min(82vw,390px); padding:22px 24px 24px; text-align:center; color:#fff; background:linear-gradient(145deg,rgba(6,26,63,.94),rgba(56,9,78,.94)); border:1px solid rgba(83,246,255,.72); clip-path:polygon(18px 0,100% 0,100% calc(100% - 18px),calc(100% - 18px) 100%,0 100%,0 18px); box-shadow:inset 0 0 32px rgba(83,246,255,.12),0 0 30px rgba(83,246,255,.34),0 0 80px rgba(168,85,255,.28); }
+  .milestoneKicker { color:#7df8ff; font-size:10px; font-weight:900; letter-spacing:3px; text-transform:uppercase; text-shadow:0 0 10px #53f6ff; }
+  .milestoneModel { height:148px; display:grid; place-items:center; perspective:620px; }
+  .milestoneModel .landmarkGlyph { width:78px; height:126px; animation:milestoneSpin 2.2s linear infinite; filter:drop-shadow(0 0 8px #53f6ff) drop-shadow(0 0 24px rgba(168,85,255,.9)); }
+  .milestoneName { font-size:clamp(22px,6vw,34px); font-weight:900; line-height:1.05; letter-spacing:.5px; text-transform:uppercase; text-shadow:0 0 12px rgba(83,246,255,.75); }
+  .milestoneHeight { margin-top:8px; color:#ff95e9; font-size:15px; font-weight:900; letter-spacing:2px; text-transform:uppercase; }
+  .milestoneKeep { margin-top:14px; color:#dcfaff; font-size:12px; font-weight:800; letter-spacing:1.8px; text-transform:uppercase; }
+  @keyframes milestoneSpin { 0%{transform:rotateY(0deg) rotateZ(-2deg)} 50%{transform:rotateY(180deg) rotateZ(2deg)} 100%{transform:rotateY(360deg) rotateZ(-2deg)} }
+  @media (prefers-reduced-motion:reduce) { .milestoneModel .landmarkGlyph { animation:milestoneFloat 1.3s ease-in-out infinite alternate; } }
+  @keyframes milestoneFloat { to { transform:translateY(-8px); } }
+
   /* new-skin unbox reveal */
   #skinReveal { z-index: 20; background: radial-gradient(ellipse at center, rgba(58,28,88,.62) 0%, rgba(10,6,20,.9) 78%); }
   #confettiCanvas { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
@@ -375,6 +389,7 @@
     <p>Tap or press Space to drop the moving block onto the tower.</p>
     <p>Line it up dead-center for a <b>perfect</b> drop — perfects keep the full width, and a streak of 5 in a row grows your tower 5×.</p>
     <p>Pass real landmarks one by one, from Christ the Redeemer to the Burj Khalifa at 828 m. Your best tower is placed directly into the world height ladder.</p>
+    <p>Every landmark you pass is celebrated again on every new run, so you always know what you have built beyond and what comes next.</p>
     <p>Every 100 m still unlocks a new tower skin, and every metre from a 5× perfect counts toward the Burj.</p>
     <button class="neonBtn secondary" id="howtoClose"><span class="label">Got it</span></button>
   </div>
@@ -403,6 +418,16 @@
 <div id="bonusMsg">
   <div class="bonusbig">5 PERFECT<br>IN A ROW!</div>
   <div class="bonussub">Your last block grew <b>5×</b></div>
+</div>
+
+<div id="milestoneMsg" aria-live="polite" aria-hidden="true">
+  <div class="milestoneCard">
+    <div class="milestoneKicker">Landmark passed</div>
+    <div class="milestoneModel"><span id="milestoneGlyph" class="landmarkGlyph statue"></span></div>
+    <div class="milestoneName" id="milestoneName">Christ the Redeemer</div>
+    <div class="milestoneHeight" id="milestoneHeight">38 m cleared</div>
+    <div class="milestoneKeep">You built past it · keep building</div>
+  </div>
 </div>
 
 <div id="skinReveal" class="ui hidden">
@@ -623,6 +648,7 @@ let stack = null, mover = null, debris = [], sparks = [];
 let score = 0, bestM = 0, camY = 0, camYT = 0, shake = 0, endT = 0;
 let equipped = 0, activeSkin = 0, unlockMsg = '';
 let perfectStreak = 0, paused = false, pauseT = 0;  // consecutive-perfect bonus
+let milestoneQueue = [], milestoneActive = false, milestoneT = 0;
 let runStartUnlockIdx = 0;  // skin already unlocked before this run began
 let pendingRevealIdx = -1;  // a skin unlocked-for-the-first-time this run, waiting to be shown
 bestM = +(localStorage.getItem('city_best_m') || 0);
@@ -646,6 +672,8 @@ function reset() {
   debris = []; sparks = [];
   score = 0; camY = 0; camYT = 0; shake = 0; endT = 0;
   perfectStreak = 0; paused = false; pauseT = 0;
+  milestoneQueue = []; milestoneActive = false; milestoneT = 0;
+  if (typeof milestoneMsgEl !== 'undefined') milestoneMsgEl.classList.remove('show');
   mover = null;
 }
 function newMover() {
@@ -662,6 +690,7 @@ function moverRect() {
   return { x0: top.x0, x1: top.x1, z0: mover.off - mover.len / 2, z1: mover.off + mover.len / 2 };
 }
 function drop() {
+  const heightBeforeDrop = heightM();
   const top = stack[stack.length - 1], r = moverRect(), ax = mover.axis;
   const mLo = ax === 'x' ? r.x0 : r.z0, mHi = ax === 'x' ? r.x1 : r.z1;
   const tLo = ax === 'x' ? top.x0 : top.z0, tHi = ax === 'x' ? top.x1 : top.z1;
@@ -694,6 +723,7 @@ function drop() {
     playSfx(audioPlace);
   }
   checkLiveSkinUnlock();
+  queueCrossedLandmarks(heightBeforeDrop, heightM());
   updateHud(); newMover();
 }
 // mid-run: crossing a milestone height instantly swaps the tower skin
@@ -719,6 +749,28 @@ function triggerPerfectBonus() {
   checkLiveSkinUnlock();
   bonusMsgEl.classList.add('show');
 }
+function queueCrossedLandmarks(fromM,toM) {
+  const crossed = LANDMARKS.filter(x => x.score > fromM && x.score <= toM);
+  if (!crossed.length) return;
+  milestoneQueue.push(...crossed);
+  showNextMilestone();
+}
+function showNextMilestone() {
+  if (milestoneActive || paused || state !== S.PLAY || !milestoneQueue.length) return;
+  const landmark = milestoneQueue.shift();
+  milestoneActive = true; milestoneT = 3.4;
+  milestoneGlyphEl.className = 'landmarkGlyph ' + landmark.type;
+  milestoneNameEl.textContent = landmark.name;
+  milestoneHeightEl.textContent = landmark.score + ' m cleared';
+  milestoneMsgEl.setAttribute('aria-hidden','false');
+  milestoneMsgEl.classList.add('show');
+  playSfx(audioNav);
+}
+function clearMilestones() {
+  milestoneQueue = []; milestoneActive = false; milestoneT = 0;
+  milestoneMsgEl.setAttribute('aria-hidden','true');
+  milestoneMsgEl.classList.remove('show');
+}
 function commitRun() {
   const m = heightM();
   if (m > bestM) {
@@ -730,6 +782,7 @@ function commitRun() {
 }
 function die() {
   state = S.DEAD; sdkStop(); shake = 10; endT = 0;
+  clearMilestones();
   camYaw = 0; camZoom = 1;
   commitRun();
   const r = moverRect(); debris.push({ ...r, vy: 20, fall: 0 });
@@ -745,7 +798,7 @@ function goHome() {
   if (state === S.PLAY) commitRun();
   if (state === S.CITY && window.City3D) window.City3D.exit();
   state = S.MENU; sdkStop();
-  paused = false; bonusMsgEl.classList.remove('show');
+  paused = false; bonusMsgEl.classList.remove('show'); clearMilestones();
   equipped = 0; activeSkin = 0;  // home always shows the default Azure skin
   camYaw = 0; camZoom = 1;
   overEl.classList.add('hidden'); hudEl.style.display = 'none'; homeBtn.style.display = 'none';
@@ -811,7 +864,7 @@ function floorTopY(blocks, i) { return floorBaseY(blocks, i) + (i === 0 ? PODIUM
 function press(e) {
   if (e && e.type === 'keydown' && e.code !== 'Space') return;
   if (e) e.preventDefault();
-  if (state === S.PLAY && !paused) drop();
+  if (state === S.PLAY && !paused && !milestoneActive) drop();
 }
 canvas.addEventListener('pointerdown', press, { passive: false });
 window.addEventListener('keydown', press);
@@ -826,6 +879,7 @@ const muteBtn = document.getElementById('muteBtn');
 muteBtn.textContent = muted ? '🔇' : '🔊';
 muteBtn.addEventListener('click', () => toggleMute());
 const bonusMsgEl = document.getElementById('bonusMsg');
+const milestoneMsgEl = document.getElementById('milestoneMsg'), milestoneGlyphEl = document.getElementById('milestoneGlyph'), milestoneNameEl = document.getElementById('milestoneName'), milestoneHeightEl = document.getElementById('milestoneHeight');
 const menuStatEl = document.getElementById('menuStat'), menuUnlockEl = document.getElementById('menuUnlock');
 function refreshMenu() {
   const reached = reachedLandmark(bestM), next = nextLandmark(bestM);
@@ -949,7 +1003,7 @@ function startGame() {
   reset(); state = S.PLAY;
   equipped = 0; activeSkin = 0; runStartUnlockIdx = unlockedIdx(bestM);
   menuEl.classList.add('hidden'); overEl.classList.add('hidden');
-  bonusMsgEl.classList.remove('show');
+  bonusMsgEl.classList.remove('show'); clearMilestones();
   camYaw = 0; camZoom = 1;
   hudEl.style.display = 'flex'; homeBtn.style.display = 'flex'; updateHud(); newMover(); sdkStart();
   // the home-screen track keeps playing straight through into the game — never switched
@@ -1031,8 +1085,9 @@ function update(dt, t) {
   camY += (camYT - camY) * Math.min(1, dt * 6);
   if (shake > 0) shake = Math.max(0, shake - dt * 26);
   if (state === S.DEAD) endT = Math.min(1, endT + dt * 1.8);
-  if (paused) { pauseT -= dt; if (pauseT <= 0) { paused = false; bonusMsgEl.classList.remove('show'); } }
-  if (state === S.PLAY && mover && !paused) {
+  if (paused) { pauseT -= dt; if (pauseT <= 0) { paused = false; bonusMsgEl.classList.remove('show'); showNextMilestone(); } }
+  if (milestoneActive) { milestoneT -= dt; if (milestoneT <= 0) { milestoneActive = false; milestoneMsgEl.setAttribute('aria-hidden','true'); milestoneMsgEl.classList.remove('show'); showNextMilestone(); } }
+  if (state === S.PLAY && mover && !paused && !milestoneActive) {
     const wob = 1 + 0.2 * Math.sin(t * 2 + mover.wob);
     mover.off += mover.dir * mover.spd * wob * dt;
     if (mover.off < -430) { mover.off = -430; mover.dir = 1; }
