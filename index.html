@@ -16,17 +16,6 @@
   .ui { position: fixed; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; color: #fff; pointer-events: none; z-index: 10; }
   .ui.hidden { display: none; }
 
-  #menu { justify-content: flex-end; padding-bottom: 13vh; transition: opacity .4s ease; }
-  .brand {
-    font-weight: 800; font-size: clamp(60px, 18vw, 150px); line-height: .88;
-    letter-spacing: 9px; margin: 0; color: #fff;
-    text-shadow: 0 3px 0 rgba(90,30,50,.35), 0 16px 44px rgba(30,10,30,.55);
-  }
-  .brand-sub {
-    font-weight: 600; letter-spacing: 3px; text-transform: uppercase;
-    font-size: clamp(11px, 3vw, 14px); opacity: .95; margin: 16px 0 30px;
-    text-shadow: 0 2px 14px rgba(20,10,30,.7);
-  }
   .btn {
     pointer-events: auto; cursor: pointer; border: 0; border-radius: 12px;
     padding: 18px 66px; font-size: 20px; font-weight: 800; letter-spacing: 2px;
@@ -61,50 +50,82 @@
   }
   #homeBtn:active { transform: translateY(2px); }
 
-  /* menu layout */
-  #menu { justify-content: flex-end; padding: 0; }
-  #menu .scrim { position: absolute; inset: 0; background: linear-gradient(to top, rgba(20,8,26,.72) 0%, rgba(20,8,26,.28) 34%, rgba(20,8,26,0) 60%); pointer-events: none; }
-  .menu-inner { position: relative; display: flex; flex-direction: column; align-items: center; padding-bottom: 11vh; width: 100%; }
-  #menu .btn { min-width: 220px; }
-  #menu .brand-sub { margin-bottom: 26px; }
-  #menuUnlock { color: #ffe08a; font-weight: 800; min-height: 16px; margin-top: 8px; }
+  /* ---------- home screen: neon skyline over the Burj photo ---------- */
+  #menu {
+    justify-content: space-between; padding: 8vh 6vw 7vh; text-align: center;
+    background-image:
+      linear-gradient(180deg, rgba(6,8,26,.78) 0%, rgba(6,8,26,.15) 32%, rgba(6,8,26,.22) 56%, rgba(7,6,26,.9) 100%),
+      linear-gradient(120deg, rgba(40,30,110,.4), rgba(10,150,255,.14) 45%, rgba(130,40,220,.34)),
+      url('photo.jpg');
+    background-size: cover; background-position: center;
+  }
+  .menu-top { position: relative; }
+  .brand {
+    font-weight: 900; font-size: clamp(42px, 12vw, 88px); line-height: .92; margin: 0;
+    letter-spacing: 3px; text-transform: uppercase;
+    -webkit-text-stroke: 1.6px rgba(255,255,255,.92);
+    background: linear-gradient(180deg, #bff3ff 0%, #6fc9ff 35%, #a76bff 75%, #6a2fe0 100%);
+    -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+    filter: drop-shadow(0 0 10px rgba(120,200,255,.75)) drop-shadow(0 0 30px rgba(150,90,255,.55));
+    animation: neonFlicker 4.5s ease-in-out infinite;
+  }
+  .brand-sub {
+    font-weight: 700; letter-spacing: 4px; text-transform: uppercase;
+    font-size: clamp(10px, 2.6vw, 13px); margin: 12px 0 0; color: #d8ecff;
+    text-shadow: 0 0 12px rgba(110,190,255,.7), 0 2px 10px rgba(5,5,20,.8);
+  }
+  @keyframes neonFlicker { 0%, 96%, 100% { opacity: 1; } 97% { opacity: .82; } 98% { opacity: 1; } 99% { opacity: .9; } }
+
+  .menu-bottom { position: relative; display: flex; flex-direction: column; align-items: center; gap: 16px; width: 100%; }
+  .stat { font-weight: 700; font-size: 13px; letter-spacing: 2px; text-transform: uppercase; opacity: .88; text-shadow: 0 2px 12px rgba(0,0,0,.7); font-variant-numeric: tabular-nums; color: #cfe6ff; }
+  #menuUnlock { color: #ffb8ff; font-weight: 800; min-height: 16px; text-shadow: 0 0 14px rgba(255,140,255,.65); }
+
+  /* neon jagged-corner buttons with a moving light ring + pulsing glow */
+  .neonBtn {
+    position: relative; pointer-events: auto; cursor: pointer; border: 0;
+    font-family: inherit; text-transform: uppercase; color: #fff; font-weight: 900;
+    letter-spacing: 2px; border-radius: 18px;
+    clip-path: polygon(16px 0, 100% 0, 100% calc(100% - 16px), calc(100% - 16px) 100%, 0 100%, 0 16px);
+    background: linear-gradient(135deg, #17d4ff 0%, #4a6bff 45%, #9a3dff 100%);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.5), inset 0 -14px 26px rgba(20,0,50,.32);
+    transition: transform .12s ease;
+  }
+  .neonBtn::before {
+    content: ''; position: absolute; inset: -9px; z-index: -2;
+    clip-path: inherit; background: linear-gradient(135deg, #7ff2ff, #c19bff);
+    filter: blur(11px); opacity: .7; animation: neonAura 2.6s ease-in-out infinite;
+  }
+  .neonBtn::after {
+    content: ''; position: absolute; inset: -3px; z-index: -1; clip-path: inherit; padding: 3px;
+    background: conic-gradient(from 0deg, #fff 0deg 18deg, transparent 18deg 70deg, #fff 70deg 88deg, transparent 88deg 160deg, #fff 160deg 178deg, transparent 178deg 250deg, #fff 250deg 268deg, transparent 268deg 360deg);
+    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor; mask-composite: exclude;
+    animation: neonSpin 3.4s linear infinite;
+  }
+  .neonBtn:active { transform: scale(.96); }
+  .neonBtn.primary { padding: 26px 20px; font-size: clamp(21px, 6vw, 29px); width: min(92vw, 460px); text-shadow: 0 2px 10px rgba(0,0,20,.4); }
+  .neonBtn.secondary { padding: 15px 20px; font-size: 13px; width: min(80vw, 340px); background: linear-gradient(135deg, rgba(24,28,58,.78), rgba(70,32,100,.78)); }
+  @keyframes neonAura { 0%, 100% { opacity: .55; transform: scale(1); } 50% { opacity: .95; transform: scale(1.035); } }
+  @keyframes neonSpin { to { transform: rotate(360deg); } }
+  @media (prefers-reduced-motion: reduce) { .brand, .neonBtn::before, .neonBtn::after { animation: none; } }
 
   /* game-over: buttons pinned bottom, comparison drawn on canvas above */
   #over { justify-content: flex-end; padding-bottom: 7vh; }
   #over .btnrow { display: flex; flex-direction: column; align-items: center; }
 
-  .arrow { pointer-events: auto; cursor: pointer; border: 0; width: 46px; height: 46px; border-radius: 50%; background: #eef0f4; color: #3a4152; font-size: 18px; box-shadow: 0 3px 10px rgba(20,20,40,.14); flex: none; }
-  .arrow:active { transform: translateY(2px); }
-  .arrow:disabled { opacity: .3; cursor: default; }
-
-  /* stats screen */
-  #stats { background: rgba(14,8,22,.55); backdrop-filter: blur(4px); }
-  .statscard {
-    position: relative; pointer-events: auto; width: min(88vw, 360px);
-    background: rgba(255,255,255,.96); color: #22283a; border-radius: 22px;
-    padding: 26px 22px 22px; box-shadow: 0 30px 80px rgba(10,8,24,.5);
-    display: flex; flex-direction: column; align-items: center;
+  /* how-to-play modal */
+  #howto { background: rgba(6,8,22,.7); backdrop-filter: blur(6px); }
+  .howtocard {
+    position: relative; pointer-events: auto; width: min(88vw, 380px);
+    background: linear-gradient(160deg, rgba(24,18,52,.96), rgba(10,10,28,.97));
+    border: 1px solid rgba(140,180,255,.35); border-radius: 22px; color: #eaf3ff;
+    padding: 28px 24px 24px; box-shadow: 0 30px 80px rgba(0,0,20,.6), 0 0 40px rgba(90,140,255,.25);
+    text-align: left;
   }
-  #statsClose { position: absolute; top: 12px; right: 14px; border: 0; background: none; font-size: 20px; color: #9aa1af; cursor: pointer; pointer-events: auto; }
-  .statstitle { font-weight: 800; letter-spacing: 3px; text-transform: uppercase; font-size: 15px; color: #6b7180; margin-bottom: 16px; }
-  .statsrow { display: flex; align-items: center; gap: 8px; width: 100%; justify-content: center; }
-  .statsmain { display: flex; flex-direction: column; align-items: center; flex: 1; }
-  #statsBestVal { font-weight: 800; font-size: 36px; letter-spacing: 1px; margin-top: 2px; text-align: center; }
-  #statsPctVal { font-weight: 700; font-size: 16px; letter-spacing: 1px; margin-top: 12px; color: #8a91a0; }
-  .statsmark { display: flex; flex-direction: column; align-items: center; margin-top: 16px; padding-top: 16px; border-top: 1px solid #e6e8ee; width: 100%; }
-  .statsmarkname { font-weight: 800; font-size: 14px; letter-spacing: 1px; text-transform: uppercase; color: #6b7180; }
-  .statsmarkval { font-weight: 600; font-size: 24px; margin-top: 6px; color: #22283a; }
-  .statsmarktype { font-weight: 600; font-size: 11px; letter-spacing: 0.5px; color: #8a91a0; margin-top: 4px; text-transform: uppercase; }
-
-  /* home screen tutorial */
-  #tutorialText {
-    position: fixed; bottom: 20px; left: 20px; z-index: 8; pointer-events: none;
-    color: #fff; font-size: 11px; font-weight: 700; letter-spacing: 0.5px;
-    text-transform: uppercase; opacity: .85; text-shadow: 0 2px 8px rgba(10,10,30,.6);
-    display: none;
-  }
-  #tutorialText.visible { display: block; }
-  #tutorialEye { font-size: 16px; margin-right: 6px; }
+  .howtotitle { font-weight: 900; letter-spacing: 3px; text-transform: uppercase; font-size: 15px; margin-bottom: 14px; color: #9fe0ff; text-shadow: 0 0 12px rgba(120,200,255,.6); }
+  .howtocard p { font-size: 14px; line-height: 1.6; margin: 0 0 10px; color: #cfe0f5; }
+  .howtocard .neonBtn { margin-top: 10px; width: 100%; }
+  .howtocard .neonBtn.secondary { padding: 15px 20px; font-size: 14px; }
 
   /* 5-perfect-in-a-row bonus overlay */
   #bonusMsg {
@@ -167,34 +188,25 @@
 <div id="toast"></div>
 
 <div id="menu" class="ui">
-  <div class="scrim"></div>
-  <div class="menu-inner">
+  <div class="menu-top">
     <h1 class="brand">CITY</h1>
     <div class="brand-sub">Build your tower toward the Burj Khalifa</div>
-    <button class="btn" id="playBtn">Play</button>
-    <button class="btn ghost" id="statsBtn">Stats</button>
+  </div>
+  <div class="menu-bottom">
+    <button class="neonBtn primary" id="playBtn"><span class="label">Play</span></button>
+    <button class="neonBtn secondary" id="howtoBtn"><span class="label">How to play</span></button>
     <div class="stat" id="menuStat">Best 0 m</div>
     <div class="stat" id="menuUnlock"></div>
   </div>
 </div>
 
-<div id="stats" class="ui hidden">
-  <div class="statscard">
-    <button id="statsClose" aria-label="Close">✕</button>
-    <div class="statstitle">Stats</div>
-    <div class="statsrow">
-      <button class="arrow" id="statsPrev" aria-label="Previous">◀</button>
-      <div class="statsmain">
-        <div id="statsBestVal">0 m</div>
-        <div id="statsPctVal">0% of Burj Khalifa</div>
-        <div class="statsmark">
-          <div class="statsmarkname" id="statsMarkName">Liberty</div>
-          <div class="statsmarkval" id="statsMarkVal">0 m</div>
-          <div class="statsmarktype" id="statsMarkType">best / worst</div>
-        </div>
-      </div>
-      <button class="arrow" id="statsNext" aria-label="Next">▶</button>
-    </div>
+<div id="howto" class="ui hidden">
+  <div class="howtocard">
+    <div class="howtotitle">How to play</div>
+    <p>Tap or press Space to drop the moving block onto the tower.</p>
+    <p>Line it up dead-center for a <b>perfect</b> drop — perfects keep the full width, and a streak of 5 in a row grows your tower 5×.</p>
+    <p>Climb past height records — Liberty, Pyramid, Eiffel, the Burj itself — to unlock new skins live, mid-run.</p>
+    <button class="neonBtn secondary" id="howtoClose"><span class="label">Got it</span></button>
   </div>
 </div>
 
@@ -203,10 +215,6 @@
     <button class="btn" id="continueBtn">▲ Recover my building (Ad)</button>
     <button class="btn ghost" id="retryBtn">New building</button>
   </div>
-</div>
-
-<div id="tutorialText">
-  <span id="tutorialEye">👁</span>How to play
 </div>
 
 <div id="bonusMsg">
@@ -247,7 +255,6 @@ function resize() {
   canvas.style.width = W + 'px'; canvas.style.height = H + 'px';
   groundY = H * 0.72;
   applyGameScale();
-  buildHomeCity();
 }
 function applyGameScale() {
   const S = Math.max(0.72, Math.min(1.4, Math.min(W, H) / 720));
@@ -335,7 +342,6 @@ function rgbHex(r, g, b) { return '#' + [r, g, b].map(v => clamp(Math.round(v), 
 function shade(hex, amt) { const [r, g, b] = hexRgb(hex); const t = amt < 0 ? 0 : 255, p = Math.abs(amt); return rgbHex(r + (t - r) * p, g + (t - g) * p, b + (t - b) * p); }
 function lerpHex(h1, h2, t) { const a = hexRgb(h1), b = hexRgb(h2); return rgbHex(a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t); }
 function hash3(a, b, c) { const x = Math.sin(a * 127.1 + b * 311.7 + c * 74.7) * 43758.5453; return x - Math.floor(x); }
-function mulberry32(a) { return function () { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
 
 // ---------- constants ----------
 const SIZE = 300, BH = 56, PODIUM_H = 78;
@@ -459,178 +465,13 @@ function drawBurjGauge(g) {
 }
 
 // ======================================================================
-//  HOME-SCREEN CITY  — each skin gets its own themed skyline
-// ======================================================================
-// Every theme drives the sky gradient, light source, building palette and
-// atmosphere so the home screen matches the equipped skin.
-const HOME_THEMES = {
-  azure: {  // calm, a little plain — light blue fading into deeper blue
-    sky: [[0, '#4e79a6'], [0.42, '#6f9cc6'], [0.72, '#a4cae6'], [1, '#d2e8f7']],
-    sun: { x: 0.5, y: 0.34, core: 'rgba(255,255,255,.95)', mid: 'rgba(216,236,252,.45)', edge: 'rgba(200,226,246,0)', r: 0.04 },
-    rays: 'rgba(214,234,252,.045)',
-    hazeTarget: '#bcd8ee', sunCatch: '#eef7ff', capTint: '#dbeeff',
-    layers: [
-      { col: '#7f9bb5', haze: 0.6, win: 0.4, wcol: '#dbeeff' },
-      { col: '#5f7fa0', haze: 0.4, win: 0.55, wcol: '#cfe6f8' },
-      { col: '#48627f', haze: 0.2, win: 0.7, wcol: '#c2ddf2' },
-      { col: '#33485f', haze: 0.06, win: 0.85, wcol: '#bcd8ee' },
-    ],
-    haze: '200,225,245', vignette: 'rgba(14,22,34,.42)', stars: false,
-  },
-  sunset: {  // the original warm golden-hour scene
-    sky: [[0, '#241a4a'], [0.28, '#5c2c62'], [0.5, '#a8455a'], [0.68, '#e07a38'], [0.84, '#f5ab41'], [1, '#ffd479']],
-    sun: { x: 0.52, y: 0.7, core: 'rgba(255,247,220,.98)', mid: 'rgba(255,214,150,.8)', edge: 'rgba(255,150,100,0)', r: 0.045 },
-    rays: 'rgba(255,226,160,.05)',
-    hazeTarget: '#f4b568', sunCatch: '#fff0c8', capTint: '#ffcf86',
-    layers: [
-      { col: '#cf7b4e', haze: 0.6, win: 0.45, wcol: '#ffdf96' },
-      { col: '#a85644', haze: 0.4, win: 0.65, wcol: '#ffd382' },
-      { col: '#6e3a48', haze: 0.2, win: 0.85, wcol: '#ffc76e' },
-      { col: '#3c2338', haze: 0.06, win: 1.0, wcol: '#ffbf63' },
-    ],
-    haze: '255,200,140', vignette: 'rgba(18,7,22,.46)', stars: false,
-  },
-  emerald: {  // verdant green dusk
-    sky: [[0, '#123a2e'], [0.32, '#1f5744'], [0.55, '#2f7d55'], [0.76, '#5fae6e'], [1, '#c3e79c']],
-    sun: { x: 0.5, y: 0.7, core: 'rgba(238,255,214,.97)', mid: 'rgba(172,226,150,.55)', edge: 'rgba(120,190,110,0)', r: 0.045 },
-    rays: 'rgba(184,232,152,.05)',
-    hazeTarget: '#7fce8f', sunCatch: '#e6ffd0', capTint: '#d6ffb0',
-    layers: [
-      { col: '#3f7d57', haze: 0.6, win: 0.45, wcol: '#d6ffb0' },
-      { col: '#2f6b47', haze: 0.4, win: 0.6, wcol: '#c6f0a0' },
-      { col: '#245538', haze: 0.2, win: 0.8, wcol: '#b6e890' },
-      { col: '#173a26', haze: 0.06, win: 1.0, wcol: '#a8e080' },
-    ],
-    haze: '160,220,150', vignette: 'rgba(8,20,14,.46)', stars: false,
-  },
-  obsidian: {  // deep night sky with a cold moon and cyan-lit towers
-    sky: [[0, '#05070f'], [0.4, '#0b1224'], [0.72, '#141d38'], [1, '#26324e']],
-    sun: { x: 0.68, y: 0.26, core: 'rgba(226,236,255,.98)', mid: 'rgba(160,180,220,.22)', edge: 'rgba(120,140,190,0)', r: 0.038 },
-    rays: null,
-    hazeTarget: '#26324a', sunCatch: '#3a4a66', capTint: '#2b3a52',
-    layers: [
-      { col: '#1b2434', haze: 0.6, win: 0.5, wcol: '#7fe6ff' },
-      { col: '#141b28', haze: 0.4, win: 0.7, wcol: '#86f2ff' },
-      { col: '#0e141e', haze: 0.2, win: 0.85, wcol: '#8ef4ff' },
-      { col: '#080c14', haze: 0.06, win: 1.0, wcol: '#9ef6ff' },
-    ],
-    haze: null, vignette: 'rgba(2,4,10,.6)', stars: true,
-  },
-  aurora: {  // northern-lights twilight to match the mythic skin
-    sky: [[0, '#0a0e24'], [0.35, '#14204a'], [0.62, '#1c3a63'], [1, '#2a5478']],
-    sun: { x: 0.74, y: 0.24, core: 'rgba(225,235,255,.9)', mid: 'rgba(150,175,220,.18)', edge: 'rgba(120,140,190,0)', r: 0.03 },
-    rays: null, aurora: true,
-    hazeTarget: '#2f4f72', sunCatch: '#4a6f92', capTint: '#37536f',
-    layers: [
-      { col: '#1b2b3e', haze: 0.6, win: 0.5, wcol: '#9affe0' },
-      { col: '#142230', haze: 0.4, win: 0.7, wcol: '#b6ffea' },
-      { col: '#0e1824', haze: 0.2, win: 0.85, wcol: '#c0f0ff' },
-      { col: '#080f18', haze: 0.06, win: 1.0, wcol: '#d0f8ff' },
-    ],
-    haze: null, vignette: 'rgba(3,6,16,.56)', stars: true,
-  },
-};
-function homeTheme() { return HOME_THEMES[SKINS[equipped].id] || HOME_THEMES.sunset; }
-let homeCanvas = null, homeCtx = null;
-function buildHomeCity() {
-  if (!homeCanvas) { homeCanvas = document.createElement('canvas'); homeCtx = homeCanvas.getContext('2d'); }
-  homeCanvas.width = W; homeCanvas.height = H;
-  const g = homeCtx, rnd = mulberry32(99), T = homeTheme();
-  // sky gradient
-  const sky = g.createLinearGradient(0, 0, 0, H);
-  for (const [stop, col] of T.sky) sky.addColorStop(stop, col);
-  g.fillStyle = sky; g.fillRect(0, 0, W, H);
-  // aurora ribbons (mythic only)
-  if (T.aurora) {
-    g.save(); g.globalCompositeOperation = 'lighter';
-    const bands = [{ c: '86,240,180', y: 0.18, amp: 32 }, { c: '120,190,255', y: 0.28, amp: 46 }, { c: '200,130,240', y: 0.38, amp: 30 }];
-    for (const b of bands) {
-      for (let pass = 0; pass < 4; pass++) {
-        g.beginPath();
-        for (let x = -20; x <= W + 20; x += 12) {
-          const yy = b.y * H + Math.sin(x * 0.012 + pass * 1.7 + b.y * 9) * b.amp + Math.sin(x * 0.03) * 10;
-          x === -20 ? g.moveTo(x, yy) : g.lineTo(x, yy);
-        }
-        g.strokeStyle = 'rgba(' + b.c + ',' + (0.09 + pass * 0.03) + ')';
-        g.lineWidth = 30 - pass * 6; g.lineCap = 'round'; g.stroke();
-      }
-    }
-    g.restore();
-  }
-  // stars behind everything (night themes)
-  if (T.stars) {
-    for (let i = 0; i < 90; i++) {
-      const sx = (i * 149 + 23) % W, sy = (i * 83 + 41) % (H * 0.55), tw = 0.4 + (hash3(i, 3, 7) * 0.6);
-      g.fillStyle = 'rgba(255,255,255,' + tw + ')'; g.fillRect(sx, sy, 1.6, 1.6);
-    }
-  }
-  // sun / moon glow + disk
-  if (T.sun) {
-    const sunX = W * T.sun.x, sunY = H * T.sun.y;
-    const sg = g.createRadialGradient(sunX, sunY, 6, sunX, sunY, H * 0.62);
-    sg.addColorStop(0, T.sun.core); sg.addColorStop(0.16, T.sun.mid); sg.addColorStop(0.5, lerpAlpha(T.sun.mid, 0.35)); sg.addColorStop(1, T.sun.edge);
-    g.fillStyle = sg; g.fillRect(0, 0, W, H);
-    if (T.rays) {
-      g.save(); g.globalCompositeOperation = 'lighter';
-      for (let r = 0; r < 9; r++) {
-        const a = -Math.PI / 2 + (r - 4) * 0.26, len = H * 0.9, wsp = 26 + r % 3 * 10;
-        g.fillStyle = T.rays;
-        g.beginPath(); g.moveTo(sunX, sunY);
-        g.lineTo(sunX + Math.cos(a) * len - wsp, sunY + Math.sin(a) * len);
-        g.lineTo(sunX + Math.cos(a) * len + wsp, sunY + Math.sin(a) * len);
-        g.closePath(); g.fill();
-      }
-      g.restore();
-    }
-    g.fillStyle = T.sun.core; g.beginPath(); g.arc(sunX, sunY, H * T.sun.r, 0, Math.PI * 2); g.fill();
-  }
-  // building layers, back (hazy) -> front (deep silhouette)
-  const ys = [0.605, 0.665, 0.735, 0.82], hMins = [0.08, 0.12, 0.16, 0.2], hMaxs = [0.22, 0.32, 0.44, 0.58];
-  for (let li = 0; li < 4; li++) {
-    const L = T.layers[li];
-    let x = -30; const yBase = ys[li] * H, base = lerpHex(L.col, T.hazeTarget, L.haze);
-    while (x < W + 30) {
-      const bw = 30 + rnd() * 70, bh = (hMins[li] + rnd() * (hMaxs[li] - hMins[li])) * H, bx = x, by = yBase - bh;
-      const fg = g.createLinearGradient(bx, 0, bx + bw, 0);
-      fg.addColorStop(0, lerpHex(base, T.capTint, 0.14)); fg.addColorStop(1, shade(base, -0.12));
-      g.fillStyle = fg; g.fillRect(bx, by, bw, bh + H);
-      g.fillStyle = lerpHex(base, T.sunCatch, 0.5); g.fillRect(bx, by, bw, 2.5); // roof sun-catch
-      if (L.haze < 0.25 && rnd() < 0.5) { const rw = 8 + rnd() * 12; g.fillStyle = shade(base, -0.05); g.fillRect(bx + 5 + rnd() * (bw - rw - 8), by - 5, rw, 6); }
-      const cols = Math.max(1, Math.floor(bw / 12)), rows = Math.floor(bh / 14);
-      for (let ci = 0; ci < cols; ci++) for (let ri = 0; ri < rows; ri++) {
-        if (rnd() < 0.5 * L.win) {
-          g.fillStyle = rnd() < 0.72 ? L.wcol : lerpHex(L.wcol, base, 0.5);
-          g.globalAlpha = 0.5 + rnd() * 0.5; g.fillRect(bx + 4 + ci * 12, by + 6 + ri * 14, 5, 7); g.globalAlpha = 1;
-        }
-      }
-      x += bw + 4 + rnd() * 8;
-    }
-  }
-  // atmospheric haze band along the light line
-  if (T.haze) {
-    const hb = g.createLinearGradient(0, H * 0.6, 0, H * 0.78);
-    hb.addColorStop(0, 'rgba(' + T.haze + ',0)'); hb.addColorStop(0.5, 'rgba(' + T.haze + ',.16)'); hb.addColorStop(1, 'rgba(' + T.haze + ',0)');
-    g.fillStyle = hb; g.fillRect(0, H * 0.6, W, H * 0.18);
-  }
-  // vignette (bottom scrim is a DOM layer for crisp text)
-  const vg = g.createRadialGradient(W / 2, H * 0.46, H * 0.32, W / 2, H * 0.52, H * 0.92);
-  vg.addColorStop(0, 'rgba(0,0,0,0)'); vg.addColorStop(1, T.vignette);
-  g.fillStyle = vg; g.fillRect(0, 0, W, H);
-}
-// fade an "r,g,b,a" rgba() string to a lower alpha for gradient mid-stops
-function lerpAlpha(rgba, a) {
-  const m = rgba.match(/rgba?\(([^)]+)\)/); if (!m) return rgba;
-  const p = m[1].split(',').map(s => s.trim()); return 'rgba(' + p[0] + ',' + p[1] + ',' + p[2] + ',' + a + ')';
-}
-
-// ======================================================================
 //  GAME
 // ======================================================================
 const S = { MENU: 0, PLAY: 1, DEAD: 2 };
 let state = S.MENU;
 let stack = null, mover = null, debris = [], sparks = [];
 let score = 0, bestM = 0, camY = 0, camYT = 0, shake = 0, usedContinue = false, endT = 0;
-let equipped = 0, activeSkin = 0, statsIdx = 0, unlockMsg = '';
+let equipped = 0, activeSkin = 0, unlockMsg = '';
 let milestoneRecords = {};  // { markName: { best: m, worst: m } }
 let perfectStreak = 0, paused = false, pauseT = 0;  // consecutive-perfect bonus
 let runStartUnlockIdx = 0;  // skin already unlocked before this run began
@@ -737,7 +578,6 @@ function commitRun() {
     }
   }
   localStorage.setItem('city_milestone_records', JSON.stringify(milestoneRecords));
-  buildHomeCity();
 }
 function die() {
   state = S.DEAD; sdkStop(); shake = 10; endT = 0;
@@ -756,9 +596,9 @@ function goHome() {
   if (state === S.PLAY) commitRun();
   state = S.MENU; sdkStop();
   paused = false; bonusMsgEl.classList.remove('show');
-  equipped = 0; activeSkin = 0; buildHomeCity();  // home always shows the default Azure skin/background
-  overEl.classList.add('hidden'); statsEl.classList.add('hidden'); hudEl.style.display = 'none'; homeBtn.style.display = 'none';
-  menuEl.classList.remove('hidden'); tutorialEl.classList.add('visible'); refreshMenu();
+  equipped = 0; activeSkin = 0;  // home always shows the default Azure skin
+  overEl.classList.add('hidden'); hudEl.style.display = 'none'; homeBtn.style.display = 'none';
+  menuEl.classList.remove('hidden'); refreshMenu();
   musicStarted = true; playMusic(musicMenu);
   checkPendingReveal();
 }
@@ -821,8 +661,8 @@ function startGame() {
   applyGameScale();
   reset(); state = S.PLAY;
   equipped = 0; activeSkin = 0; runStartUnlockIdx = unlockedIdx(bestM);
-  menuEl.classList.add('hidden'); overEl.classList.add('hidden'); statsEl.classList.add('hidden');
-  tutorialEl.classList.remove('visible'); bonusMsgEl.classList.remove('show');
+  menuEl.classList.add('hidden'); overEl.classList.add('hidden');
+  bonusMsgEl.classList.remove('show');
   hudEl.style.display = 'flex'; homeBtn.style.display = 'flex'; updateHud(); newMover(); sdkStart();
   musicStarted = true; playMusic(gameplayMusicFor(equipped));
 }
@@ -906,43 +746,12 @@ function showSkinReveal(idx) {
 function closeSkinReveal() { skinRevealEl.classList.add('hidden'); skinRevealEl.classList.remove('show'); stopConfetti(); refreshMenu(); }
 document.getElementById('revealBtn').addEventListener('click', () => { playSfx(audioNav); closeSkinReveal(); });
 
-// ---------- stats ----------
-const statsEl = document.getElementById('stats');
-const statsBestEl = document.getElementById('statsBestVal'), statsPctEl = document.getElementById('statsPctVal');
-const statsMarkEl = document.getElementById('statsMarkName'), statsValEl = document.getElementById('statsMarkVal'), statsTypeEl = document.getElementById('statsMarkType');
-function openStats() { statsIdx = 0; menuEl.classList.add('hidden'); tutorialEl.classList.remove('visible'); statsEl.classList.remove('hidden'); renderStats(); }
-function closeStats() { statsEl.classList.add('hidden'); menuEl.classList.remove('hidden'); tutorialEl.classList.add('visible'); refreshMenu(); }
-function renderStats() {
-  const mk = MARKS[statsIdx];
-  statsBestEl.textContent = bestM + ' m';
-  statsPctEl.textContent = pctOfBurj(bestM) + '% of Burj Khalifa';
-  statsMarkEl.textContent = mk.name;
-  const rec = milestoneRecords[mk.name];
-  if (rec && (rec.best > 0 || rec.worst > 0)) {
-    if (rec.best > 0 && rec.worst > 0) {
-      statsValEl.textContent = rec.best + ' m / ' + rec.worst + ' m';
-      statsTypeEl.textContent = 'best / worst';
-    } else if (rec.best > 0) {
-      statsValEl.textContent = rec.best + ' m';
-      statsTypeEl.textContent = 'best';
-    } else {
-      statsValEl.textContent = rec.worst + ' m';
-      statsTypeEl.textContent = 'worst';
-    }
-  } else {
-    statsValEl.textContent = '— m';
-    statsTypeEl.textContent = 'no record';
-  }
-  document.getElementById('statsPrev').disabled = statsIdx === 0;
-  document.getElementById('statsNext').disabled = statsIdx === MARKS.length - 1;
-}
-document.getElementById('statsBtn').addEventListener('click', (e) => { playSfx(audioNav); openStats(); });
-document.getElementById('statsClose').addEventListener('click', (e) => { playSfx(audioNav); closeStats(); });
-document.getElementById('statsPrev').addEventListener('click', () => { playSfx(audioNav); if (statsIdx > 0) { statsIdx--; renderStats(); } });
-document.getElementById('statsNext').addEventListener('click', () => { playSfx(audioNav); if (statsIdx < MARKS.length - 1) { statsIdx++; renderStats(); } });
+// ---------- how-to-play modal ----------
+const howtoEl = document.getElementById('howto');
+document.getElementById('howtoBtn').addEventListener('click', (e) => { playSfx(audioNav); menuEl.classList.add('hidden'); howtoEl.classList.remove('hidden'); });
+document.getElementById('howtoClose').addEventListener('click', (e) => { playSfx(audioNav); howtoEl.classList.add('hidden'); menuEl.classList.remove('hidden'); });
 
 // ---------- loop ----------
-const tutorialEl = document.getElementById('tutorialText');
 let last = performance.now();
 function loop(now) { const dt = Math.min((now - last) / 1000, 0.05); last = now; update(dt, now / 1000); render(now / 1000); requestAnimationFrame(loop); }
 function update(dt, t) {
@@ -1054,7 +863,7 @@ function renderComparison() {
 // ---------- render ----------
 function render(t) {
   ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
-  if (state === S.MENU) { if (homeCanvas) ctx.drawImage(homeCanvas, 0, 0); return; }
+  if (state === S.MENU) return;  // home screen background is the CSS photo, not canvas-drawn
   drawSky(ctx);
   const shx = (Math.random() - .5) * shake, shy = (Math.random() - .5) * shake;
   if (state === S.PLAY) {
@@ -1068,7 +877,6 @@ function render(t) {
 // ---------- boot ----------
 resize();
 reset();
-tutorialEl.classList.add('visible');
 requestAnimationFrame(loop);
 </script>
 </body>
