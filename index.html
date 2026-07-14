@@ -50,6 +50,22 @@
   }
   #homeBtn:active { transform: translateY(2px); }
 
+  /* camera / orbit toggle — sits under the home button during play */
+  #camBtn {
+    position: fixed; top: 70px; right: 16px; z-index: 9; pointer-events: auto;
+    width: 46px; height: 46px; border: 0; border-radius: 13px; cursor: pointer;
+    background: rgba(255,255,255,.9); box-shadow: 0 5px 16px rgba(20,10,30,.3);
+    font-size: 20px; line-height: 1; display: flex; align-items: center; justify-content: center;
+  }
+  #camBtn.active { background: linear-gradient(135deg, #17d4ff, #9a3dff); box-shadow: 0 0 18px rgba(120,120,255,.7); }
+  #camBtn:active { transform: translateY(2px); }
+  #camHint {
+    position: fixed; bottom: 22px; left: 0; right: 0; text-align: center; z-index: 8;
+    color: #fff; font-size: 12px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase;
+    text-shadow: 0 2px 10px rgba(0,0,0,.7); pointer-events: none; opacity: 0; transition: opacity .2s ease;
+  }
+  #camHint.show { opacity: .92; }
+
   /* persistent mute button — always available, above every screen/modal */
   #muteBtn {
     position: fixed; top: 16px; left: 16px; z-index: 21; pointer-events: auto;
@@ -194,7 +210,9 @@
   </div>
 </div>
 <button id="homeBtn" aria-label="Home" style="display:none">⌂</button>
+<button id="camBtn" aria-label="Camera" style="display:none">📷</button>
 <button id="muteBtn" aria-label="Mute">🔊</button>
+<div id="camHint">Drag to orbit · scroll / pinch to zoom</div>
 <div id="toast"></div>
 
 <div id="menu" class="ui">
@@ -254,9 +272,14 @@ const ctx = canvas.getContext('2d');
 
 const BASE_A = 0.52, BASE_B = 0.30, BASE_C = 0.52;
 let A = BASE_A, B = BASE_B, C = BASE_C;
-let W = 0, H = 0, DPR = 1, groundY = 0, lastS = -1;
+let W = 0, H = 0, DPR = 1, groundY = 0, lastS = -1, gameScale = 1;
 let PX = 0, PY = 0;
-function project(x, y, z) { return { x: PX + (x - z) * A, y: PY + (x + z) * B - y * C }; }
+// free-look camera: yaw orbits the tower, zoom scales it (both 0/1 in normal play)
+let camYaw = 0, camZoom = 1;
+function project(x, y, z) {
+  if (camYaw !== 0) { const c = Math.cos(camYaw), s = Math.sin(camYaw), rx = x * c - z * s, rz = x * s + z * c; x = rx; z = rz; }
+  return { x: PX + (x - z) * A, y: PY + (x + z) * B - y * C };
+}
 
 function resize() {
   DPR = Math.min(window.devicePixelRatio || 1, 2);
@@ -267,8 +290,8 @@ function resize() {
   applyGameScale();
 }
 function applyGameScale() {
-  const S = Math.max(0.72, Math.min(1.4, Math.min(W, H) / 720));
-  A = BASE_A * S; B = BASE_B * S; C = BASE_C * S;
+  gameScale = Math.max(0.72, Math.min(1.4, Math.min(W, H) / 720));
+  A = BASE_A * gameScale; B = BASE_B * gameScale; C = BASE_C * gameScale;
 }
 window.addEventListener('resize', resize);
 
@@ -590,11 +613,12 @@ function commitRun() {
 }
 function die() {
   state = S.DEAD; sdkStop(); shake = 10; endT = 0;
+  setCameraMode(false); camYaw = 0; camZoom = 1;
   commitRun();
   const r = moverRect(); debris.push({ ...r, vy: 20, fall: 0 });
   playSfx(audioDeath);
   continueBtn.style.display = usedContinue ? 'none' : '';
-  overEl.classList.remove('hidden'); hudEl.style.display = 'none';
+  overEl.classList.remove('hidden'); hudEl.style.display = 'none'; camBtn.style.display = 'none';
   checkPendingReveal();
 }
 // show the unbox animation for any skin unlocked during the run just committed
@@ -606,7 +630,8 @@ function goHome() {
   state = S.MENU; sdkStop();
   paused = false; bonusMsgEl.classList.remove('show');
   equipped = 0; activeSkin = 0;  // home always shows the default Azure skin
-  overEl.classList.add('hidden'); hudEl.style.display = 'none'; homeBtn.style.display = 'none';
+  setCameraMode(false); camYaw = 0; camZoom = 1;
+  overEl.classList.add('hidden'); hudEl.style.display = 'none'; homeBtn.style.display = 'none'; camBtn.style.display = 'none';
   menuEl.classList.remove('hidden'); refreshMenu();
   musicStarted = true; playMusic(musicMenu);
   checkPendingReveal();
@@ -627,24 +652,54 @@ function floorColors(i) {
 }
 function drawFloor(g, b, i, yb, yt) {
   const w = b.x1 - b.x0, d = b.z1 - b.z0;
-  if (b.podium) { drawBox(g, b.x0, b.z0, b.x1, b.z1, yb, yt, { top: '#b9b3a6', right: '#8f887b', left: '#7c766a' }, null); return; }
+  if (b.podium) return drawPlaza(g, b, yb, yt);
   const c = floorColors(i);
-  if (Math.min(w, d) < 76) { drawBox(g, b.x0, b.z0, b.x1, b.z1, yb, yt, { top: c.top, right: c.right, left: c.left }, null); return; }
+  // always show windows — column counts shrink with the block so slivers still read as glass
   drawBox(g, b.x0, b.z0, b.x1, b.z1, yb, yt, { top: c.top, right: c.right, left: c.left },
-    { colsR: clamp(Math.round(d / 42), 2, 7), colsL: clamp(Math.round(w / 42), 2, 7), rows: clamp(Math.round((yt - yb) / BH), 1, 8), glass: c.glass, lit: c.lit, litP: 0.16, seed: (i * 13) % 999 });
+    { colsR: clamp(Math.round(d / 42), 1, 7), colsL: clamp(Math.round(w / 42), 1, 7), rows: clamp(Math.round((yt - yb) / BH), 1, 8), glass: c.glass, lit: c.lit, litP: 0.16, seed: (i * 13) % 999 });
+}
+// the starting block is a stone plaza that outlines the build area, sitting in the park
+function drawPlaza(g, b, yb, yt) {
+  drawBox(g, b.x0, b.z0, b.x1, b.z1, yb, yt, { top: '#c8cdd2', right: '#8f9aa2', left: '#7c868e' }, null);
+  // inset outline marking the designated tower footprint
+  const inset = 22, ty = yt;
+  const p0 = project(b.x0 + inset, ty, b.z0 + inset), p1 = project(b.x1 - inset, ty, b.z0 + inset);
+  const p2 = project(b.x1 - inset, ty, b.z1 - inset), p3 = project(b.x0 + inset, ty, b.z1 - inset);
+  g.strokeStyle = 'rgba(255,255,255,.5)'; g.lineWidth = 2;
+  g.beginPath(); g.moveTo(p0.x, p0.y); g.lineTo(p1.x, p1.y); g.lineTo(p2.x, p2.y); g.lineTo(p3.x, p3.y); g.closePath(); g.stroke();
 }
 // cumulative Y so a boosted (taller) block pushes everything above it up
 function floorBaseY(blocks, i) { let y = 0; for (let k = 0; k < i; k++) y += (k === 0 ? PODIUM_H : (blocks[k].h || BH)); return y; }
 function floorTopY(blocks, i) { return floorBaseY(blocks, i) + (i === 0 ? PODIUM_H : (blocks[i].h || BH)); }
 
 // ---------- input (instant, no latency) ----------
+let cameraMode = false;
 function press(e) {
   if (e && e.type === 'keydown' && e.code !== 'Space') return;
   if (e) e.preventDefault();
+  if (cameraMode) return;                 // in orbit mode taps move the camera, not the block
   if (state === S.PLAY && !paused) drop();
 }
 canvas.addEventListener('pointerdown', press, { passive: false });
 window.addEventListener('keydown', press);
+
+// ---------- free-look camera (orbit + zoom) ----------
+const camPointers = new Map();
+let pinchDist = 0;
+canvas.addEventListener('pointerdown', (e) => { if (cameraMode) camPointers.set(e.pointerId, { x: e.clientX, y: e.clientY }); });
+canvas.addEventListener('pointermove', (e) => {
+  if (!cameraMode) return;
+  const p = camPointers.get(e.pointerId); if (!p) return;
+  const dx = e.clientX - p.x; p.x = e.clientX; p.y = e.clientY;
+  if (camPointers.size >= 2) {
+    const [a, b] = [...camPointers.values()], d = Math.hypot(a.x - b.x, a.y - b.y);
+    if (pinchDist) camZoom = clamp(camZoom * d / pinchDist, 0.4, 3.2); pinchDist = d;
+  } else {
+    camYaw -= dx * 0.008;
+  }
+}, { passive: false });
+window.addEventListener('pointerup', (e) => { camPointers.delete(e.pointerId); if (camPointers.size < 2) pinchDist = 0; });
+canvas.addEventListener('wheel', (e) => { if (!cameraMode) return; e.preventDefault(); camZoom = clamp(camZoom * (e.deltaY < 0 ? 1.1 : 0.9), 0.4, 3.2); }, { passive: false });
 
 // ---------- UI ----------
 const menuEl = document.getElementById('menu'), overEl = document.getElementById('over'), hudEl = document.getElementById('hud');
@@ -653,6 +708,14 @@ const toastEl = document.getElementById('toast'), continueBtn = document.getElem
 const muteBtn = document.getElementById('muteBtn');
 muteBtn.textContent = muted ? '🔇' : '🔊';
 muteBtn.addEventListener('click', () => toggleMute());
+const camBtn = document.getElementById('camBtn'), camHintEl = document.getElementById('camHint');
+function setCameraMode(on) {
+  cameraMode = on;
+  camBtn.classList.toggle('active', on);
+  camHintEl.classList.toggle('show', on);
+  if (!on) { camPointers.clear(); pinchDist = 0; }   // targets ease back to default in update()
+}
+camBtn.addEventListener('click', () => { playSfx(audioNav); setCameraMode(!cameraMode); });
 const bonusMsgEl = document.getElementById('bonusMsg');
 const menuStatEl = document.getElementById('menuStat'), menuUnlockEl = document.getElementById('menuUnlock');
 function refreshMenu() {
@@ -675,7 +738,8 @@ function startGame() {
   equipped = 0; activeSkin = 0; runStartUnlockIdx = unlockedIdx(bestM);
   menuEl.classList.add('hidden'); overEl.classList.add('hidden');
   bonusMsgEl.classList.remove('show');
-  hudEl.style.display = 'flex'; homeBtn.style.display = 'flex'; updateHud(); newMover(); sdkStart();
+  setCameraMode(false); camYaw = 0; camZoom = 1;
+  hudEl.style.display = 'flex'; homeBtn.style.display = 'flex'; camBtn.style.display = 'flex'; updateHud(); newMover(); sdkStart();
   // the home-screen track keeps playing straight through into the game — never switched
   musicStarted = true; playMusic(musicMenu);
 }
@@ -698,6 +762,7 @@ continueBtn.addEventListener('click', () => {
     overEl.classList.add('hidden');
     hudEl.style.display = 'flex';
     homeBtn.style.display = 'flex';
+    camBtn.style.display = 'flex';
     updateHud();
     newMover();
     sdkStart();
@@ -708,7 +773,8 @@ continueBtn.addEventListener('click', () => {
 function drawTowerInto(g, w, h, idx, transparent) {
   g.clearRect(0, 0, w, h);
   if (!transparent) { const bg = g.createLinearGradient(0, 0, 0, h); bg.addColorStop(0, '#e9ecf3'); bg.addColorStop(1, '#cfd5e0'); g.fillStyle = bg; g.fillRect(0, 0, w, h); }
-  const sA = A, sB = B, sC = C, sPX = PX, sPY = PY, sAct = activeSkin, sCtx = ctx;
+  const sA = A, sB = B, sC = C, sPX = PX, sPY = PY, sAct = activeSkin, sYaw = camYaw, sZoom = camZoom;
+  camYaw = 0; camZoom = 1;
   const stackN = 6, hw = SIZE * 0.34;
   const worldH = PODIUM_H + (stackN - 1) * BH;
   const k = (h * 0.66) / worldH; A = k; B = k * 0.577; C = k; PX = w * 0.5; PY = h * 0.86; activeSkin = idx;
@@ -716,7 +782,7 @@ function drawTowerInto(g, w, h, idx, transparent) {
   const tmp = [{ x0: -hw, z0: -hw, x1: hw, z1: hw, podium: true }];
   for (let i = 1; i < stackN; i++) tmp.push({ x0: -hw, z0: -hw, x1: hw, z1: hw });
   for (let i = 0; i < stackN; i++) drawFloor(g, tmp[i], i, floorBaseY(tmp, i), floorTopY(tmp, i));
-  A = sA; B = sB; C = sC; PX = sPX; PY = sPY; activeSkin = sAct;
+  A = sA; B = sB; C = sC; PX = sPX; PY = sPY; activeSkin = sAct; camYaw = sYaw; camZoom = sZoom;
 }
 
 // ---------- new-skin reveal (confetti + spinning tower) ----------
@@ -769,10 +835,15 @@ let last = performance.now();
 function loop(now) { const dt = Math.min((now - last) / 1000, 0.05); last = now; update(dt, now / 1000); render(now / 1000); requestAnimationFrame(loop); }
 function update(dt, t) {
   camY += (camYT - camY) * Math.min(1, dt * 6);
+  // ease orbit/zoom back to the default view whenever camera mode is off
+  if (!cameraMode) {
+    camYaw += (0 - camYaw) * Math.min(1, dt * 8); if (Math.abs(camYaw) < 0.002) camYaw = 0;
+    camZoom += (1 - camZoom) * Math.min(1, dt * 8); if (Math.abs(camZoom - 1) < 0.004) camZoom = 1;
+  }
   if (shake > 0) shake = Math.max(0, shake - dt * 26);
   if (state === S.DEAD) endT = Math.min(1, endT + dt * 1.8);
   if (paused) { pauseT -= dt; if (pauseT <= 0) { paused = false; bonusMsgEl.classList.remove('show'); } }
-  if (state === S.PLAY && mover && !paused) {
+  if (state === S.PLAY && mover && !paused && !cameraMode) {
     const wob = 1 + 0.2 * Math.sin(t * 2 + mover.wob);
     mover.off += mover.dir * mover.spd * wob * dt;
     if (mover.off < -430) { mover.off = -430; mover.dir = 1; }
@@ -784,13 +855,68 @@ function update(dt, t) {
   sparks = sparks.filter(p => p.life > 0);
 }
 
+// ---------- park at the base (grass, trees, benches, a small neighbourhood) ----------
+const PARK_TREES = [
+  [-250,-250],[-320,-30],[-280,180],[-90,-300],[70,-300],[250,-250],[300,-40],
+  [280,190],[190,290],[-30,310],[-210,290],[-320,70],[150,250],[-160,250],[240,120],[-120,-250],
+];
+const PARK_BENCHES = [[-205,55],[55,205],[205,-70],[-70,-205]];
+const PARK_BLDGS = [  // small neighbourhood, kept in the back hemisphere (x+z < 0)
+  [-370,-330,72,200],[-150,-410,82,250],[120,-410,64,150],[350,-330,86,215],
+  [-430,-150,58,165],[-300,-360,60,120],[220,-360,58,130],[-90,-440,52,95],
+];
+function parkDepth(x, z) { if (camYaw !== 0) { const c = Math.cos(camYaw), s = Math.sin(camYaw); return (x * c - z * s) + (x * s + z * c); } return x + z; }
+function drawGrass(g) {
+  const GR = 900;
+  const a = project(-GR, 0, -GR), b = project(GR, 0, -GR), c = project(GR, 0, GR), d = project(-GR, 0, GR);
+  fillQuad(g, a, b, c, d, '#3c7a37');
+  const cen = project(0, 0, 0), rad = GR * A * 1.4;
+  const rg = g.createRadialGradient(cen.x, cen.y, 10, cen.x, cen.y, rad);
+  rg.addColorStop(0, 'rgba(120,190,90,.28)'); rg.addColorStop(1, 'rgba(20,50,20,0)');
+  g.fillStyle = rg; g.beginPath(); g.moveTo(a.x, a.y); g.lineTo(b.x, b.y); g.lineTo(c.x, c.y); g.lineTo(d.x, d.y); g.closePath(); g.fill();
+}
+function drawTree(g, x, z) {
+  const s = project(x, 0, z);
+  g.fillStyle = 'rgba(10,30,10,.28)'; g.beginPath(); g.ellipse(s.x, s.y, 24 * A, 12 * A, 0, 0, 6.29); g.fill();
+  drawBox(g, x - 5, z - 5, x + 5, z + 5, 0, 34, { top: '#7b5230', right: '#5c3c22', left: '#4a3019' }, null);
+  const top = project(x, 58, z), rad = 34 * C;
+  g.fillStyle = '#2f7d3a'; g.beginPath(); g.arc(top.x - rad * .35, top.y + rad * .2, rad * .85, 0, 6.29); g.fill();
+  g.fillStyle = '#3a9147'; g.beginPath(); g.arc(top.x + rad * .4, top.y + rad * .15, rad * .8, 0, 6.29); g.fill();
+  g.fillStyle = '#49a854'; g.beginPath(); g.arc(top.x, top.y - rad * .4, rad * .9, 0, 6.29); g.fill();
+  g.fillStyle = '#5cc067'; g.beginPath(); g.arc(top.x - rad * .12, top.y - rad * .12, rad * .58, 0, 6.29); g.fill();
+}
+function drawBench(g, x, z) {
+  const s = project(x, 0, z);
+  g.fillStyle = 'rgba(10,20,10,.22)'; g.beginPath(); g.ellipse(s.x, s.y, 20 * A, 9 * A, 0, 0, 6.29); g.fill();
+  drawBox(g, x - 16, z - 7, x + 16, z + 7, 0, 9, { top: '#b07c44', right: '#7c5027', left: '#68421f' }, null);
+  drawBox(g, x - 16, z + 3, x + 16, z + 7, 9, 22, { top: '#8a5a2c', right: '#7c5027', left: '#68421f' }, null);
+}
+function drawSurround(g, x, z, hf, h) {
+  const s = project(x, 0, z);
+  g.fillStyle = 'rgba(5,8,18,.32)'; g.beginPath(); g.ellipse(s.x, s.y, hf * A * 1.5, hf * A * .7, 0, 0, 6.29); g.fill();
+  drawBox(g, x - hf, z - hf, x + hf, z + hf, 0, h, { top: '#39455e', right: '#212a3c', left: '#19212f' },
+    { colsR: clamp(Math.round(hf * 2 / 40), 2, 6), colsL: clamp(Math.round(hf * 2 / 40), 2, 6), rows: clamp(Math.round(h / 40), 2, 7), glass: '#26324a', lit: '#ffd27a', litP: 0.5, seed: (x * 7 + z) | 0 });
+}
+const parkProps = [];
+for (const [x, z] of PARK_TREES) parkProps.push({ x, z, f: g => drawTree(g, x, z) });
+for (const [x, z] of PARK_BENCHES) parkProps.push({ x, z, f: g => drawBench(g, x, z) });
+for (const [x, z, hf, h] of PARK_BLDGS) parkProps.push({ x, z, f: g => drawSurround(g, x, z, hf, h) });
+function drawPark(g, front) {
+  const list = parkProps.map(p => ({ p, d: parkDepth(p.x, p.z) })).sort((a, b) => a.d - b.d);
+  for (const { p, d } of list) if (front ? d > 0 : d <= 0) p.f(g);
+}
+
 // ---------- tower render (iso, during play) ----------
 function renderTower(shx, shy) {
   activeSkin = equipped;
+  A = BASE_A * gameScale * camZoom; B = BASE_B * gameScale * camZoom; C = BASE_C * gameScale * camZoom;
   PX = W / 2 + shx; PY = groundY + camY * C + shy;
+  const showPark = camY < 660;
+  if (showPark) { drawGrass(ctx); drawPark(ctx, false); }
   for (const d of debris) { const yb = stack.length * BH + boostExtra() - d.fall; drawBox(ctx, d.x0, d.z0, d.x1, d.z1, yb, yb + BH, { top: '#c6cdd1', right: '#9aa7b0', left: '#84919b' }, null); }
   const firstVis = Math.max(0, stack.length - 26);
   for (let i = firstVis; i < stack.length; i++) drawFloor(ctx, stack[i], i, floorBaseY(stack, i), floorTopY(stack, i));
+  if (showPark) drawPark(ctx, true);
   if (state === S.PLAY && mover) {
     const r = moverRect(), base = floorTopY(stack, stack.length - 1);
     drawFloor(ctx, r, stack.length, base, base + BH);
@@ -827,11 +953,11 @@ function groundShadow(g, wx, wz, rad) {
   gr.addColorStop(0, 'rgba(10,10,25,.35)'); gr.addColorStop(1, 'rgba(10,10,25,0)');
   g.fillStyle = gr; g.beginPath(); g.ellipse(s.x, s.y, rad, rad * 0.5, 0, 0, Math.PI * 2); g.fill();
 }
-// the Burj model is rendered in the same skin currently equipped, so both towers match
+// the Burj model always wears the Sunset skin so it reads warm against your tower
 function drawBurj3D(g, bx, bz) {
   const Hb = BURJ_M * BH_PER_M, baseHalf = SIZE * 0.92;
-  const sk = SKINS[equipped];
-  const bTop = sk.mythic ? '#e6d6ff' : sk.top, bRight = sk.mythic ? '#9a63d6' : sk.right, bLeft = sk.mythic ? '#7847a8' : sk.left;
+  const sk = SKINS.find(s => s.id === 'sunset');
+  const bTop = sk.top, bRight = sk.right, bLeft = sk.left;
   for (let i = 0; i < BURJ.length - 1; i++) {
     const y0 = BURJ[i][0] * Hb, y1 = BURJ[i + 1][0] * Hb;
     if (y1 <= y0) continue;
