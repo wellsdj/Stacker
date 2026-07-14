@@ -4,6 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>City</title>
+<script type="importmap">
+{ "imports": { "three": "./vendor/three.module.js" } }
+</script>
 <style>
   html, body {
     margin: 0; padding: 0; height: 100%; overflow: hidden;
@@ -12,6 +15,36 @@
     -webkit-user-select: none; user-select: none;
   }
   #game { display: block; width: 100vw; height: 100vh; }
+
+  /* ---------- 3D city scene (Three.js) + point-picker ---------- */
+  #scene3d { position: fixed; inset: 0; width: 100vw; height: 100vh; z-index: 3; display: none; touch-action: none; cursor: none; }
+  #scene3d.on { display: block; }
+  #dotCursor {
+    position: fixed; width: 16px; height: 16px; margin: -8px 0 0 -8px; border-radius: 50%;
+    border: 2px solid #fff; background: rgba(120,210,255,.55); box-shadow: 0 0 10px rgba(120,210,255,.9);
+    z-index: 12; pointer-events: none; display: none; transform: translateZ(0);
+  }
+  #dotCursor.on { display: block; }
+  #loadWrap {
+    position: fixed; inset: 0; z-index: 14; display: none; flex-direction: column;
+    align-items: center; justify-content: center; gap: 18px; color: #dceeff;
+    background: radial-gradient(ellipse at center, rgba(20,18,54,.96), rgba(6,6,20,.98));
+  }
+  #loadWrap.on { display: flex; }
+  .loadRing { width: 54px; height: 54px; border-radius: 50%; border: 4px solid rgba(150,180,255,.25); border-top-color: #7fd0ff; animation: spin 1s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  #loadTxt { font-weight: 800; letter-spacing: 2px; text-transform: uppercase; font-size: 13px; text-shadow: 0 0 12px rgba(120,190,255,.6); }
+  #pickBar {
+    position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%); z-index: 12;
+    display: none; flex-direction: column; align-items: center; gap: 8px; width: min(92vw, 460px);
+    padding: 14px 18px; border-radius: 16px; text-align: center; pointer-events: none;
+    background: linear-gradient(160deg, rgba(20,16,48,.86), rgba(8,8,24,.9));
+    border: 1px solid rgba(140,180,255,.35); box-shadow: 0 12px 40px rgba(0,0,20,.55);
+    color: #eaf3ff;
+  }
+  #pickBar.on { display: flex; }
+  #pickBar .t1 { font-weight: 800; letter-spacing: 1px; text-transform: uppercase; font-size: 12px; color: #9fe0ff; }
+  #pickCoord { font-weight: 700; font-size: 13px; font-variant-numeric: tabular-nums; color: #cfe0f5; }
 
   .ui { position: fixed; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; color: #fff; pointer-events: none; z-index: 10; }
   .ui.hidden { display: none; }
@@ -200,6 +233,16 @@
 </head>
 <body>
 <canvas id="game"></canvas>
+<canvas id="scene3d"></canvas>
+<div id="dotCursor"></div>
+<div id="loadWrap">
+  <div class="loadRing"></div>
+  <div id="loadTxt">Loading city…</div>
+</div>
+<div id="pickBar">
+  <div class="t1">Tap a flat spot to set where your tower starts</div>
+  <div id="pickCoord">No point set yet</div>
+</div>
 
 <div id="hud" style="display:none">
   <div id="hudLeft">
@@ -500,7 +543,7 @@ function drawBurjGauge(g) {
 // ======================================================================
 //  GAME
 // ======================================================================
-const S = { MENU: 0, PLAY: 1, DEAD: 2 };
+const S = { MENU: 0, PLAY: 1, DEAD: 2, CITY: 3 };  // CITY = 3D model scene + point picker
 let state = S.MENU;
 let stack = null, mover = null, debris = [], sparks = [];
 let score = 0, bestM = 0, camY = 0, camYT = 0, shake = 0, usedContinue = false, endT = 0;
@@ -627,6 +670,7 @@ function checkPendingReveal() {
 }
 function goHome() {
   if (state === S.PLAY) commitRun();
+  if (state === S.CITY && window.City3D) window.City3D.exit();
   state = S.MENU; sdkStop();
   paused = false; bonusMsgEl.classList.remove('show');
   equipped = 0; activeSkin = 0;  // home always shows the default Azure skin
@@ -636,6 +680,21 @@ function goHome() {
   musicStarted = true; playMusic(musicMenu);
   checkPendingReveal();
 }
+// Play now opens the 3D city scene + point-picker (Stage 1). The 2D stacking
+// game stays intact and returns once the tower's start point has been placed.
+function enterCity() {
+  state = S.CITY;
+  menuEl.classList.add('hidden'); overEl.classList.add('hidden');
+  hudEl.style.display = 'none'; camBtn.style.display = 'none';
+  homeBtn.style.display = 'flex';
+  if (window.City3D) window.City3D.enter();
+  else console.warn('City3D module not ready yet');
+}
+// if the city model is missing/unloadable, don't dead-end Play — drop into the 2D game
+window.CityFallback = function () {
+  if (window.City3D) window.City3D.exit();
+  startGame();
+};
 function spawnSparks(b) {
   const cx = (b.x0 + b.x1) / 2, cz = (b.z0 + b.z1) / 2, y = stack.length * BH + boostExtra();
   for (let i = 0; i < 22; i++) { const a = Math.random() * 6.28, r = 40 + Math.random() * 60; sparks.push({ x: cx + Math.cos(a) * r, z: cz + Math.sin(a) * r, y, vy: 130 + Math.random() * 150, life: .5 + Math.random() * .5 }); }
@@ -743,7 +802,7 @@ function startGame() {
   // the home-screen track keeps playing straight through into the game — never switched
   musicStarted = true; playMusic(musicMenu);
 }
-document.getElementById('playBtn').addEventListener('click', (e) => { playSfx(audioNav); startGame(); });
+document.getElementById('playBtn').addEventListener('click', (e) => { playSfx(audioNav); enterCity(); });
 document.getElementById('retryBtn').addEventListener('click', (e) => { playSfx(audioNav); startGame(); });
 homeBtn.addEventListener('click', (e) => { playSfx(audioNav); goHome(); });
 continueBtn.addEventListener('click', () => {
@@ -1003,6 +1062,7 @@ function renderComparison() {
 function render(t) {
   ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
   if (state === S.MENU) return;  // home screen background is the CSS photo, not canvas-drawn
+  if (state === S.CITY) return;  // the 3D scene renders itself on the WebGL canvas
   drawSky(ctx);
   const shx = (Math.random() - .5) * shake, shy = (Math.random() - .5) * shake;
   if (state === S.PLAY) {
@@ -1017,6 +1077,186 @@ function render(t) {
 resize();
 reset();
 requestAnimationFrame(loop);
+</script>
+
+<!-- ====================================================================
+     3D city scene + point-picker (Three.js). Exposes window.City3D so the
+     classic game script can enter/exit it. Loads big_city.glb on first Play.
+     ==================================================================== -->
+<script type="module">
+import * as THREE from 'three';
+import { GLTFLoader } from './vendor/GLTFLoader.js';
+import { DRACOLoader } from './vendor/DRACOLoader.js';
+import { OrbitControls } from './vendor/OrbitControls.js';
+
+const MODEL_URL = new URLSearchParams(location.search).get('model') || 'big_city.glb';
+const ANCHOR_KEY = 'city_anchor';
+
+const canvas = document.getElementById('scene3d');
+const dotCursor = document.getElementById('dotCursor');
+const loadWrap = document.getElementById('loadWrap');
+const loadTxt = document.getElementById('loadTxt');
+const pickBar = document.getElementById('pickBar');
+const pickCoord = document.getElementById('pickCoord');
+
+let renderer, scene, camera, controls, raycaster, pointer;
+let cityRoot = null, pickables = [], marker = null;
+let active = false, loaded = false, rafId = 0;
+
+function init() {
+  renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  renderer.outputColorSpace = THREE.SRGBColorSpace;
+
+  scene = new THREE.Scene();
+  scene.background = new THREE.Color(0x0b1024);
+
+  camera = new THREE.PerspectiveCamera(55, window.innerWidth / window.innerHeight, 0.1, 100000);
+  camera.position.set(60, 60, 60);
+
+  // lights so the model reads even if it ships without its own
+  scene.add(new THREE.HemisphereLight(0xdfefff, 0x2a2440, 1.05));
+  const sun = new THREE.DirectionalLight(0xffffff, 1.4);
+  sun.position.set(120, 200, 80);
+  scene.add(sun);
+  scene.add(new THREE.AmbientLight(0x404860, 0.6));
+
+  controls = new OrbitControls(camera, canvas);
+  controls.enableDamping = true; controls.dampingFactor = 0.08;
+  controls.maxPolarAngle = Math.PI * 0.495;   // stay above ground
+
+  raycaster = new THREE.Raycaster();
+  pointer = new THREE.Vector2();
+
+  // marker dot placed on the model at the picked point
+  marker = new THREE.Mesh(
+    new THREE.SphereGeometry(1, 24, 16),
+    new THREE.MeshBasicMaterial({ color: 0x37e0ff })
+  );
+  marker.visible = false;
+  scene.add(marker);
+  const ring = new THREE.Mesh(
+    new THREE.RingGeometry(1.6, 2.2, 32),
+    new THREE.MeshBasicMaterial({ color: 0xffffff, side: THREE.DoubleSide, transparent: true, opacity: 0.9 })
+  );
+  ring.rotation.x = -Math.PI / 2; marker.add(ring); marker.userData.ring = ring;
+
+  window.addEventListener('resize', onResize);
+  canvas.addEventListener('pointermove', onPointerMove);
+  canvas.addEventListener('pointerdown', onPointerDown);
+  canvas.addEventListener('pointerup', onPointerUp);
+}
+
+function onResize() {
+  if (!renderer) return;
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+}
+
+function loadModel() {
+  loadWrap.classList.add('on');
+  loadTxt.textContent = 'Loading city…';
+  const draco = new DRACOLoader();
+  draco.setDecoderPath('./vendor/draco/gltf/');
+  const loader = new GLTFLoader();
+  loader.setDRACOLoader(draco);
+  loader.load(MODEL_URL, (gltf) => {
+    cityRoot = gltf.scene;
+    scene.add(cityRoot);
+    // collect meshes to raycast against, and scale the marker to the model size
+    pickables = [];
+    cityRoot.traverse((o) => { if (o.isMesh) { o.frustumCulled = true; pickables.push(o); } });
+    frameModel();
+    loaded = true;
+    loadWrap.classList.remove('on');
+    restoreMarker();
+  }, (ev) => {
+    if (ev && ev.total) loadTxt.textContent = 'Loading city… ' + Math.round(ev.loaded / ev.total * 100) + '%';
+    else if (ev && ev.loaded) loadTxt.textContent = 'Loading city… ' + (ev.loaded / 1048576).toFixed(1) + ' MB';
+  }, (err) => {
+    console.error('Failed to load ' + MODEL_URL, err);
+    loadTxt.textContent = 'City model not found — starting the classic game…';
+    if (window.CityFallback) setTimeout(() => window.CityFallback(), 700);
+  });
+}
+
+// centre the camera + controls on the model and size the marker to it
+function frameModel() {
+  const box = new THREE.Box3().setFromObject(cityRoot);
+  const size = box.getSize(new THREE.Vector3());
+  const center = box.getCenter(new THREE.Vector3());
+  const maxDim = Math.max(size.x, size.y, size.z) || 10;
+  controls.target.copy(center);
+  camera.near = maxDim / 500; camera.far = maxDim * 50; camera.updateProjectionMatrix();
+  camera.position.set(center.x + maxDim * 0.7, center.y + maxDim * 0.7, center.z + maxDim * 0.7);
+  controls.minDistance = maxDim * 0.05; controls.maxDistance = maxDim * 6;
+  controls.update();
+  const ms = maxDim * 0.012;
+  marker.scale.setScalar(ms);
+}
+
+function restoreMarker() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(ANCHOR_KEY) || 'null');
+    if (saved && typeof saved.x === 'number') { marker.position.set(saved.x, saved.y, saved.z); marker.visible = true; showCoord(saved); }
+  } catch (e) {}
+}
+function showCoord(p) {
+  pickCoord.textContent = 'Start point:  x ' + p.x.toFixed(2) + '   y ' + p.y.toFixed(2) + '   z ' + p.z.toFixed(2);
+}
+
+// distinguish a pick (tap) from an orbit drag
+let downX = 0, downY = 0, dragged = false;
+function onPointerDown(e) { downX = e.clientX; downY = e.clientY; dragged = false; }
+function onPointerMove(e) {
+  dotCursor.style.left = e.clientX + 'px'; dotCursor.style.top = e.clientY + 'px';
+  if (Math.abs(e.clientX - downX) > 6 || Math.abs(e.clientY - downY) > 6) dragged = true;
+}
+function onPointerUp(e) {
+  if (dragged || !loaded) return;      // was an orbit drag, not a point pick
+  pointer.x = (e.clientX / window.innerWidth) * 2 - 1;
+  pointer.y = -(e.clientY / window.innerHeight) * 2 + 1;
+  raycaster.setFromCamera(pointer, camera);
+  const hits = raycaster.intersectObjects(pickables, true);
+  if (!hits.length) return;
+  const p = hits[0].point;
+  marker.position.copy(p); marker.visible = true;
+  const rec = { x: p.x, y: p.y, z: p.z };
+  localStorage.setItem(ANCHOR_KEY, JSON.stringify(rec));
+  showCoord(rec);
+  console.log('[City3D] start point saved:', rec);
+}
+
+function renderLoop() {
+  if (!active) return;
+  rafId = requestAnimationFrame(renderLoop);
+  controls.update();
+  if (marker.visible && marker.userData.ring) marker.userData.ring.rotation.z += 0.03;  // spin the marker ring
+  renderer.render(scene, camera);
+}
+
+window.City3D = {
+  async enter() {
+    // only take over Play when the city model actually exists; otherwise the
+    // classic 2D game runs (no loader flash). Becomes active the moment the file lands.
+    try { const r = await fetch(MODEL_URL, { method: 'HEAD', cache: 'no-store' }); if (!r.ok) throw 0; }
+    catch (e) { if (window.CityFallback) window.CityFallback(); return; }
+    if (!renderer) init();
+    active = true;
+    canvas.classList.add('on'); dotCursor.classList.add('on'); pickBar.classList.add('on');
+    onResize();
+    if (!loaded) loadModel();
+    cancelAnimationFrame(rafId); renderLoop();
+  },
+  exit() {
+    active = false;
+    cancelAnimationFrame(rafId);
+    canvas.classList.remove('on'); dotCursor.classList.remove('on'); pickBar.classList.remove('on'); loadWrap.classList.remove('on');
+  },
+  isReady() { return loaded; },
+};
 </script>
 </body>
 </html>
