@@ -46,6 +46,22 @@
   #pickBar .t1 { font-weight: 800; letter-spacing: 1px; text-transform: uppercase; font-size: 12px; color: #9fe0ff; }
   #pickCoord { font-weight: 700; font-size: 13px; font-variant-numeric: tabular-nums; color: #cfe0f5; }
 
+  /* ---------- 3D leaderboard tower viewer (separate scene from the city picker) ---------- */
+  #viewer3d { position: fixed; inset: 0; width: 100vw; height: 100vh; z-index: 22; display: none; touch-action: none; background: #0b1024; }
+  #viewer3d.on { display: block; }
+  #viewerLoad {
+    position: fixed; inset: 0; z-index: 23; display: none; align-items: center; justify-content: center;
+    background: radial-gradient(ellipse at center, rgba(20,18,54,.96), rgba(6,6,20,.98));
+  }
+  #viewerLoad.on { display: flex; }
+  #viewerClose {
+    position: fixed; top: 16px; right: 16px; z-index: 24; display: none; pointer-events: auto; cursor: pointer;
+    width: 46px; height: 46px; border: 0; border-radius: 13px; background: rgba(255,255,255,.9);
+    box-shadow: 0 5px 16px rgba(20,10,30,.3); font-size: 18px; line-height: 1; align-items: center; justify-content: center;
+  }
+  #viewerClose.on { display: flex; }
+  #viewerClose:active { transform: translateY(2px); }
+
   .ui { position: fixed; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; color: #fff; pointer-events: none; z-index: 10; }
   .ui.hidden { display: none; }
 
@@ -65,7 +81,6 @@
   #hud { position: fixed; top: 0; left: 0; right: 0; z-index: 5; display: flex; justify-content: space-between; align-items: flex-start; padding: 18px 20px; pointer-events: none; color: #fff; }
   #hudLeft { display: flex; flex-direction: column; line-height: 1; }
   #hudHeight { font-size: 54px; font-weight: 800; font-variant-numeric: tabular-nums; text-shadow: 0 3px 16px rgba(10,10,30,.6); }
-  #hudPct { font-size: 12px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; opacity: .9; margin-top: 4px; text-shadow: 0 2px 10px rgba(10,10,30,.7); }
   #hudRight { text-align: right; font-weight: 700; font-size: 13px; letter-spacing: 1px; opacity: .95; line-height: 1.7; text-shadow: 0 2px 10px rgba(10,10,30,.7); font-variant-numeric: tabular-nums; }
 
   #toast { position: fixed; top: 26%; left: 0; right: 0; text-align: center; font-size: 30px; font-weight: 800; letter-spacing: 1px; color: #fff; z-index: 6; pointer-events: none; opacity: 0; transition: opacity .16s ease, transform .16s ease; text-shadow: 0 3px 18px rgba(10,10,30,.7); }
@@ -108,7 +123,7 @@
   }
   #muteBtn:active { transform: translateY(2px); }
 
-  /* ---------- home screen: neon skyline over the Burj photo ---------- */
+  /* ---------- home screen: neon skyline over the background photo ---------- */
   #menu {
     justify-content: space-between; padding: 8vh 6vw 7vh; text-align: center;
     background-image:
@@ -185,6 +200,32 @@
   .howtocard .neonBtn { margin-top: 10px; width: 100%; }
   .howtocard .neonBtn.secondary { padding: 15px 20px; font-size: 14px; }
 
+  /* stats / leaderboard modal */
+  .statscard { width: min(92vw, 420px); max-height: 82vh; display: flex; flex-direction: column; }
+  .statsTabs { display: flex; gap: 6px; margin-bottom: 10px; }
+  .statsTab {
+    flex: 1; pointer-events: auto; cursor: pointer; border: 0; border-radius: 10px;
+    padding: 9px 4px; font-family: inherit; font-weight: 800; font-size: 11px; letter-spacing: 1px;
+    text-transform: uppercase; color: #cfe0f5; background: rgba(255,255,255,.06);
+  }
+  .statsTab.active { color: #0c0820; background: linear-gradient(135deg, #7ff2ff, #c19bff); }
+  .statsList { overflow-y: auto; max-height: 46vh; display: flex; flex-direction: column; gap: 4px; margin-bottom: 12px; }
+  .statsMsg { text-align: center; padding: 20px 0; color: #9fb0cf; font-size: 13px; }
+  .statsRow {
+    display: flex; align-items: center; gap: 10px; padding: 9px 12px; border-radius: 10px;
+    background: rgba(255,255,255,.04); font-size: 13px; font-variant-numeric: tabular-nums;
+  }
+  .statsRow.clickable { cursor: pointer; }
+  .statsRow.clickable:active { transform: scale(.98); }
+  .statsRow.me { background: rgba(120,200,255,.16); box-shadow: inset 0 0 0 1px rgba(140,200,255,.4); }
+  .statsRank { width: 34px; font-weight: 800; color: #9fe0ff; flex-shrink: 0; }
+  .statsName { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .statsHeight { font-weight: 800; color: #ffe08a; flex-shrink: 0; }
+  .statsYou { font-size: 12px; font-weight: 700; letter-spacing: .5px; color: #cfe0f5; text-align: center; margin-bottom: 10px; }
+
+  /* post-death rank readout */
+  #rankInfo { font-size: 11px; letter-spacing: 1px; margin-bottom: 8px; min-height: 14px; }
+
   /* 5-perfect-in-a-row bonus overlay */
   #bonusMsg {
     position: fixed; inset: 0; z-index: 7; pointer-events: none;
@@ -244,11 +285,16 @@
   <div id="pickCoord">No point set yet</div>
 </div>
 
+<canvas id="viewer3d"></canvas>
+<div id="viewerLoad">
+  <div class="loadRing"></div>
+</div>
+<button id="viewerClose" aria-label="Close">✕</button>
+
 <div id="hud" style="display:none">
   <div id="hudLeft">
     <div id="hudHeight">10 m</div>
-    <div id="hudPct">1% of Burj Khalifa</div>
-    <div id="hudNext">Next: Liberty 93 m</div>
+    <div id="hudNext">Next skin: Sunset at 100 m</div>
     <div id="hudBest">Best 0 m</div>
   </div>
 </div>
@@ -261,10 +307,11 @@
 <div id="menu" class="ui">
   <div class="menu-top">
     <h1 class="brand">CITY</h1>
-    <div class="brand-sub">Build your tower toward the Burj Khalifa</div>
+    <div class="brand-sub">Stack it up. Climb the leaderboard.</div>
   </div>
   <div class="menu-bottom">
     <button class="neonBtn primary" id="playBtn"><span class="label">Play</span></button>
+    <button class="neonBtn secondary" id="statsBtn"><span class="label">Stats</span></button>
     <button class="neonBtn secondary" id="howtoBtn"><span class="label">How to play</span></button>
     <div class="stat" id="menuStat">Best 0 m</div>
     <div class="stat" id="menuUnlock"></div>
@@ -275,16 +322,27 @@
   <div class="howtocard">
     <div class="howtotitle">How to play</div>
     <p>Tap or press Space to drop the moving block onto the tower.</p>
-    <p>Line it up dead-center for a <b>perfect</b> drop — perfects keep the full width, and a streak of 5 in a row grows your tower 5×.</p>
-    <p>Climb past height records — Liberty, Pyramid, Eiffel, the Burj itself — to unlock new skins live, mid-run.</p>
+    <p>Line it up dead-center for a <b>perfect</b> drop — perfects keep the full width, and a streak of 5 in a row grows your tower 5× (and counts toward your height).</p>
+    <p>Every 100 m unlocks a new skin live, mid-run. After each run, check the <b>Stats</b> button on the home screen to see your daily, weekly, monthly, and all-time rank.</p>
     <button class="neonBtn secondary" id="howtoClose"><span class="label">Got it</span></button>
   </div>
 </div>
 
 <div id="over" class="ui hidden">
   <div class="btnrow">
+    <div class="stat" id="rankInfo"></div>
     <button class="btn" id="continueBtn">▲ Recover my building (Ad)</button>
     <button class="btn ghost" id="retryBtn">New building</button>
+  </div>
+</div>
+
+<div id="statsModal" class="ui hidden">
+  <div class="howtocard statscard">
+    <div class="howtotitle">Leaderboard</div>
+    <div class="statsTabs"></div>
+    <div class="statsList"></div>
+    <div class="statsYou"></div>
+    <button class="neonBtn secondary" id="statsClose"><span class="label">Close</span></button>
   </div>
 </div>
 
@@ -306,9 +364,11 @@
 <script>
 'use strict';
 // ======================================================================
-// CITY — stack a tower floor by floor and chase the Burj Khalifa (828 m).
+// CITY — stack a tower floor by floor and climb the global leaderboard.
 // Base floor 10 m, every placed floor +5 m. Perfect drops keep full width
-// (no regrow). Topple to zoom out and compare your tower to the Burj.
+// (no regrow); 5 perfects in a row grows the block 5x and adds to height.
+// A new skin unlocks live every 100 m, forever. Topple to see your result
+// and submit your run to the daily/weekly/monthly/all-time leaderboards.
 // ======================================================================
 const canvas = document.getElementById('game');
 const ctx = canvas.getContext('2d');
@@ -415,32 +475,46 @@ function add(a, b) { return { x: a.x + b.x, y: a.y + b.y }; }
 function mul(a, s) { return { x: a.x * s, y: a.y * s }; }
 function hexRgb(h) { h = h.replace('#', ''); return [parseInt(h.slice(0, 2), 16), parseInt(h.slice(2, 4), 16), parseInt(h.slice(4, 6), 16)]; }
 function rgbHex(r, g, b) { return '#' + [r, g, b].map(v => clamp(Math.round(v), 0, 255).toString(16).padStart(2, '0')).join(''); }
-function shade(hex, amt) { const [r, g, b] = hexRgb(hex); const t = amt < 0 ? 0 : 255, p = Math.abs(amt); return rgbHex(r + (t - r) * p, g + (t - g) * p, b + (t - b) * p); }
 function lerpHex(h1, h2, t) { const a = hexRgb(h1), b = hexRgb(h2); return rgbHex(a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t); }
 function hash3(a, b, c) { const x = Math.sin(a * 127.1 + b * 311.7 + c * 74.7) * 43758.5453; return x - Math.floor(x); }
 
 // ---------- constants ----------
 const SIZE = 300, BH = 56, PODIUM_H = 78;
 const PERF = 11;                 // perfect tolerance (tighter = harder)
-const BURJ_M = 828;              // Burj Khalifa height, metres
 const BASE_M = 10, STEP_M = 5;   // first floor 10 m, each floor +5 m
+const BH_PER_M = BH / STEP_M;    // world units per metre (used to convert bonus height into metres)
+const SKIN_STEP_M = 100;         // a new skin unlocks every 100 m, forever
 
-// height landmarks shown on the gauge and as the "next" target
-const MARKS = [
-  { m: 93, name: 'Liberty' }, { m: 139, name: 'Pyramid' }, { m: 330, name: 'Eiffel' },
-  { m: 443, name: 'Empire St' }, { m: 828, name: 'Burj' },
-];
-
-// tower skins — unlocked automatically by clearing a height milestone (in metres,
-// this run or any past run). Azure is the default; Aurora is the mythic Burj reward.
+// tower skins — unlocked automatically every 100 m of height (this run or any past
+// run). Azure is the default; Aurora is the last hand-authored skin, after which
+// unlocks continue forever as procedurally-hued "mythic" tiers.
 const SKINS = [
   { id: 'azure',    name: 'Azure',    need: 0,   top: '#a9d3e0', right: '#33526b', left: '#2b465c', gA: '#8fc2d6', gB: '#a9d8e8', lit: '#ffe3a1' },
-  { id: 'sunset',   name: 'Sunset',   need: 93,  top: '#ffd9a8', right: '#8a4a2f', left: '#6f3a25', gA: '#f0a35e', gB: '#f7c07a', lit: '#fff0c0' },   // past Liberty
-  { id: 'emerald',  name: 'Emerald',  need: 139, top: '#bfe8c8', right: '#2f6b47', left: '#245538', gA: '#4fae7a', gB: '#7fd0a0', lit: '#eaffe0' },   // past Pyramid
-  { id: 'obsidian', name: 'Obsidian', need: 330, top: '#5a6470', right: '#1c2430', left: '#131a22', gA: '#2b3a48', gB: '#3d5265', lit: '#86f2ff' },   // past Eiffel
-  { id: 'aurora',   name: 'Aurora',   need: 828, mythic: true },                                                                                       // past the Burj
+  { id: 'sunset',   name: 'Sunset',   need: 100, top: '#ffd9a8', right: '#8a4a2f', left: '#6f3a25', gA: '#f0a35e', gB: '#f7c07a', lit: '#fff0c0' },
+  { id: 'emerald',  name: 'Emerald',  need: 200, top: '#bfe8c8', right: '#2f6b47', left: '#245538', gA: '#4fae7a', gB: '#7fd0a0', lit: '#eaffe0' },
+  { id: 'obsidian', name: 'Obsidian', need: 300, top: '#5a6470', right: '#1c2430', left: '#131a22', gA: '#2b3a48', gB: '#3d5265', lit: '#86f2ff' },
+  { id: 'aurora',   name: 'Aurora',   need: 400, mythic: true },
 ];
-function unlockedIdx(m) { let idx = 0; for (let i = 0; i < SKINS.length; i++) if (m >= SKINS[i].need) idx = i; return idx; }
+// the highest tier whose threshold is <= m; extends past the last authored skin
+// with one new synthetic tier every SKIN_STEP_M, forever
+function tierForHeight(m) {
+  let tier = 0;
+  for (let i = 1; i < SKINS.length; i++) { if (m >= SKINS[i].need) tier = i; else break; }
+  const lastNeed = SKINS[SKINS.length - 1].need;
+  if (m > lastNeed) tier = SKINS.length - 1 + Math.floor((m - lastNeed) / SKIN_STEP_M);
+  return tier;
+}
+function needForTier(tier) {
+  if (tier < SKINS.length) return SKINS[tier].need;
+  return SKINS[SKINS.length - 1].need + (tier - SKINS.length + 1) * SKIN_STEP_M;
+}
+// returns a real SKINS[] entry for authored tiers, or a synthesized mythic
+// descriptor (distinct hue per tier) for every 100m unlocked past Aurora
+function skinForTier(tier) {
+  if (tier < SKINS.length) return SKINS[tier];
+  const extra = tier - SKINS.length + 1;
+  return { id: 'mythic' + tier, name: 'Mythic ' + (extra + 1), mythic: true, hueOffset: (tier * 137.5) % 360 };
+}
 
 // ---------- draw primitives ----------
 function fillQuad(g, a, b, c, d, color) { g.fillStyle = color; g.beginPath(); g.moveTo(a.x, a.y); g.lineTo(b.x, b.y); g.lineTo(c.x, c.y); g.lineTo(d.x, d.y); g.closePath(); g.fill(); }
@@ -497,50 +571,6 @@ function drawSky(g) {
 }
 
 // ======================================================================
-//  BURJ KHALIFA silhouette (stylised, scalable)
-// ======================================================================
-const BURJ = [
-  [0.00, 1.00], [0.06, 0.95], [0.06, 0.86], [0.16, 0.82], [0.16, 0.72], [0.28, 0.68],
-  [0.28, 0.58], [0.40, 0.55], [0.40, 0.46], [0.52, 0.44], [0.52, 0.36], [0.63, 0.34],
-  [0.63, 0.26], [0.72, 0.24], [0.72, 0.17], [0.80, 0.15], [0.80, 0.10], [0.87, 0.085],
-  [0.87, 0.05], [0.93, 0.045], [1.00, 0.006],
-];
-function burjPath(g, cx, baseY, hpx) {
-  const mh = hpx * 0.075;
-  g.beginPath();
-  g.moveTo(cx - BURJ[0][1] * mh, baseY);
-  for (let i = 0; i < BURJ.length; i++) g.lineTo(cx - BURJ[i][1] * mh, baseY - BURJ[i][0] * hpx);
-  for (let i = BURJ.length - 1; i >= 0; i--) g.lineTo(cx + BURJ[i][1] * mh, baseY - BURJ[i][0] * hpx);
-  g.closePath();
-}
-function drawBurj(g, cx, baseY, hpx, fill) { burjPath(g, cx, baseY, hpx); g.fillStyle = fill; g.fill(); }
-
-function nextMark(m) { for (const mk of MARKS) if (mk.m > m) return mk; return null; }
-// left-edge progress gauge with landmark milestones
-function drawBurjGauge(g) {
-  const hpx = H * 0.7, baseY = H * 0.9, cx = 42, m = heightM();
-  drawBurj(g, cx, baseY, hpx, 'rgba(255,255,255,.13)');
-  const frac = clamp(m / BURJ_M, 0, 1), markY = baseY - frac * hpx;
-  g.save(); burjPath(g, cx, baseY, hpx); g.clip();
-  g.fillStyle = 'rgba(255,222,150,.92)'; g.fillRect(0, markY, 120, baseY - markY);
-  g.restore();
-  // landmark ticks
-  const nm = nextMark(m);
-  g.textAlign = 'left';
-  for (const mk of MARKS) {
-    const y = baseY - (mk.m / BURJ_M) * hpx, on = m >= mk.m, next = nm && nm.m === mk.m;
-    g.strokeStyle = next ? 'rgba(255,235,150,.95)' : on ? 'rgba(255,255,255,.5)' : 'rgba(255,255,255,.28)';
-    g.lineWidth = next ? 2 : 1; g.beginPath(); g.moveTo(cx + 14, y); g.lineTo(cx + 30, y); g.stroke();
-    g.fillStyle = next ? 'rgba(255,235,150,.95)' : on ? 'rgba(255,255,255,.65)' : 'rgba(255,255,255,.4)';
-    g.font = (next ? '800 ' : '600 ') + '9px Helvetica, Arial'; g.fillText(mk.name, cx + 34, y + 3);
-  }
-  // your marker
-  g.strokeStyle = 'rgba(255,255,255,.85)'; g.lineWidth = 1.5; g.setLineDash([4, 4]);
-  g.beginPath(); g.moveTo(6, markY); g.lineTo(cx + 10, markY); g.stroke(); g.setLineDash([]);
-  g.fillStyle = 'rgba(255,255,255,.9)'; g.font = '800 12px Helvetica, Arial'; g.fillText(m + ' m', 10, markY - 6);
-}
-
-// ======================================================================
 //  GAME
 // ======================================================================
 const S = { MENU: 0, PLAY: 1, DEAD: 2, CITY: 3 };  // CITY = 3D model scene + point picker
@@ -548,23 +578,22 @@ let state = S.MENU;
 let stack = null, mover = null, debris = [], sparks = [];
 let score = 0, bestM = 0, camY = 0, camYT = 0, shake = 0, usedContinue = false, endT = 0;
 let equipped = 0, activeSkin = 0, unlockMsg = '';
-let milestoneRecords = {};  // { markName: { best: m, worst: m } }
-let perfectStreak = 0, paused = false, pauseT = 0;  // consecutive-perfect bonus
-let runStartUnlockIdx = 0;  // skin already unlocked before this run began
-let pendingRevealIdx = -1;  // a skin unlocked-for-the-first-time this run, waiting to be shown
+let perfectStreak = 0, maxPerfectStreak = 0, paused = false, pauseT = 0;  // consecutive-perfect bonus
+let runStartUnlockIdx = 0;  // skin tier already unlocked before this run began
+let pendingRevealIdx = -1;  // a skin tier unlocked-for-the-first-time this run, waiting to be shown
 bestM = +(localStorage.getItem('city_best_m') || 0);
-// you always start on Azure — skins are earned live, run by run, as you climb past each milestone
-(function loadMilestoneRecords() { const stored = localStorage.getItem('city_milestone_records'); if (stored) { try { milestoneRecords = JSON.parse(stored); } catch (e) {} } })();
+// you always start on Azure — skins are earned live, run by run, as you climb past each 100m tier
 
-function heightM() { return BASE_M + STEP_M * score; }
-function pctOfBurj(m) { return Math.round(m / BURJ_M * 100); }
+// extra world-height added by any boosted (5-in-a-row) blocks, converted to metres
+// so a 5x streak genuinely adds to your scored height, not just visual block size
+function heightM() { return BASE_M + STEP_M * score + Math.round(boostExtra() / BH_PER_M); }
 
 function reset() {
   const hw = SIZE / 2;
   stack = [{ x0: -hw, z0: -hw, x1: hw, z1: hw, podium: true }];
   debris = []; sparks = [];
   score = 0; camY = 0; camYT = 0; shake = 0; usedContinue = false; endT = 0;
-  perfectStreak = 0; paused = false; pauseT = 0;
+  perfectStreak = 0; maxPerfectStreak = 0; paused = false; pauseT = 0;
   mover = null;
 }
 function newMover() {
@@ -592,7 +621,7 @@ function drop() {
     // slot exactly into place — keep full width, no regrow
     if (ax === 'x') { block.x0 = tLo; block.x1 = tHi; } else { block.z0 = tLo; block.z1 = tHi; }
     spawnSparks(block); shake = 5;
-    perfectStreak++;
+    perfectStreak++; maxPerfectStreak = Math.max(maxPerfectStreak, perfectStreak);
   } else {
     perfectStreak = 0;
     const cutLo = mLo < tLo, cut = cutLo ? (tLo - mLo) : (mHi - tHi);
@@ -603,7 +632,7 @@ function drop() {
     }
     if (ax === 'x') { block.x0 = lo; block.x1 = hi; } else { block.z0 = lo; block.z1 = hi; }
   }
-  block.w = block.x1 - block.x0; block.d = block.z1 - block.z0;
+  block.w = block.x1 - block.x0; block.d = block.z1 - block.z0; block.perfect = perfect;
   stack.push(block); score++;
   camYT = Math.max(0, stack.length * BH + boostExtra() - (0.42 * H) / C);
   if (perfect) {
@@ -615,14 +644,15 @@ function drop() {
   checkLiveSkinUnlock();
   updateHud(); newMover();
 }
-// mid-run: crossing a milestone height instantly swaps the tower skin
+// mid-run: crossing a 100m tier instantly swaps the tower skin
 function checkLiveSkinUnlock() {
-  const idx = unlockedIdx(heightM());
-  if (idx <= equipped) return;
-  equipped = idx; activeSkin = idx;
+  const tier = tierForHeight(heightM());
+  if (tier <= equipped) return;
+  equipped = tier; activeSkin = tier;
+  const sk = skinForTier(tier);
   playSfx(audioSkin);
-  toast((SKINS[idx].mythic ? '✦ ' : '') + SKINS[idx].name.toUpperCase() + ' UNLOCKED');
-  if (idx > runStartUnlockIdx) { unlockMsg = '✦ New skin unlocked: ' + SKINS[idx].name; pendingRevealIdx = idx; }
+  toast((sk.mythic ? '✦ ' : '') + sk.name.toUpperCase() + ' UNLOCKED');
+  if (tier > runStartUnlockIdx) { unlockMsg = '✦ New skin unlocked: ' + sk.name; pendingRevealIdx = tier; }
 }
 // extra world-height added by any boosted (5-in-a-row) blocks
 function boostExtra() { let e = 0; for (let k = 1; k < stack.length; k++) if (stack[k].h) e += stack[k].h - BH; return e; }
@@ -640,19 +670,6 @@ function triggerPerfectBonus() {
 function commitRun() {
   const m = heightM();
   if (m > bestM) { bestM = m; localStorage.setItem('city_best_m', bestM); }
-  // update milestone records
-  for (const mk of MARKS) {
-    if (!milestoneRecords[mk.name]) milestoneRecords[mk.name] = { best: 0, worst: 0 };
-    if (m >= mk.m) {
-      if (milestoneRecords[mk.name].best === 0) milestoneRecords[mk.name].best = m;
-      else milestoneRecords[mk.name].best = Math.max(milestoneRecords[mk.name].best, m);
-    }
-    if (m < mk.m) {
-      if (milestoneRecords[mk.name].worst === 0) milestoneRecords[mk.name].worst = m;
-      else milestoneRecords[mk.name].worst = Math.min(milestoneRecords[mk.name].worst, m);
-    }
-  }
-  localStorage.setItem('city_milestone_records', JSON.stringify(milestoneRecords));
 }
 function die() {
   state = S.DEAD; sdkStop(); shake = 10; endT = 0;
@@ -663,6 +680,18 @@ function die() {
   continueBtn.style.display = usedContinue ? 'none' : '';
   overEl.classList.remove('hidden'); hudEl.style.display = 'none'; camBtn.style.display = 'none';
   checkPendingReveal();
+  submitRunToLeaderboard();
+}
+// submit the finished run and show the player's rank across all 4 leaderboard windows
+function submitRunToLeaderboard() {
+  if (!window.Leaderboard) return;
+  rankInfoEl.textContent = 'Submitting run…';
+  window.Leaderboard.submitRun(window.CityGame.getRunPayload()).then((res) => {
+    if (!res) { rankInfoEl.textContent = ''; return; }
+    const r = res.rank;
+    rankInfoEl.textContent = 'Rank  Daily #' + (r.daily || '–') + '  ·  Weekly #' + (r.weekly || '–') +
+      '  ·  Monthly #' + (r.monthly || '–') + '  ·  All-time #' + (r.alltime || '–');
+  });
 }
 // show the unbox animation for any skin unlocked during the run just committed
 function checkPendingReveal() {
@@ -702,9 +731,9 @@ function spawnSparks(b) {
 
 // ---------- floor styling (windows kept, skin-aware) ----------
 function floorColors(i) {
-  const sk = SKINS[activeSkin];
+  const sk = skinForTier(activeSkin);
   if (sk.mythic) {
-    const h = (i * 16 + performance.now() * 0.045) % 360;
+    const h = (i * 16 + performance.now() * 0.045 + (sk.hueOffset || 0)) % 360;
     return { top: `hsl(${(h + 10) % 360}, 82%, 78%)`, right: `hsl(${h}, 66%, 40%)`, left: `hsl(${h}, 66%, 30%)`, glass: `hsl(${h}, 80%, 62%)`, lit: '#ffffff' };
   }
   return { top: sk.top, right: sk.right, left: sk.left, glass: lerpHex(sk.gA, sk.gB, (Math.sin(i * .7) + 1) / 2), lit: sk.lit };
@@ -762,8 +791,9 @@ canvas.addEventListener('wheel', (e) => { if (!cameraMode) return; e.preventDefa
 
 // ---------- UI ----------
 const menuEl = document.getElementById('menu'), overEl = document.getElementById('over'), hudEl = document.getElementById('hud');
-const hudHeightEl = document.getElementById('hudHeight'), hudPctEl = document.getElementById('hudPct'), hudNextEl = document.getElementById('hudNext'), hudBestEl = document.getElementById('hudBest');
+const hudHeightEl = document.getElementById('hudHeight'), hudNextEl = document.getElementById('hudNext'), hudBestEl = document.getElementById('hudBest');
 const toastEl = document.getElementById('toast'), continueBtn = document.getElementById('continueBtn'), homeBtn = document.getElementById('homeBtn');
+const rankInfoEl = document.getElementById('rankInfo');
 const muteBtn = document.getElementById('muteBtn');
 muteBtn.textContent = muted ? '🔇' : '🔊';
 muteBtn.addEventListener('click', () => toggleMute());
@@ -783,10 +813,9 @@ function refreshMenu() {
 }
 refreshMenu();
 function updateHud() {
-  const m = heightM(), nm = nextMark(m);
+  const m = heightM(), nextTier = tierForHeight(m) + 1;
   hudHeightEl.textContent = m + ' m';
-  hudPctEl.textContent = pctOfBurj(m) + '% of Burj Khalifa';
-  hudNextEl.textContent = nm ? 'Next: ' + nm.name + ' ' + nm.m + ' m' : 'Above the Burj!';
+  hudNextEl.textContent = 'Next skin: ' + skinForTier(nextTier).name + ' at ' + needForTier(nextTier) + ' m';
   hudBestEl.textContent = 'Best ' + Math.max(bestM, m) + ' m';
 }
 let toastTimer = 0;
@@ -794,7 +823,8 @@ function toast(msg) { toastEl.textContent = msg; toastEl.style.opacity = 1; toas
 function startGame() {
   applyGameScale();
   reset(); state = S.PLAY;
-  equipped = 0; activeSkin = 0; runStartUnlockIdx = unlockedIdx(bestM);
+  equipped = 0; activeSkin = 0; runStartUnlockIdx = tierForHeight(bestM);
+  rankInfoEl.textContent = '';
   menuEl.classList.add('hidden'); overEl.classList.add('hidden');
   bonusMsgEl.classList.remove('show');
   setCameraMode(false); camYaw = 0; camZoom = 1;
@@ -876,7 +906,8 @@ function confStep(now) {
 function stopConfetti() { cancelAnimationFrame(confRAF); confCtx.clearRect(0, 0, confettiCanvas.width, confettiCanvas.height); }
 function showSkinReveal(idx) {
   drawTowerInto(revealCtx, revealTowerCanvas.width, revealTowerCanvas.height, idx, true);
-  revealNameEl.textContent = SKINS[idx].name + (SKINS[idx].mythic ? ' ✦' : '');
+  const sk = skinForTier(idx);
+  revealNameEl.textContent = sk.name + (sk.mythic ? ' ✦' : '');
   skinRevealEl.classList.remove('hidden');
   skinRevealEl.classList.remove('show'); void skinRevealEl.offsetWidth; skinRevealEl.classList.add('show');  // retrigger animations
   playSfx(audioSkin); startConfetti();
@@ -995,8 +1026,7 @@ function renderTower(shx, shy) {
   ctx.globalAlpha = 1;
 }
 
-// ---------- end-screen comparison (3D isometric, zoom-out, always to scale) ----------
-const BH_PER_M = BH / STEP_M;          // world units per metre
+// ---------- end-screen result (3D isometric, zoom-out to show the full tower) ----------
 function easeOut(t) { return 1 - Math.pow(1 - clamp(t, 0, 1), 3); }
 function drawCompSky(g) {
   const grad = g.createLinearGradient(0, 0, 0, H);
@@ -1012,49 +1042,23 @@ function groundShadow(g, wx, wz, rad) {
   gr.addColorStop(0, 'rgba(10,10,25,.35)'); gr.addColorStop(1, 'rgba(10,10,25,0)');
   g.fillStyle = gr; g.beginPath(); g.ellipse(s.x, s.y, rad, rad * 0.5, 0, 0, Math.PI * 2); g.fill();
 }
-// the Burj model always wears the Sunset skin so it reads warm against your tower
-function drawBurj3D(g, bx, bz) {
-  const Hb = BURJ_M * BH_PER_M, baseHalf = SIZE * 0.92;
-  const sk = SKINS.find(s => s.id === 'sunset');
-  const bTop = sk.top, bRight = sk.right, bLeft = sk.left;
-  for (let i = 0; i < BURJ.length - 1; i++) {
-    const y0 = BURJ[i][0] * Hb, y1 = BURJ[i + 1][0] * Hb;
-    if (y1 <= y0) continue;
-    const half = baseHalf * Math.max(BURJ[i][1], BURJ[i + 1][1]);
-    const tint = i / BURJ.length;
-    drawBox(g, bx - half, bz - half, bx + half, bz + half, y0, y1,
-      { top: lerpHex(bTop, shade(bTop, 0.16), tint), right: lerpHex(bRight, shade(bRight, -0.1), tint), left: lerpHex(bLeft, shade(bLeft, -0.1), tint) }, null);
-  }
-}
-function drawFloorOff(g, b, i, ox, oz) {
-  drawFloor(g, { x0: b.x0 + ox, z0: b.z0 + oz, x1: b.x1 + ox, z1: b.z1 + oz, podium: b.podium, w: b.w, d: b.d }, i, floorBaseY(stack, i), floorTopY(stack, i));
-}
 function renderComparison() {
   activeSkin = equipped;
   drawCompSky(ctx);
-  const compC = 0.56 * H / (BURJ_M * BH_PER_M);
+  const totalH = stack.length * BH + boostExtra();
+  const compC = 0.62 * H / Math.max(totalH, 200);
   const e = easeOut(endT), startMul = 2.6;
   const Cn = compC * (startMul + (1 - startMul) * e);
   A = Cn; B = Cn * 0.577; C = Cn;
-  const sep = 0.20 * W / compC;                 // fixed world separation
-  PX = W * 0.62 - sep * A; PY = H * 0.63;
-  const bx = -sep / 2, bz = sep / 2, tox = sep / 2, toz = -sep / 2;
-  // shadows + 3D models
-  groundShadow(ctx, bx, bz, SIZE * A * 1.4);
-  groundShadow(ctx, tox, toz, SIZE * A * 0.9);
-  drawBurj3D(ctx, bx, bz);
-  for (let i = 0; i < stack.length; i++) drawFloorOff(ctx, stack[i], i, tox, toz);
+  PX = W / 2; PY = H * 0.66;
+  groundShadow(ctx, 0, 0, SIZE * A * 1.4);
+  for (let i = 0; i < stack.length; i++) drawFloor(ctx, stack[i], i, floorBaseY(stack, i), floorTopY(stack, i));
   // labels fade in once mostly zoomed out
   const la = clamp((endT - 0.45) / 0.4, 0, 1), m = heightM();
-  const bb = project(bx, 0, bz), tb = project(tox, 0, toz);
   ctx.globalAlpha = la; ctx.textAlign = 'center'; ctx.fillStyle = '#fff';
-  ctx.font = '700 12px Helvetica, Arial'; ctx.fillText('BURJ KHALIFA', bb.x, PY + 26);
-  ctx.font = '800 15px Helvetica, Arial'; ctx.fillText('828 m', bb.x, PY + 46);
-  ctx.font = '700 12px Helvetica, Arial'; ctx.fillText('YOUR TOWER', tb.x, PY + 26);
-  ctx.font = '800 15px Helvetica, Arial'; ctx.fillText(m + ' m', tb.x, PY + 46);
-  ctx.font = '800 38px Helvetica, Arial'; ctx.fillText(pctOfBurj(m) + '% of the Burj', W / 2, H * 0.14);
+  ctx.font = '800 38px Helvetica, Arial'; ctx.fillText(m + ' m', W / 2, H * 0.14);
   ctx.font = '700 14px Helvetica, Arial'; ctx.fillStyle = 'rgba(255,255,255,.85)';
-  ctx.fillText('Best ' + bestM + ' m · ' + pctOfBurj(bestM) + '%', W / 2, H * 0.14 + 26);
+  ctx.fillText('Best ' + bestM + ' m', W / 2, H * 0.14 + 26);
   ctx.globalAlpha = 1; ctx.textAlign = 'left';
 }
 
@@ -1067,11 +1071,25 @@ function render(t) {
   const shx = (Math.random() - .5) * shake, shy = (Math.random() - .5) * shake;
   if (state === S.PLAY) {
     renderTower(shx, shy);
-    drawBurjGauge(ctx);
   } else if (state === S.DEAD) {
     renderComparison();
   }
 }
+
+// ---------- expose the finished run for leaderboard submission ----------
+// the whole tower always renders under the single currently-equipped skin (see
+// floorColors/renderTower), so one resolved skin snapshot covers every block —
+// no need to track which skin was active when each individual floor was placed
+window.CityGame = {
+  getRunPayload() {
+    const sk = skinForTier(equipped);
+    const skin = sk.mythic
+      ? { mythic: true, name: sk.name, hueOffset: sk.hueOffset || 0 }
+      : { mythic: false, name: sk.name, top: sk.top, right: sk.right, left: sk.left, gA: sk.gA, gB: sk.gB, lit: sk.lit };
+    const blocks = stack.slice(1).map(b => ({ x0: b.x0, z0: b.z0, x1: b.x1, z1: b.z1, h: b.h || BH, perfect: !!b.perfect }));
+    return { heightM: heightM(), skinId: sk.id, skin, perfectStreakMax: maxPerfectStreak, blocks };
+  },
+};
 
 // ---------- boot ----------
 resize();
@@ -1258,5 +1276,8 @@ window.City3D = {
   isReady() { return loaded; },
 };
 </script>
+
+<script src="leaderboard.js"></script>
+<script type="module" src="viewer3d.js"></script>
 </body>
 </html>
