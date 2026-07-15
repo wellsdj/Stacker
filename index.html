@@ -220,13 +220,14 @@
   #milestoneMsg.show { visibility:visible; opacity:1; transform:scale(1); }
   .milestoneCard { width:min(82vw,390px); padding:22px 24px 24px; text-align:center; color:#fff; background:linear-gradient(145deg,rgba(6,26,63,.94),rgba(56,9,78,.94)); border:1px solid rgba(83,246,255,.72); clip-path:polygon(18px 0,100% 0,100% calc(100% - 18px),calc(100% - 18px) 100%,0 100%,0 18px); box-shadow:inset 0 0 32px rgba(83,246,255,.12),0 0 30px rgba(83,246,255,.34),0 0 80px rgba(168,85,255,.28); }
   .milestoneKicker { color:#7df8ff; font-size:10px; font-weight:900; letter-spacing:3px; text-transform:uppercase; text-shadow:0 0 10px #53f6ff; }
-  .milestoneModel { height:164px; display:grid; place-items:center; perspective:620px; }
-  #milestoneTower { width:220px; height:164px; filter:drop-shadow(0 0 9px #53f6ff) drop-shadow(0 0 25px rgba(168,85,255,.82)); animation:milestoneRise .48s cubic-bezier(.2,1.25,.35,1) both; }
+  .milestoneModel { height:148px; display:grid; place-items:center; perspective:620px; }
+  .milestoneModel .landmarkGlyph { width:78px; height:126px; animation:milestoneSpin 2.2s linear infinite; filter:drop-shadow(0 0 8px #53f6ff) drop-shadow(0 0 24px rgba(168,85,255,.9)); }
   .milestoneName { font-size:clamp(22px,6vw,34px); font-weight:900; line-height:1.05; letter-spacing:.5px; text-transform:uppercase; text-shadow:0 0 12px rgba(83,246,255,.75); }
   .milestoneHeight { margin-top:8px; color:#ff95e9; font-size:15px; font-weight:900; letter-spacing:2px; text-transform:uppercase; }
   .milestoneKeep { margin-top:14px; color:#dcfaff; font-size:12px; font-weight:800; letter-spacing:1.8px; text-transform:uppercase; }
-  @keyframes milestoneRise { from { opacity:0; transform:translateY(28px) scale(.76); } to { opacity:1; transform:translateY(0) scale(1); } }
-  @media (prefers-reduced-motion:reduce) { #milestoneTower { animation:none; } }
+  @keyframes milestoneSpin { 0%{transform:rotateY(0deg) rotateZ(-2deg)} 50%{transform:rotateY(180deg) rotateZ(2deg)} 100%{transform:rotateY(360deg) rotateZ(-2deg)} }
+  @media (prefers-reduced-motion:reduce) { .milestoneModel .landmarkGlyph { animation:milestoneFloat 1.3s ease-in-out infinite alternate; } }
+  @keyframes milestoneFloat { to { transform:translateY(-8px); } }
 
   /* new-skin unbox reveal */
   #skinReveal { z-index: 20; background: radial-gradient(ellipse at center, rgba(58,28,88,.62) 0%, rgba(10,6,20,.9) 78%); }
@@ -351,14 +352,14 @@
   <div id="hudLeft">
     <div id="hudHeight">10 m</div>
     <div id="hudPct">1% to Burj Khalifa</div>
-    <div id="hudNext">Next building: Big Ben · 100 m</div>
+    <div id="hudNext">Next landmark: Christ the Redeemer · 38 m</div>
     <div id="hudBest">Best 0 m</div>
   </div>
   <div id="buildMeter" aria-label="Live building height">
     <div class="meterTitle">Burj ascent</div>
     <canvas id="miniTower" width="296" height="436"></canvas>
     <div class="meterRail"><div id="meterFill"></div></div>
-    <div id="meterMeters">10 / 800 m <span id="meterBoost">5× BOOST</span></div>
+    <div id="meterMeters">10 / 828 m <span id="meterBoost">5× BOOST</span></div>
   </div>
   <button id="undoAdBtn" type="button" aria-label="Undo last floor with an ad">
     <span class="undoIcon">↶</span><span class="undoCopy">Undo last floor<small>Ad · CrazyGames soon</small></span>
@@ -371,11 +372,11 @@
 <div id="menu" class="ui">
   <div class="menu-top">
     <h1 class="brand">BURJ</h1>
-    <div class="brand-sub">Reach the Burj Khalifa · 800 m final level</div>
+    <div class="brand-sub">Build the Burj Khalifa · 828 m</div>
   </div>
   <div class="menu-bottom">
     <button class="neonBtn primary" id="playBtn"><span class="label">Play</span></button>
-    <button class="neonBtn secondary" id="statsBtn"><span class="label">100 m building ladder</span></button>
+    <button class="neonBtn secondary" id="statsBtn"><span class="label">World height ladder</span></button>
     <button class="neonBtn secondary" id="howtoBtn"><span class="label">How to play</span></button>
     <div class="stat" id="menuStat">Best 0 m</div>
     <div class="stat" id="menuUnlock"></div>
@@ -387,7 +388,7 @@
     <div class="howtotitle">How to play</div>
     <p>Tap or press Space to drop the moving block onto the tower.</p>
     <p>Line it up dead-center for a <b>perfect</b> drop — perfects keep the full width, and a streak of 5 in a row grows your tower 5×.</p>
-    <p>Unlock one real-world building every 100 m: 100, 200, 300 and onward until the Burj Khalifa final level at 800 m.</p>
+    <p>Pass real landmarks one by one, from Christ the Redeemer to the Burj Khalifa at 828 m. Your best tower is placed directly into the world height ladder.</p>
     <p>Every landmark you pass is celebrated again on every new run, so you always know what you have built beyond and what comes next.</p>
     <p>Every 100 m still unlocks a new tower skin, and every metre from a 5× perfect counts toward the Burj.</p>
     <button class="neonBtn secondary" id="howtoClose"><span class="label">Got it</span></button>
@@ -396,7 +397,7 @@
 
 <div id="stats" class="ui hidden">
   <div class="statscard">
-    <div class="statshead"><h2>100 m building ladder</h2><button class="period" id="statsClose">Close</button></div>
+    <div class="statshead"><h2>World height ladder</h2><button class="period" id="statsClose">Close</button></div>
     <div id="rankSummary" class="rankSummary">Build once to place your tower beside the world's landmarks.</div>
     <div id="leaderRows"></div>
   </div>
@@ -421,10 +422,10 @@
 
 <div id="milestoneMsg" aria-live="polite" aria-hidden="true">
   <div class="milestoneCard">
-    <div class="milestoneKicker" id="milestoneKicker">Level 1 cleared</div>
-    <div class="milestoneModel"><canvas id="milestoneTower" width="440" height="328"></canvas></div>
-    <div class="milestoneName" id="milestoneName">Big Ben</div>
-    <div class="milestoneHeight" id="milestoneHeight">100 m checkpoint</div>
+    <div class="milestoneKicker">Landmark passed</div>
+    <div class="milestoneModel"><span id="milestoneGlyph" class="landmarkGlyph statue"></span></div>
+    <div class="milestoneName" id="milestoneName">Christ the Redeemer</div>
+    <div class="milestoneHeight" id="milestoneHeight">38 m cleared</div>
     <div class="milestoneKeep">You built past it · keep building</div>
   </div>
 </div>
@@ -557,17 +558,24 @@ function hash3(a, b, c) { const x = Math.sin(a * 127.1 + b * 311.7 + c * 74.7) *
 const SIZE = 300, BH = 56, PODIUM_H = 78;
 const PERF = 11;                 // perfect tolerance (tighter = harder)
 const BASE_M = 10, STEP_M = 5;   // first floor 10 m, each floor +5 m
-const BURJ_M = 800;
+const BURJ_M = 828;
 const LANDMARKS = [
-  { name:'Big Ben', score:100, type:'clock' },
-  { name:'Space Needle', score:200, type:'needle' },
-  { name:'The Shard', score:300, type:'spire' },
-  { name:'Empire State Building', score:400, type:'spire' },
-  { name:'Taipei 101', score:500, type:'spire' },
-  { name:'Canton Tower', score:600, type:'needle' },
-  { name:'Merdeka 118', score:700, type:'spire' },
+  { name:'Christ the Redeemer', score:38, type:'statue' },
+  { name:'Arc de Triomphe', score:50, type:'arch' },
+  { name:'Leaning Tower of Pisa', score:57, type:'tower' },
+  { name:'Statue of Liberty', score:93, type:'statue' },
+  { name:'Big Ben', score:96, type:'clock' },
+  { name:"St Paul's Cathedral", score:111, type:'dome' },
+  { name:'Great Pyramid of Giza', score:139, type:'pyramid' },
+  { name:'Blackpool Tower', score:158, type:'lattice' },
+  { name:'Space Needle', score:184, type:'needle' },
+  { name:'Chrysler Building', score:319, type:'spire' },
+  { name:'Eiffel Tower', score:330, type:'lattice' },
+  { name:'Empire State Building', score:443, type:'spire' },
+  { name:'One World Trade Center', score:541, type:'spire' },
+  { name:'Shanghai Tower', score:632, type:'twist' },
   { name:'Burj Khalifa', score:BURJ_M, type:'burj' },
-].map((x,i) => ({ ...x, level:i+1, landmark:true }));
+].map(x => ({ ...x, landmark:true }));
 // Tower skins unlock each time a building passes another 100 metres.
 const SKINS = [
   { id: 'azure',    name: 'Azure',    need: 0,   top: '#8cf8ff', right: '#124c78', left: '#172d70', gA: '#1ccff0', gB: '#607dff', lit: '#e8ffff' },
@@ -575,10 +583,6 @@ const SKINS = [
   { id: 'emerald',  name: 'Emerald',  need: 200, top: '#8dffe0', right: '#087b78', left: '#155d76', gA: '#16e0a4', gB: '#34e8ff', lit: '#efffff' },
   { id: 'obsidian', name: 'Obsidian', need: 300, top: '#bd9cff', right: '#4e288f', left: '#241b64', gA: '#815cff', gB: '#c34cff', lit: '#ffffff' },
   { id: 'aurora',   name: 'Aurora',   need: 400, mythic: true },
-  { id: 'solar',    name: 'Solar',    need: 500, top: '#fff09a', right: '#c85d18', left: '#7a245f', gA: '#ffbd36', gB: '#ff4fa3', lit: '#fffbe0' },
-  { id: 'plasma',   name: 'Plasma',   need: 600, top: '#f6adff', right: '#7d1bb2', left: '#2d258d', gA: '#ff4fe1', gB: '#7268ff', lit: '#fff2ff' },
-  { id: 'frost',    name: 'Frost',    need: 700, top: '#edffff', right: '#3986a7', left: '#315d9d', gA: '#d5ffff', gB: '#5ea6ff', lit: '#ffffff' },
-  { id: 'zenith',   name: 'Zenith',   need: 800, top: '#fff5c4', right: '#a66b13', left: '#623397', gA: '#ffe26b', gB: '#ff63e4', lit: '#ffffff' },
 ];
 function unlockedIdx(m) { let idx = 0; for (let i = 0; i < SKINS.length; i++) if (m >= SKINS[i].need) idx = i; return idx; }
 
@@ -645,7 +649,6 @@ let score = 0, bestM = 0, camY = 0, camYT = 0, shake = 0, endT = 0;
 let equipped = 0, activeSkin = 0, unlockMsg = '';
 let perfectStreak = 0, paused = false, pauseT = 0;  // consecutive-perfect bonus
 let milestoneQueue = [], milestoneActive = false, milestoneT = 0;
-let milestoneCurrent = null, milestoneYaw = -.7;
 let runStartUnlockIdx = 0;  // skin already unlocked before this run began
 let pendingRevealIdx = -1;  // a skin unlocked-for-the-first-time this run, waiting to be shown
 bestM = +(localStorage.getItem('city_best_m') || 0);
@@ -660,7 +663,7 @@ function nextLandmark(m) { return LANDMARKS.find(x => m < x.score) || null; }
 function landmarkLadder() {
   const rows = LANDMARKS.map(x => ({ ...x }));
   if (bestM > 0) rows.push({ name:'Your best tower', score:bestM, tower:bestTower, you:true, type:'yours' });
-  return rows.sort((a,b) => a.score - b.score || (a.you ? -1 : 1));
+  return rows.sort((a,b) => b.score - a.score || (a.you ? -1 : 1)).map((r,i) => ({ ...r, rank:i + 1 }));
 }
 
 function reset() {
@@ -728,6 +731,8 @@ function checkLiveSkinUnlock() {
   const idx = unlockedIdx(heightM());
   if (idx <= equipped) return;
   equipped = idx; activeSkin = idx;
+  playSfx(audioSkin);
+  toast((SKINS[idx].mythic ? '✦ ' : '') + SKINS[idx].name.toUpperCase() + ' UNLOCKED');
   if (idx > runStartUnlockIdx) { unlockMsg = '✦ New skin unlocked: ' + SKINS[idx].name; pendingRevealIdx = idx; }
 }
 // extra world-height added by any boosted (5-in-a-row) blocks
@@ -754,16 +759,15 @@ function showNextMilestone() {
   if (milestoneActive || paused || state !== S.PLAY || !milestoneQueue.length) return;
   const landmark = milestoneQueue.shift();
   milestoneActive = true; milestoneT = 3.4;
-  milestoneCurrent = landmark; milestoneYaw = -.7;
-  milestoneKickerEl.textContent = 'Level ' + landmark.level + ' cleared';
+  milestoneGlyphEl.className = 'landmarkGlyph ' + landmark.type;
   milestoneNameEl.textContent = landmark.name;
-  milestoneHeightEl.textContent = landmark.score + ' m · ' + SKINS[unlockedIdx(landmark.score)].name + ' skin';
+  milestoneHeightEl.textContent = landmark.score + ' m cleared';
   milestoneMsgEl.setAttribute('aria-hidden','false');
   milestoneMsgEl.classList.add('show');
+  playSfx(audioNav);
 }
 function clearMilestones() {
   milestoneQueue = []; milestoneActive = false; milestoneT = 0;
-  milestoneCurrent = null;
   milestoneMsgEl.setAttribute('aria-hidden','true');
   milestoneMsgEl.classList.remove('show');
 }
@@ -875,12 +879,11 @@ const muteBtn = document.getElementById('muteBtn');
 muteBtn.textContent = muted ? '🔇' : '🔊';
 muteBtn.addEventListener('click', () => toggleMute());
 const bonusMsgEl = document.getElementById('bonusMsg');
-const milestoneMsgEl = document.getElementById('milestoneMsg'), milestoneTowerCanvas = document.getElementById('milestoneTower'), milestoneTowerCtx = milestoneTowerCanvas.getContext('2d');
-const milestoneKickerEl = document.getElementById('milestoneKicker'), milestoneNameEl = document.getElementById('milestoneName'), milestoneHeightEl = document.getElementById('milestoneHeight');
+const milestoneMsgEl = document.getElementById('milestoneMsg'), milestoneGlyphEl = document.getElementById('milestoneGlyph'), milestoneNameEl = document.getElementById('milestoneName'), milestoneHeightEl = document.getElementById('milestoneHeight');
 const menuStatEl = document.getElementById('menuStat'), menuUnlockEl = document.getElementById('menuUnlock');
 function refreshMenu() {
   const reached = reachedLandmark(bestM), next = nextLandmark(bestM);
-  menuStatEl.textContent = 'Best ' + bestM + ' m' + (reached ? ' · Passed ' + reached.name : ' · First target 100 m');
+  menuStatEl.textContent = 'Best ' + bestM + ' m' + (reached ? ' · Passed ' + reached.name : ' · First target 38 m');
   if (!unlockMsg && next) unlockMsg = 'Next: ' + next.name + ' · ' + next.score + ' m';
   if (!unlockMsg && !next) unlockMsg = 'Burj Khalifa reached';
   menuUnlockEl.textContent = unlockMsg; unlockMsg = '';
@@ -894,10 +897,10 @@ function openStats() { menuEl.classList.add('hidden'); statsEl.classList.remove(
 function closeStats() { statsEl.classList.add('hidden'); menuEl.classList.remove('hidden'); }
 function renderLeaderboard() {
   const rows = landmarkLadder(), reached = reachedLandmark(bestM), next = nextLandmark(bestM);
-  rankSummaryEl.textContent = bestM ? 'Your best: ' + bestM + ' m' + (reached ? ' · Passed ' + reached.name : '') + (next ? ' · Next ' + next.name + ' at ' + next.score + ' m' : ' · Burj Khalifa level reached') : 'Build once to enter the 100 m building ladder.';
+  rankSummaryEl.textContent = bestM ? 'Your best: ' + bestM + ' m' + (reached ? ' · Passed ' + reached.name : '') + (next ? ' · Next ' + next.name : ' · Burj Khalifa reached') : 'Build once to place your tower beside the world’s landmarks.';
   leaderRowsEl.replaceChildren(...rows.map(row => {
     const b = document.createElement('button'); b.className = 'leaderRow' + (row.you ? ' you' : '');
-    b.innerHTML = '<span class="rank">' + (row.you ? 'YOU' : 'L' + row.level) + '</span><span class="landmarkGlyph ' + row.type + '"></span><span>' + row.name + (row.you ? ' · highest achieved' : '') + '</span><span class="meters">' + row.score + ' m</span>';
+    b.innerHTML = '<span class="rank">#' + row.rank + '</span><span class="landmarkGlyph ' + row.type + '"></span><span>' + row.name + (row.you ? ' · highest achieved' : '') + '</span><span class="meters">' + row.score + ' m</span>';
     b.addEventListener('click', () => openViewer(row)); return b;
   }));
 }
@@ -1015,12 +1018,12 @@ undoAdBtn.addEventListener('click', () => {
 });
 
 // render a small skin tower into any canvas context (used by the unlock reveal)
-function drawTowerInto(g, w, h, idx, transparent, yaw = 0, stackN = 6) {
+function drawTowerInto(g, w, h, idx, transparent) {
   g.clearRect(0, 0, w, h);
   if (!transparent) { const bg = g.createLinearGradient(0, 0, 0, h); bg.addColorStop(0, '#e9ecf3'); bg.addColorStop(1, '#cfd5e0'); g.fillStyle = bg; g.fillRect(0, 0, w, h); }
   const sA = A, sB = B, sC = C, sPX = PX, sPY = PY, sAct = activeSkin, sYaw = camYaw, sZoom = camZoom;
-  camYaw = yaw; camZoom = 1;
-  const hw = SIZE * 0.34;
+  camYaw = 0; camZoom = 1;
+  const stackN = 6, hw = SIZE * 0.34;
   const worldH = PODIUM_H + (stackN - 1) * BH;
   const k = (h * 0.66) / worldH; A = k; B = k * 0.577; C = k; PX = w * 0.5; PY = h * 0.86; activeSkin = idx;
   const gs = project(0, 0, 0); g.fillStyle = 'rgba(30,35,55,.16)'; g.beginPath(); g.ellipse(gs.x, gs.y, hw * k * 2.1, hw * k * 0.9, 0, 0, Math.PI * 2); g.fill();
@@ -1028,11 +1031,6 @@ function drawTowerInto(g, w, h, idx, transparent, yaw = 0, stackN = 6) {
   for (let i = 1; i < stackN; i++) tmp.push({ x0: -hw, z0: -hw, x1: hw, z1: hw });
   for (let i = 0; i < stackN; i++) drawFloor(g, tmp[i], i, floorBaseY(tmp, i), floorTopY(tmp, i));
   A = sA; B = sB; C = sC; PX = sPX; PY = sPY; activeSkin = sAct; camYaw = sYaw; camZoom = sZoom;
-}
-function drawMilestoneTower() {
-  if (!milestoneActive || !milestoneCurrent) return;
-  const storeys = 6 + Math.min(4,milestoneCurrent.level);
-  drawTowerInto(milestoneTowerCtx,milestoneTowerCanvas.width,milestoneTowerCanvas.height,unlockedIdx(milestoneCurrent.score),true,milestoneYaw,storeys);
 }
 
 // ---------- new-skin reveal (confetti + spinning tower) ----------
@@ -1088,10 +1086,7 @@ function update(dt, t) {
   if (shake > 0) shake = Math.max(0, shake - dt * 26);
   if (state === S.DEAD) endT = Math.min(1, endT + dt * 1.8);
   if (paused) { pauseT -= dt; if (pauseT <= 0) { paused = false; bonusMsgEl.classList.remove('show'); showNextMilestone(); } }
-  if (milestoneActive) {
-    milestoneT -= dt; milestoneYaw += dt * 1.15; drawMilestoneTower();
-    if (milestoneT <= 0) { milestoneActive = false; milestoneMsgEl.setAttribute('aria-hidden','true'); milestoneMsgEl.classList.remove('show'); playSfx(audioSkin); showNextMilestone(); }
-  }
+  if (milestoneActive) { milestoneT -= dt; if (milestoneT <= 0) { milestoneActive = false; milestoneMsgEl.setAttribute('aria-hidden','true'); milestoneMsgEl.classList.remove('show'); showNextMilestone(); } }
   if (state === S.PLAY && mover && !paused && !milestoneActive) {
     const wob = 1 + 0.2 * Math.sin(t * 2 + mover.wob);
     mover.off += mover.dir * mover.spd * wob * dt;
