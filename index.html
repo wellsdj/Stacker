@@ -150,9 +150,24 @@
   @keyframes neonSpin { to { transform: rotate(360deg); } }
   @media (prefers-reduced-motion: reduce) { .brand, .neonBtn::before, .neonBtn::after { animation: none; } }
 
-  /* game-over: buttons pinned bottom, comparison drawn on canvas above */
-  #over { justify-content: flex-end; padding-bottom: 7vh; }
-  #over .btnrow { display: flex; flex-direction: column; align-items: center; }
+  /* game-over: a horizontal, true-scale landmark comparison gallery */
+  #over { z-index:15; justify-content:flex-end; padding:76px 0 4vh; background:linear-gradient(180deg,rgba(3,7,25,.18),rgba(5,5,24,.78) 52%,rgba(7,4,24,.96)); opacity:0; transition:opacity .7s ease; }
+  #over.reveal { opacity:1; }
+  .compareHead { width:min(92vw,760px); margin:auto auto 8px; text-align:left; padding:0 18px; box-sizing:border-box; }
+  .compareKicker { color:#7df8ff; font-size:10px; font-weight:900; letter-spacing:3px; text-transform:uppercase; text-shadow:0 0 12px #53f6ff; }
+  #compareTitle { margin:7px 0 4px; font-size:clamp(25px,7vw,46px); line-height:1; text-transform:uppercase; text-shadow:0 0 18px rgba(83,246,255,.65); }
+  #compareSub { color:#ffc3f1; font-size:12px; font-weight:800; letter-spacing:1.3px; }
+  #compareRail { pointer-events:auto; display:flex; width:100%; overflow-x:auto; gap:14px; padding:10px max(5vw,calc((100vw - 620px)/2)) 18px; box-sizing:border-box; scroll-snap-type:x mandatory; scrollbar-width:none; touch-action:pan-x; }
+  #compareRail::-webkit-scrollbar { display:none; }
+  .compareCard { position:relative; flex:0 0 min(82vw,620px); height:min(47vh,410px); scroll-snap-align:center; overflow:hidden; border:1px solid rgba(83,246,255,.48); background:linear-gradient(145deg,rgba(9,24,57,.86),rgba(47,8,69,.88)); clip-path:polygon(18px 0,100% 0,100% calc(100% - 18px),calc(100% - 18px) 100%,0 100%,0 18px); box-shadow:inset 0 0 34px rgba(83,246,255,.08),0 0 24px rgba(83,246,255,.16); }
+  .compareCard canvas { width:100%; height:100%; display:block; }
+  .compareLabel { position:absolute; left:14px; right:14px; bottom:12px; display:flex; justify-content:space-between; gap:12px; color:#efffff; font-size:11px; font-weight:900; letter-spacing:1px; text-transform:uppercase; text-shadow:0 2px 8px #02030c; }
+  .compareLabel span:last-child { color:#ff91e8; text-align:right; }
+  #over .btnrow { display:flex; flex-direction:column; align-items:center; gap:4px; }
+  #over .btn { margin:0; padding:15px 54px; font-size:16px; }
+  .continueHint { color:#b8dfff; font-size:9px; font-weight:800; letter-spacing:1.8px; text-transform:uppercase; }
+  #over .compareHead, #over #compareRail, #over .btnrow { opacity:0; transform:translateY(18px); transition:opacity .45s ease,transform .55s cubic-bezier(.2,.8,.2,1); }
+  #over.reveal .compareHead, #over.reveal #compareRail, #over.reveal .btnrow { opacity:1; transform:none; transition-delay:.5s; }
 
   /* how-to-play modal */
   #howto { background: rgba(6,8,22,.7); backdrop-filter: blur(6px); }
@@ -315,6 +330,7 @@
   #meterBoost { color:#ff85ea; font-size:9px; letter-spacing:1.4px; margin-left:5px; opacity:0; transition:opacity .2s ease; }
   #buildMeter.boost #meterBoost { opacity:1; }
   #undoAdBtn { position:fixed; left:22px; bottom:22px; z-index:9; pointer-events:auto; display:flex; align-items:center; gap:11px; min-width:196px; padding:12px 17px; border:1px solid rgba(83,246,255,.64); cursor:pointer; color:#efffff; font:900 11px/1 inherit; letter-spacing:1.5px; text-transform:uppercase; clip-path:polygon(12px 0,100% 0,100% calc(100% - 12px),calc(100% - 12px) 100%,0 100%,0 12px); background:linear-gradient(135deg,rgba(7,35,72,.96),rgba(72,18,104,.96)); box-shadow:inset 0 0 20px rgba(83,246,255,.09),0 0 12px rgba(83,246,255,.28),0 0 30px rgba(168,85,255,.22); text-shadow:0 0 8px rgba(83,246,255,.8); }
+  #undoAdBtn:disabled { opacity:.42; cursor:default; filter:saturate(.5); }
   #undoAdBtn:hover { filter:brightness(1.25); box-shadow:inset 0 0 24px rgba(83,246,255,.16),0 0 17px rgba(83,246,255,.55),0 0 38px rgba(255,63,213,.3); }
   #undoAdBtn:active { transform:scale(.97); }
   .undoIcon { display:grid; place-items:center; width:31px; height:31px; color:#071225; font-size:19px; background:linear-gradient(135deg,#bfffff,#53f6ff 50%,#ac77ff); clip-path:polygon(8px 0,100% 0,100% calc(100% - 8px),calc(100% - 8px) 100%,0 100%,0 8px); box-shadow:0 0 14px rgba(83,246,255,.75); }
@@ -362,8 +378,8 @@
     <div class="meterRail"><div id="meterFill"></div></div>
     <div id="meterMeters">10 / 100,000 m <span id="meterBoost">5× BOOST</span></div>
   </div>
-  <button id="undoAdBtn" type="button" aria-label="Undo last floor with an ad">
-    <span class="undoIcon">↶</span><span class="undoCopy">Undo last floor<small>Ad · CrazyGames soon</small></span>
+  <button id="undoAdBtn" type="button" aria-label="Polish away the last placed floor">
+    <span class="undoIcon">✦</span><span class="undoCopy">Polish last floor<small>1 use · removes the block</small></span>
   </button>
 </div>
 <button id="homeBtn" aria-label="Home" style="display:none">⌂</button>
@@ -411,8 +427,15 @@
 </div>
 
 <div id="over" class="ui hidden">
+  <div class="compareHead">
+    <div class="compareKicker">Your tower on Earth</div>
+    <h2 id="compareTitle">See how you measure up</h2>
+    <div id="compareSub">Swipe left and right to compare your building</div>
+  </div>
+  <div id="compareRail" aria-label="Landmark height comparisons"></div>
   <div class="btnrow">
     <button class="btn ghost" id="retryBtn">New building</button>
+    <div class="continueHint">Click next or press Space</div>
   </div>
 </div>
 
@@ -635,6 +658,21 @@ function drawSky(g) {
   g.fillStyle = glowB; g.fillRect(0,0,W,H);
 }
 
+// A clean curved Earth horizon keeps the build grounded without bringing back a city.
+function drawEarthGround(g) {
+  const horizon = H * .765, depth = Math.max(120, H * .28);
+  const earth = g.createLinearGradient(0,horizon,0,H);
+  earth.addColorStop(0,'#123d68'); earth.addColorStop(.32,'#17275c'); earth.addColorStop(1,'#180b38');
+  g.save();
+  g.shadowColor='#53f6ff'; g.shadowBlur=28;
+  g.beginPath(); g.moveTo(-40,horizon+18); g.quadraticCurveTo(W*.5,horizon-34,W+40,horizon+18); g.lineTo(W+40,H+40); g.lineTo(-40,H+40); g.closePath();
+  g.fillStyle=earth; g.fill();
+  g.shadowBlur=0;
+  const bloom=g.createRadialGradient(W*.5,horizon,0,W*.5,horizon,W*.62);
+  bloom.addColorStop(0,'rgba(73,238,255,.22)'); bloom.addColorStop(.48,'rgba(89,91,255,.12)'); bloom.addColorStop(1,'rgba(255,58,211,0)');
+  g.fillStyle=bloom; g.fillRect(0,horizon-80,W,H-horizon+80); g.restore();
+}
+
 // ======================================================================
 //  GAME
 // ======================================================================
@@ -645,6 +683,7 @@ let score = 0, bestM = 0, camY = 0, camYT = 0, shake = 0, endT = 0;
 let equipped = 0, activeSkin = 0, unlockMsg = '';
 let perfectStreak = 0, paused = false, pauseT = 0;  // consecutive-perfect bonus
 let milestoneQueue = [], milestoneActive = false, milestoneT = 0;
+let polishUsed = false, lastRunM = BASE_M, lastRunTower = [], lastRunSkin = 0;
 let runStartUnlockIdx = 0;  // skin already unlocked before this run began
 let pendingRevealIdx = -1;  // a skin unlocked-for-the-first-time this run, waiting to be shown
 bestM = +(localStorage.getItem('city_best_m') || 0);
@@ -670,6 +709,8 @@ function reset() {
   score = 0; camY = 0; camYT = 0; shake = 0; endT = 0;
   perfectStreak = 0; paused = false; pauseT = 0;
   milestoneQueue = []; milestoneActive = false; milestoneT = 0;
+  polishUsed = false;
+  if (typeof undoAdBtn !== 'undefined') undoAdBtn.disabled = false;
   if (typeof milestoneMsgEl !== 'undefined') milestoneMsgEl.classList.remove('show');
   mover = null;
 }
@@ -781,10 +822,14 @@ function die() {
   state = S.DEAD; sdkStop(); shake = 10; endT = 0;
   clearMilestones();
   camYaw = 0; camZoom = 1;
+  lastRunM = heightM(); lastRunTower = stack.map(b => ({...b})); lastRunSkin = equipped;
   commitRun();
   const r = moverRect(); debris.push({ ...r, vy: 20, fall: 0 });
   playSfx(audioDeath);
-  overEl.classList.remove('hidden'); hudEl.style.display = 'none';
+  buildLossComparison();
+  overEl.classList.remove('hidden'); overEl.classList.remove('reveal');
+  requestAnimationFrame(() => overEl.classList.add('reveal'));
+  hudEl.style.display = 'none';
   checkPendingReveal();
 }
 // show the unbox animation for any skin unlocked during the run just committed
@@ -798,7 +843,7 @@ function goHome() {
   paused = false; bonusMsgEl.classList.remove('show'); clearMilestones();
   equipped = 0; activeSkin = 0;  // home always shows the default Azure skin
   camYaw = 0; camZoom = 1;
-  overEl.classList.add('hidden'); hudEl.style.display = 'none'; homeBtn.style.display = 'none';
+  overEl.classList.add('hidden'); overEl.classList.remove('reveal'); hudEl.style.display = 'none'; homeBtn.style.display = 'none';
   menuEl.classList.remove('hidden'); refreshMenu();
   musicStarted = true; playMusic(musicMenu);
   checkPendingReveal();
@@ -862,6 +907,7 @@ function press(e) {
   if (e && e.type === 'keydown' && e.code !== 'Space') return;
   if (e) e.preventDefault();
   if (state === S.PLAY && !paused && !milestoneActive) drop();
+  else if (state === S.DEAD && e && e.type === 'keydown') { playSfx(audioNav); startGame(); }
 }
 canvas.addEventListener('pointerdown', press, { passive: false });
 window.addEventListener('keydown', press);
@@ -919,15 +965,17 @@ function drawViewer() {
   for (let i = 0; i < blocks.length; i++) drawFloor(viewerCtx, blocks[i], i, floorBaseY(blocks,i), floorTopY(blocks,i));
   [A,B,C,PX,PY,camYaw,activeSkin] = saved;
 }
-function drawLandmarkViewer(g,w,h,row) {
+function drawLandmarkViewer(g,w,h,row,isolated=false) {
   const totalH = Math.min(h*.66,w*.68) * viewerZoom, baseY = h*.82, cx = w*.5;
   const orbit = .78 + Math.abs(Math.cos(viewerYaw))*.22, ww = totalH*.34*orbit;
   const topY = baseY-totalH, left = cx-ww/2, right = cx+ww/2;
   g.save();
-  const haze = g.createRadialGradient(cx,baseY-totalH*.38,0,cx,baseY-totalH*.38,totalH*.72);
-  haze.addColorStop(0,'rgba(83,246,255,.17)'); haze.addColorStop(.55,'rgba(168,85,255,.1)'); haze.addColorStop(1,'rgba(255,63,213,0)'); g.fillStyle=haze; g.fillRect(0,0,w,h);
-  g.fillStyle='rgba(83,246,255,.11)'; g.beginPath(); g.moveTo(cx-ww*.85,baseY); g.lineTo(cx,baseY+ww*.24); g.lineTo(cx+ww*.85,baseY); g.lineTo(cx,baseY-ww*.24); g.closePath(); g.fill();
-  g.strokeStyle='rgba(83,246,255,.72)'; g.lineWidth=2; g.stroke();
+  if (!isolated) {
+    const haze = g.createRadialGradient(cx,baseY-totalH*.38,0,cx,baseY-totalH*.38,totalH*.72);
+    haze.addColorStop(0,'rgba(83,246,255,.17)'); haze.addColorStop(.55,'rgba(168,85,255,.1)'); haze.addColorStop(1,'rgba(255,63,213,0)'); g.fillStyle=haze; g.fillRect(0,0,w,h);
+    g.fillStyle='rgba(83,246,255,.11)'; g.beginPath(); g.moveTo(cx-ww*.85,baseY); g.lineTo(cx,baseY+ww*.24); g.lineTo(cx+ww*.85,baseY); g.lineTo(cx,baseY-ww*.24); g.closePath(); g.fill();
+    g.strokeStyle='rgba(83,246,255,.72)'; g.lineWidth=2; g.stroke();
+  }
   g.shadowColor='#53f6ff'; g.shadowBlur=22; g.strokeStyle='#7df8ff'; g.lineWidth=Math.max(2,totalH*.006); g.fillStyle='rgba(30,74,139,.74)';
   const poly = pts => { g.beginPath(); pts.forEach((p,i) => i ? g.lineTo(p[0],p[1]) : g.moveTo(p[0],p[1])); g.closePath(); g.fill(); g.stroke(); };
   const rect = (x,y,rw,rh) => { g.fillRect(x,y,rw,rh); g.strokeRect(x,y,rw,rh); };
@@ -959,9 +1007,52 @@ function drawLandmarkViewer(g,w,h,row) {
   }
   g.restore();
 }
+
+function towerComparisonAsset(blocks,skin) {
+  const c=document.createElement('canvas'); c.width=320; c.height=360; const g=c.getContext('2d');
+  const saved=[A,B,C,PX,PY,camYaw,camZoom,activeSkin];
+  const worldH=floorTopY(blocks,blocks.length-1), k=Math.min(270/Math.max(worldH,120),.72);
+  A=k; B=k*.577; C=k; PX=160; PY=326; camYaw=-.5; camZoom=1; activeSkin=skin;
+  const glow=g.createRadialGradient(160,316,5,160,316,130); glow.addColorStop(0,'rgba(83,246,255,.3)'); glow.addColorStop(1,'rgba(83,246,255,0)'); g.fillStyle=glow; g.fillRect(0,190,320,170);
+  for(let i=0;i<blocks.length;i++) drawFloor(g,blocks[i],i,floorBaseY(blocks,i),floorTopY(blocks,i));
+  [A,B,C,PX,PY,camYaw,camZoom,activeSkin]=saved; return c;
+}
+function landmarkComparisonAsset(row) {
+  const c=document.createElement('canvas'); c.width=320; c.height=360; const g=c.getContext('2d'), z=viewerZoom;
+  viewerZoom=1.22; drawLandmarkViewer(g,320,360,row,true); viewerZoom=z; return c;
+}
+function drawComparisonCard(c,row) {
+  const g=c.getContext('2d'), w=c.width, h=c.height, maxM=Math.max(lastRunM,row.score), base=h*.83;
+  const bg=g.createLinearGradient(0,0,w,h); bg.addColorStop(0,'#071a3c'); bg.addColorStop(.55,'#17134b'); bg.addColorStop(1,'#320b47'); g.fillStyle=bg; g.fillRect(0,0,w,h);
+  const halo=g.createRadialGradient(w*.5,base,0,w*.5,base,w*.65); halo.addColorStop(0,'rgba(83,246,255,.22)'); halo.addColorStop(.5,'rgba(116,79,255,.1)'); halo.addColorStop(1,'rgba(255,70,205,0)'); g.fillStyle=halo; g.fillRect(0,0,w,h);
+  g.fillStyle='#fff'; for(let i=0;i<18;i++){ g.globalAlpha=.18+(i%4)*.12; g.fillRect((i*97)%w,24+(i*53)%(h*.58),1+(i%2),1+(i%2)); } g.globalAlpha=1;
+  g.save(); g.shadowColor='#53f6ff'; g.shadowBlur=22; g.fillStyle='#15375e'; g.beginPath(); g.moveTo(-20,base+8); g.quadraticCurveTo(w*.5,base-18,w+20,base+8); g.lineTo(w+20,h); g.lineTo(-20,h); g.closePath(); g.fill(); g.restore();
+  const userAsset=towerComparisonAsset(lastRunTower,lastRunSkin), landmarkAsset=landmarkComparisonAsset(row);
+  const userRatio=Math.max(.055,lastRunM/maxM), landmarkRatio=Math.max(.055,row.score/maxM);
+  const maxH=h*.68, userH=maxH*userRatio, markH=maxH*landmarkRatio;
+  const userW=245*userRatio, markW=245*landmarkRatio;
+  g.drawImage(userAsset,w*.29-userW/2,base-userH,userW,userH);
+  g.drawImage(landmarkAsset,w*.71-markW/2,base-markH,markW,markH);
+  g.fillStyle='#dffcff'; g.font='900 12px Arial'; g.textAlign='center'; g.fillText('YOU · '+formatM(lastRunM)+' m',w*.29,base+25);
+  g.fillStyle='#ff9be9'; g.fillText(formatM(row.score)+' m',w*.71,base+25);
+}
+function buildLossComparison() {
+  const rail=document.getElementById('compareRail'), title=document.getElementById('compareTitle'), sub=document.getElementById('compareSub');
+  const reached=reachedLandmark(lastRunM), next=nextLandmark(lastRunM);
+  title.textContent='You built '+formatM(lastRunM)+' m';
+  sub.textContent=reached && next ? 'Past '+reached.name+' · next is '+next.name : next ? 'Next landmark: '+next.name : 'You climbed beyond every tower';
+  const rows=LANDMARKS.filter(x=>x.score<=BURJ_M); rail.replaceChildren(...rows.map(row=>{
+    const card=document.createElement('article'); card.className='compareCard';
+    const c=document.createElement('canvas'); c.width=620; c.height=410; c.setAttribute('aria-label','Your tower beside '+row.name);
+    const label=document.createElement('div'); label.className='compareLabel'; label.innerHTML='<span>Your tower</span><span>'+row.name+'</span>';
+    card.append(c,label); requestAnimationFrame(()=>drawComparisonCard(c,row)); return card;
+  }));
+  requestAnimationFrame(()=>{ const found=rows.findIndex(x=>x.score>lastRunM), i=found<0?rows.length-1:found; const card=rail.children[i]; if(card) rail.scrollLeft=card.offsetLeft-(rail.clientWidth-card.clientWidth)/2; });
+}
 document.getElementById('statsBtn').addEventListener('click', () => { playSfx(audioNav); openStats(); });
 document.getElementById('statsClose').addEventListener('click', () => { playSfx(audioNav); closeStats(); });
 document.getElementById('viewerClose').addEventListener('click', () => { playSfx(audioNav); closeViewer(); });
+document.getElementById('compareRail').addEventListener('wheel',e=>{ if(Math.abs(e.deltaY)>Math.abs(e.deltaX)){ e.preventDefault(); e.currentTarget.scrollLeft+=e.deltaY; } },{passive:false});
 viewerCanvas.addEventListener('pointerdown', e => { viewerDragging = true; viewerX = e.clientX; viewerCanvas.setPointerCapture(e.pointerId); });
 viewerCanvas.addEventListener('pointermove', e => { if (!viewerDragging) return; viewerYaw += (e.clientX - viewerX) * .009; viewerX = e.clientX; drawViewer(); });
 viewerCanvas.addEventListener('pointerup', () => { viewerDragging = false; });
@@ -1006,7 +1097,7 @@ function startGame() {
   applyGameScale();
   reset(); state = S.PLAY;
   equipped = 0; activeSkin = 0; runStartUnlockIdx = unlockedIdx(bestM);
-  menuEl.classList.add('hidden'); overEl.classList.add('hidden');
+  menuEl.classList.add('hidden'); overEl.classList.add('hidden'); overEl.classList.remove('reveal');
   bonusMsgEl.classList.remove('show'); clearMilestones();
   camYaw = 0; camZoom = 1;
   hudEl.style.display = 'flex'; homeBtn.style.display = 'flex'; updateHud(); newMover(); sdkStart();
@@ -1017,8 +1108,13 @@ document.getElementById('playBtn').addEventListener('click', (e) => { playSfx(au
 document.getElementById('retryBtn').addEventListener('click', (e) => { playSfx(audioNav); startGame(); });
 homeBtn.addEventListener('click', (e) => { playSfx(audioNav); goHome(); });
 undoAdBtn.addEventListener('click', () => {
-  playSfx(audioNav);
-  toast('UNDO ADS COMING WITH CRAZYGAMES');
+  if (state !== S.PLAY || paused || milestoneActive) return;
+  if (polishUsed) { toast('POLISH ALREADY USED'); return; }
+  if (!stack || stack.length <= 1) { toast('PLACE A FLOOR FIRST'); return; }
+  const removed=stack.pop(); score=Math.max(0,score-1); perfectStreak=0; polishUsed=true;
+  debris.push({...removed,vy:80,fall:0});
+  camYT=Math.max(0,stack.length*BH+boostExtra()-(.42*H)/C);
+  undoAdBtn.disabled=true; clearMilestones(); newMover(); updateHud(); playSfx(audioNav); toast('LAST FLOOR POLISHED AWAY');
 });
 
 // render a small skin tower into any canvas context (used by the unlock reveal)
@@ -1136,11 +1232,14 @@ function render(t) {
   if (state === S.MENU) return;  // home screen background is the CSS photo, not canvas-drawn
   if (state === S.CITY) return;  // the 3D scene renders itself on the WebGL canvas
   drawSky(ctx);
+  drawEarthGround(ctx);
   const shx = (Math.random() - .5) * shake, shy = (Math.random() - .5) * shake;
   if (state === S.PLAY) {
     renderTower(shx, shy);
   } else if (state === S.DEAD) {
+    const z=camZoom,y=camYaw,e=1-Math.pow(1-endT,3); camZoom=1-e*.44; camYaw=-e*.32;
     renderTower(shx, shy);
+    camZoom=z; camYaw=y;
   }
 }
 
