@@ -104,7 +104,8 @@
       linear-gradient(120deg, rgba(40,30,110,.7), rgba(10,150,255,.24) 45%, rgba(130,40,220,.6));
     background-size: cover; background-position: center;
   }
-  .menu-top { position: relative; }
+  #menuBurj3d { position:absolute; inset:0; width:100%; height:100%; z-index:0; pointer-events:none; opacity:.56; filter:drop-shadow(0 0 26px rgba(83,246,255,.28)); }
+  .menu-top { position: relative; z-index:1; }
   .brand {
     font-weight: 900; font-size: clamp(42px, 12vw, 88px); line-height: .92; margin: 0;
     letter-spacing: 3px; text-transform: uppercase;
@@ -121,7 +122,7 @@
   }
   @keyframes neonFlicker { 0%, 96%, 100% { opacity: 1; } 97% { opacity: .82; } 98% { opacity: 1; } 99% { opacity: .9; } }
 
-  .menu-bottom { position: relative; display: flex; flex-direction: column; align-items: center; gap: 16px; width: 100%; }
+  .menu-bottom { position: relative; z-index:1; display: flex; flex-direction: column; align-items: center; gap: 16px; width: 100%; }
   .stat { font-weight: 700; font-size: 13px; letter-spacing: 2px; text-transform: uppercase; opacity: .88; text-shadow: 0 2px 12px rgba(0,0,0,.7); font-variant-numeric: tabular-nums; color: #cfe6ff; }
   #menuUnlock { color: #ffb8ff; font-weight: 800; min-height: 16px; text-shadow: 0 0 14px rgba(255,140,255,.65); }
 
@@ -249,14 +250,11 @@
   #milestoneMsg.show { visibility:visible; opacity:1; transform:scale(1); }
   .milestoneCard { width:min(82vw,390px); padding:22px 24px 24px; text-align:center; color:#fff; background:linear-gradient(145deg,rgba(6,26,63,.94),rgba(56,9,78,.94)); border:1px solid rgba(83,246,255,.72); clip-path:polygon(18px 0,100% 0,100% calc(100% - 18px),calc(100% - 18px) 100%,0 100%,0 18px); box-shadow:inset 0 0 32px rgba(83,246,255,.12),0 0 30px rgba(83,246,255,.34),0 0 80px rgba(168,85,255,.28); }
   .milestoneKicker { color:#7df8ff; font-size:10px; font-weight:900; letter-spacing:3px; text-transform:uppercase; text-shadow:0 0 10px #53f6ff; }
-  .milestoneModel { height:148px; display:grid; place-items:center; perspective:620px; }
-  .milestoneModel .landmarkGlyph { width:78px; height:126px; animation:milestoneSpin 2.2s linear infinite; filter:drop-shadow(0 0 8px #53f6ff) drop-shadow(0 0 24px rgba(168,85,255,.9)); }
+  .milestoneModel { height:190px; display:grid; place-items:center; }
+  #milestone3d { width:100%; height:190px; display:block; filter:drop-shadow(0 0 8px #53f6ff) drop-shadow(0 0 24px rgba(168,85,255,.7)); }
   .milestoneName { font-size:clamp(22px,6vw,34px); font-weight:900; line-height:1.05; letter-spacing:.5px; text-transform:uppercase; text-shadow:0 0 12px rgba(83,246,255,.75); }
   .milestoneHeight { margin-top:8px; color:#ff95e9; font-size:15px; font-weight:900; letter-spacing:2px; text-transform:uppercase; }
   .milestoneKeep { margin-top:14px; color:#dcfaff; font-size:12px; font-weight:800; letter-spacing:1.8px; text-transform:uppercase; }
-  @keyframes milestoneSpin { 0%{transform:rotateY(0deg) rotateZ(-2deg)} 50%{transform:rotateY(180deg) rotateZ(2deg)} 100%{transform:rotateY(360deg) rotateZ(-2deg)} }
-  @media (prefers-reduced-motion:reduce) { .milestoneModel .landmarkGlyph { animation:milestoneFloat 1.3s ease-in-out infinite alternate; } }
-  @keyframes milestoneFloat { to { transform:translateY(-8px); } }
 
   /* new-skin unbox reveal */
   #skinReveal { z-index: 20; background: radial-gradient(ellipse at center, rgba(58,28,88,.62) 0%, rgba(10,6,20,.9) 78%); }
@@ -427,6 +425,7 @@
 <div id="toast"></div>
 
 <div id="menu" class="ui">
+  <canvas id="menuBurj3d" aria-hidden="true"></canvas>
   <div class="menu-top">
     <h1 class="brand">BURJ</h1>
     <div class="brand-sub">Build past the Burj · Reach the atmosphere</div>
@@ -446,7 +445,7 @@
     <p>Tap or press Space to drop the moving block onto the tower.</p>
     <p>Line it up dead-center for a <b>perfect</b> drop — perfects keep the full width, and a streak of 5 in a row grows your tower 5×.</p>
     <p>Pass the Statue of Liberty, Space Needle, Eiffel Tower, Empire State Building, One World Trade Center, Shanghai Tower and Burj Khalifa — then keep climbing all the way to the atmosphere at 100,000 m.</p>
-    <p>Every landmark you pass is celebrated again on every new run, so you always know what you have built beyond and what comes next.</p>
+    <p>Every landmark you pass is celebrated again with its spinning 3D model. The game waits until you press Space to keep building.</p>
     <p>Every 100 m still unlocks a new tower skin, and every metre from a 5× perfect counts toward the Burj.</p>
     <p>Each 100 m also drops one random power-up. Click its spinning cube before the next 10 m or it shatters.</p>
     <button class="neonBtn secondary" id="howtoClose"><span class="label">Got it</span></button>
@@ -496,10 +495,10 @@
 <div id="milestoneMsg" aria-live="polite" aria-hidden="true">
   <div class="milestoneCard">
     <div class="milestoneKicker">Landmark passed</div>
-    <div class="milestoneModel"><span id="milestoneGlyph" class="landmarkGlyph statue"></span></div>
+    <div class="milestoneModel"><canvas id="milestone3d" aria-label="Spinning 3D landmark model"></canvas></div>
     <div class="milestoneName" id="milestoneName">Statue of Liberty</div>
     <div class="milestoneHeight" id="milestoneHeight">93 m cleared</div>
-    <div class="milestoneKeep">You built past it · keep building</div>
+    <div class="milestoneKeep">Press Space to keep building</div>
   </div>
 </div>
 
@@ -736,7 +735,7 @@ let stack = null, mover = null, debris = [], sparks = [];
 let score = 0, bestM = 0, camY = 0, camYT = 0, shake = 0, endT = 0;
 let equipped = 0, activeSkin = 0, unlockMsg = '';
 let perfectStreak = 0, paused = false, pauseT = 0;  // consecutive-perfect bonus
-let milestoneQueue = [], milestoneActive = false, milestoneT = 0;
+let milestoneQueue = [], milestoneActive = false, milestoneT = 0, currentMilestone=null;
 let polishUsed = false, lastRunM = BASE_M, lastRunTower = [], lastRunSkin = 0;
 let runStartUnlockIdx = 0;  // skin already unlocked before this run began
 let pendingRevealIdx = -1;  // a skin unlocked-for-the-first-time this run, waiting to be shown
@@ -912,18 +911,26 @@ function queueCrossedLandmarks(fromM,toM) {
 function showNextMilestone() {
   if (milestoneActive || paused || state !== S.PLAY || !milestoneQueue.length) return;
   const landmark = milestoneQueue.shift();
-  milestoneActive = true; milestoneT = 3.4;
-  milestoneGlyphEl.className = 'landmarkGlyph ' + landmark.type;
+  milestoneActive = true; milestoneT = 0; currentMilestone=landmark;
   milestoneNameEl.textContent = landmark.name;
   milestoneHeightEl.textContent = formatM(landmark.score) + ' m cleared';
   milestoneMsgEl.setAttribute('aria-hidden','false');
   milestoneMsgEl.classList.add('show');
+  if(window.Milestone3D)window.Milestone3D.show(landmark,equipped);
   playSfx(audioNav);
 }
+function dismissMilestone(){
+  if(!milestoneActive)return;
+  milestoneActive=false; currentMilestone=null;
+  milestoneMsgEl.setAttribute('aria-hidden','true'); milestoneMsgEl.classList.remove('show');
+  if(window.Milestone3D)window.Milestone3D.hide();
+  playSfx(audioNav); showNextMilestone();
+}
 function clearMilestones() {
-  milestoneQueue = []; milestoneActive = false; milestoneT = 0;
+  milestoneQueue = []; milestoneActive = false; milestoneT = 0; currentMilestone=null;
   milestoneMsgEl.setAttribute('aria-hidden','true');
   milestoneMsgEl.classList.remove('show');
+  if(window.Milestone3D)window.Milestone3D.hide();
 }
 function commitRun() {
   const m = heightM();
@@ -1028,6 +1035,7 @@ function floorTopY(blocks, i) { return floorBaseY(blocks, i) + (i === 0 ? PODIUM
 function press(e) {
   if (e && e.type === 'keydown' && e.code !== 'Space') return;
   if (e) e.preventDefault();
+  if (milestoneActive && e && e.type === 'keydown') { dismissMilestone(); return; }
   if (state === S.PLAY && !paused && !milestoneActive) drop();
   else if (state === S.DEAD && e && e.type === 'keydown') { playSfx(audioNav); startGame(); }
 }
@@ -1054,7 +1062,7 @@ volumeSlider.addEventListener('input',()=>{
   localStorage.setItem('city_muted',muted?'1':'0'); muteBtn.textContent=muted?'🔇':'🔊';
 });
 const bonusMsgEl = document.getElementById('bonusMsg');
-const milestoneMsgEl = document.getElementById('milestoneMsg'), milestoneGlyphEl = document.getElementById('milestoneGlyph'), milestoneNameEl = document.getElementById('milestoneName'), milestoneHeightEl = document.getElementById('milestoneHeight');
+const milestoneMsgEl = document.getElementById('milestoneMsg'), milestoneNameEl = document.getElementById('milestoneName'), milestoneHeightEl = document.getElementById('milestoneHeight');
 const menuStatEl = document.getElementById('menuStat'), menuUnlockEl = document.getElementById('menuUnlock');
 function refreshMenu() {
   const reached = reachedLandmark(bestM), next = nextLandmark(bestM);
@@ -1062,7 +1070,9 @@ function refreshMenu() {
   if (!unlockMsg && next) unlockMsg = 'Next: ' + next.name + ' · ' + formatM(next.score) + ' m';
   if (!unlockMsg && !next) unlockMsg = 'Atmosphere reached';
   menuUnlockEl.textContent = unlockMsg; unlockMsg = '';
+  if(window.MenuBurj3D)window.MenuBurj3D.setSkin(unlockedIdx(bestM));
 }
+window.addEventListener('showcase3dready',()=>{ refreshMenu(); if(milestoneActive&&currentMilestone)window.Milestone3D.show(currentMilestone,equipped); });
 
 // ---------- leaderboard / tower viewer ----------
 const statsEl = document.getElementById('stats'), leaderRowsEl = document.getElementById('leaderRows'), rankSummaryEl = document.getElementById('rankSummary');
@@ -1322,7 +1332,6 @@ function update(dt, t) {
   if (shake > 0) shake = Math.max(0, shake - dt * 26);
   if (state === S.DEAD) endT = Math.min(1, endT + dt * 1.8);
   if (paused) { pauseT -= dt; if (pauseT <= 0) { paused = false; bonusMsgEl.classList.remove('show'); showNextMilestone(); } }
-  if (milestoneActive) { milestoneT -= dt; if (milestoneT <= 0) { milestoneActive = false; milestoneMsgEl.setAttribute('aria-hidden','true'); milestoneMsgEl.classList.remove('show'); showNextMilestone(); } }
   if(state===S.PLAY&&freezeTimer>0){ freezeTimer=Math.max(0,freezeTimer-dt); updatePowerStatus(); }
   if (state === S.PLAY && mover && !paused && !milestoneActive) {
     const wob = 1 + 0.2 * Math.sin(t * 2 + mover.wob);
@@ -1684,6 +1693,110 @@ window.City3D = {
   }
   window.Comparison3D={show,hide};
   window.dispatchEvent(new Event('comparison3dready'));
+})();
+
+// Home-screen Burj and the landmark-passed celebration are true WebGL models.
+(() => {
+  const palettes=[
+    {top:0x8cf8ff,side:0x315cff,edge:0x53f6ff,glass:0xe8ffff},
+    {top:0xff92e6,side:0x9a196d,edge:0xff91e8,glass:0xffd6f5},
+    {top:0x8dffe0,side:0x087b78,edge:0x61ffca,glass:0xefffff},
+    {top:0xbd9cff,side:0x4e288f,edge:0xa889ff,glass:0xffffff},
+    {top:0x63fff3,side:0x5940e8,edge:0xff6fe2,glass:0xf0ffff}
+  ];
+  const menuCanvas=document.getElementById('menuBurj3d'), milestoneCanvas=document.getElementById('milestone3d');
+  let menuRenderer,menuScene,menuCamera,menuTower,menuSkin=-1;
+  let milestoneRenderer,milestoneScene,milestoneCamera,milestoneModel,milestoneActive3D=false;
+  const profileFns={
+    statue:t=>t<.08?.42:t<.16?.34:t<.60?.18:t<.72?.28:t<.82?.17:t<.91?.08:.025,
+    needle:t=>t<.09?.34:t<.62?.075:t<.70?.12:t<.76?.42:t<.81?.32:t<.87?.07:.018,
+    lattice:t=>Math.max(.025,.55*Math.pow(1-t,1.75)+(t>.47&&t<.58?.09:0)),
+    spire:t=>t<.62?.36:t<.75?.27:t<.84?.18:t<.91?.10:.025,
+    twist:t=>Math.max(.035,.38*(1-t*.77))*(1+.045*Math.sin(t*13)),
+    burj:t=>t<.15?.38:t<.38?.32:t<.58?.25:t<.76?.17:t<.9?.09:.018
+  };
+  function addLights(scene){
+    scene.add(new THREE.HemisphereLight(0xcff4ff,0x160526,1.55));
+    const key=new THREE.DirectionalLight(0xffffff,2.4); key.position.set(-8,18,12); scene.add(key);
+    const cyan=new THREE.PointLight(0x53f6ff,24,42); cyan.position.set(-8,7,7); scene.add(cyan);
+    const pink=new THREE.PointLight(0xff4fd8,20,42); pink.position.set(9,12,-4); scene.add(pink);
+  }
+  function resize(renderer,camera,canvas){
+    const w=Math.max(1,canvas.clientWidth),h=Math.max(1,canvas.clientHeight),pr=Math.min(devicePixelRatio||1,2);
+    if(canvas.width!==Math.floor(w*pr)||canvas.height!==Math.floor(h*pr)){ renderer.setSize(w,h,false); camera.aspect=w/h; camera.updateProjectionMatrix(); }
+  }
+  function dispose(root){ if(!root)return; root.traverse(o=>{ if(o.geometry)o.geometry.dispose(); if(o.material){const ms=Array.isArray(o.material)?o.material:[o.material];ms.forEach(m=>m.dispose());} }); }
+  function addEdges(group,mesh,color){
+    const edge=new THREE.LineSegments(new THREE.EdgesGeometry(mesh.geometry,18),new THREE.LineBasicMaterial({color,transparent:true,opacity:.58}));
+    edge.position.copy(mesh.position); edge.rotation.copy(mesh.rotation); group.add(edge);
+  }
+  function buildPerfectBurj(skin){
+    const p=palettes[skin%palettes.length],group=new THREE.Group(),floorH=.66;
+    const tiers=[{n:6,w:6.8},{n:5,w:6.05},{n:5,w:5.25},{n:4,w:4.5},{n:4,w:3.75},{n:3,w:3.05},{n:3,w:2.35},{n:3,w:1.7},{n:2,w:1.12},{n:4,w:.58}];
+    const wall=new THREE.MeshStandardMaterial({color:p.side,emissive:p.side,emissiveIntensity:.16,metalness:.68,roughness:.24});
+    const roof=new THREE.MeshStandardMaterial({color:p.top,emissive:p.top,emissiveIntensity:.14,metalness:.42,roughness:.24});
+    const glass=new THREE.MeshStandardMaterial({color:p.glass,emissive:p.glass,emissiveIntensity:1.3,metalness:.18,roughness:.1});
+    let y=.4,level=0;
+    for(const tier of tiers){
+      for(let i=0;i<tier.n;i++,level++){
+        const w=tier.w,h=floorH,geo=new THREE.BoxGeometry(w,h,w),mesh=new THREE.Mesh(geo,[wall,wall,roof,wall,wall,wall]);
+        mesh.position.set(0,y+h/2,0); group.add(mesh); addEdges(group,mesh,p.edge);
+        if(w>.72){
+          const bandW=w*.72,bandH=.16,z=w/2+.012;
+          const front=new THREE.Mesh(new THREE.BoxGeometry(bandW,bandH,.025),glass); front.position.set(0,y+h*.54,z); group.add(front);
+          const back=front.clone(); back.position.z=-z; group.add(back);
+          const right=new THREE.Mesh(new THREE.BoxGeometry(.025,bandH,bandW),glass); right.position.set(z,y+h*.54,0); group.add(right);
+          const left=right.clone(); left.position.x=-z; group.add(left);
+        }
+        y+=h;
+      }
+    }
+    const platform=new THREE.Mesh(new THREE.CylinderGeometry(5.2,5.6,.55,8),new THREE.MeshStandardMaterial({color:0x07152e,metalness:.8,roughness:.28,emissive:p.edge,emissiveIntensity:.04})); platform.position.y=.1; group.add(platform); addEdges(group,platform,p.edge);
+    group.userData.height=y; return group;
+  }
+  function initMenu(){
+    menuRenderer=new THREE.WebGLRenderer({canvas:menuCanvas,antialias:true,alpha:true}); menuRenderer.setPixelRatio(Math.min(devicePixelRatio||1,2)); menuRenderer.outputColorSpace=THREE.SRGBColorSpace;
+    menuScene=new THREE.Scene(); menuScene.fog=new THREE.FogExp2(0x050616,.022); addLights(menuScene);
+    menuCamera=new THREE.PerspectiveCamera(34,1,.1,140); menuCamera.position.set(19,14,50); menuCamera.lookAt(0,11,0);
+    setMenuSkin(0);
+  }
+  function setMenuSkin(idx){
+    idx=idx%palettes.length; if(menuSkin===idx&&menuTower)return; menuSkin=idx;
+    if(menuTower){menuScene.remove(menuTower);dispose(menuTower);} menuTower=buildPerfectBurj(idx); menuTower.position.set(9.5,-1.2,0); menuTower.rotation.y=-.45; menuScene.add(menuTower);
+  }
+  function makeLandmark(row,skin){
+    const p=palettes[skin%palettes.length],group=new THREE.Group(),widthAt=profileFns[row.type]||profileFns.burj,steps=34,pts=[];
+    for(let i=0;i<=steps;i++){const t=i/steps;pts.push(new THREE.Vector2(-widthAt(t),t));}
+    for(let i=steps;i>=0;i--){const t=i/steps;pts.push(new THREE.Vector2(widthAt(t),t));}
+    const shape=new THREE.Shape(pts),geo=new THREE.ExtrudeGeometry(shape,{depth:.7,bevelEnabled:true,bevelSegments:2,bevelSize:.018,bevelThickness:.05}); geo.scale(5.4,8.6,1); geo.translate(0,.32,-.35);
+    const body=new THREE.Mesh(geo,new THREE.MeshStandardMaterial({color:p.side,emissive:p.side,emissiveIntensity:.18,metalness:.7,roughness:.24})); group.add(body); addEdges(group,body,p.edge);
+    const glass=new THREE.MeshStandardMaterial({color:p.glass,emissive:p.glass,emissiveIntensity:1.4,metalness:.15,roughness:.12});
+    for(let i=2;i<22;i++){
+      const t=i/22,half=widthAt(t)*5.4;if(half<.09)continue;
+      const band=new THREE.Mesh(new THREE.BoxGeometry(Math.max(.08,half*1.25),.07,.018),glass); band.position.set(0,.32+t*8.6,.365);group.add(band);
+      const back=band.clone();back.position.z=-.365;group.add(back);
+    }
+    const pad=new THREE.Mesh(new THREE.CylinderGeometry(3,3.35,.42,8),new THREE.MeshStandardMaterial({color:0x0a1838,metalness:.75,roughness:.3,emissive:p.edge,emissiveIntensity:.05}));pad.position.y=.1;group.add(pad);addEdges(group,pad,p.edge);
+    return group;
+  }
+  function initMilestone(){
+    milestoneRenderer=new THREE.WebGLRenderer({canvas:milestoneCanvas,antialias:true,alpha:true}); milestoneRenderer.setPixelRatio(Math.min(devicePixelRatio||1,2)); milestoneRenderer.outputColorSpace=THREE.SRGBColorSpace;
+    milestoneScene=new THREE.Scene(); addLights(milestoneScene);
+    milestoneCamera=new THREE.PerspectiveCamera(36,1,.1,80); milestoneCamera.position.set(9,5.1,16); milestoneCamera.lookAt(0,4.4,0);
+  }
+  function showMilestone(row,skin){
+    if(!milestoneRenderer)initMilestone(); if(milestoneModel){milestoneScene.remove(milestoneModel);dispose(milestoneModel);}
+    milestoneModel=makeLandmark(row,skin);milestoneModel.rotation.y=-.5;milestoneScene.add(milestoneModel);milestoneActive3D=true;
+  }
+  function hideMilestone(){milestoneActive3D=false;}
+  function animate(){
+    requestAnimationFrame(animate);
+    if(menuRenderer&&!document.getElementById('menu').classList.contains('hidden')){resize(menuRenderer,menuCamera,menuCanvas);menuTower.rotation.y+=.0017;menuRenderer.render(menuScene,menuCamera);}
+    if(milestoneRenderer&&milestoneActive3D){resize(milestoneRenderer,milestoneCamera,milestoneCanvas);milestoneModel.rotation.y+=.008;milestoneRenderer.render(milestoneScene,milestoneCamera);}
+  }
+  initMenu(); animate();
+  window.MenuBurj3D={setSkin:setMenuSkin}; window.Milestone3D={show:showMilestone,hide:hideMilestone};
+  window.dispatchEvent(new Event('showcase3dready'));
 })();
 </script>
 </body>
