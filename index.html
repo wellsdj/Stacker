@@ -975,9 +975,9 @@ function landmarkProfile(row,cx,topY,baseY,ww) {
   if(row.name.indexOf('One World')===0) return [[x(-.43),y(1)],[x(-.31),y(.20)],[x(-.05),y(.08)],[x(-.02),y(0)],[x(.02),y(0)],[x(.05),y(.08)],[x(.31),y(.20)],[x(.43),y(1)]];
   return [[x(-.45),y(1)],[x(-.45),y(.72)],[x(-.34),y(.72)],[x(-.34),y(.48)],[x(-.24),y(.48)],[x(-.24),y(.25)],[x(-.10),y(.25)],[x(-.06),y(.08)],[x(0),y(0)],[x(.06),y(.08)],[x(.10),y(.25)],[x(.24),y(.25)],[x(.24),y(.48)],[x(.34),y(.48)],[x(.34),y(.72)],[x(.45),y(.72)],[x(.45),y(1)]];
 }
-function drawLandmarkModel3D(g,row,cx,topY,baseY,ww,totalH,skinIdx) {
+function drawLandmarkModel3D(g,row,cx,topY,baseY,ww,totalH,skinIdx,straightOn=false) {
   const sk=SKINS[skinIdx]||SKINS[0], front=landmarkProfile(row,cx,topY,baseY,ww);
-  const sideSign=Math.cos(viewerYaw)>=0?1:-1, dx=sideSign*ww*.22, dy=-ww*.11, back=front.map(p=>[p[0]+dx,p[1]+dy]);
+  const sideSign=Math.cos(viewerYaw)>=0?1:-1, dx=sideSign*ww*(straightOn?.10:.22), dy=-ww*(straightOn?.045:.11), back=front.map(p=>[p[0]+dx,p[1]+dy]);
   const topCol=sk.mythic?'#d8b8ff':sk.top, frontA=sk.mythic?'#763cff':sk.left, sideA=sk.mythic?'#29136b':sk.right;
   const path=pts=>{g.beginPath();pts.forEach((p,i)=>i?g.lineTo(p[0],p[1]):g.moveTo(p[0],p[1]));g.closePath();};
   g.save(); g.shadowColor=sk.mythic?'#ff5cff':sk.gA; g.shadowBlur=Math.max(9,totalH*.035);
@@ -1005,7 +1005,7 @@ function drawLandmarkModel3D(g,row,cx,topY,baseY,ww,totalH,skinIdx) {
   path([[cap[0],cap[1]],[cap[0]+dx,cap[1]+dy],[cap[0]+dx+ww*.05,cap[1]+dy+ww*.025],[cap[0]+ww*.05,cap[1]+ww*.025]]); g.fillStyle=topCol; g.fill();
   g.restore();
 }
-function drawLandmarkViewer(g,w,h,row,isolated=false,skinIdx=null) {
+function drawLandmarkViewer(g,w,h,row,isolated=false,skinIdx=null,straightOn=false) {
   const totalH = Math.min(h*.66,w*.68) * viewerZoom, baseY = h*.82, cx = w*.5;
   const orbit = .78 + Math.abs(Math.cos(viewerYaw))*.22, ww = totalH*.34*orbit;
   const topY = baseY-totalH;
@@ -1025,7 +1025,7 @@ function drawLandmarkViewer(g,w,h,row,isolated=false,skinIdx=null) {
     for(let i=0;i<4;i++){ g.strokeStyle=i%2?'rgba(255,83,218,.72)':'rgba(83,246,255,.78)'; g.lineWidth=Math.max(2,totalH*(.011-i*.0015)); g.shadowColor=i%2?'#ff53da':'#53f6ff'; g.shadowBlur=18; g.beginPath(); g.arc(cx,earthY,earthR*(1.08+i*.13),Math.PI*1.08,Math.PI*1.92); g.stroke(); }
     g.fillStyle='#fff'; for(let i=0;i<12;i++){ const a=i*2.31, r=totalH*(.18+(i%4)*.11); g.globalAlpha=.35+(i%3)*.22; g.beginPath(); g.arc(cx+Math.cos(a)*r,topY+totalH*.34+Math.sin(a)*r*.48,1+(i%2),0,Math.PI*2); g.fill(); } g.globalAlpha=1;
   } else {
-    drawLandmarkModel3D(g,row,cx,topY,baseY,ww,totalH,skinIdx==null?unlockedIdx(bestM):skinIdx);
+    drawLandmarkModel3D(g,row,cx,topY,baseY,ww,totalH,skinIdx==null?unlockedIdx(bestM):skinIdx,straightOn);
   }
   g.restore();
 }
@@ -1034,29 +1034,36 @@ function towerComparisonAsset(blocks,skin) {
   const c=document.createElement('canvas'); c.width=320; c.height=360; const g=c.getContext('2d');
   const saved=[A,B,C,PX,PY,camYaw,camZoom,activeSkin];
   const worldH=floorTopY(blocks,blocks.length-1), k=Math.min(270/Math.max(worldH,120),.72);
-  A=k; B=k*.577; C=k; PX=160; PY=326; camYaw=-.5; camZoom=1; activeSkin=skin;
+  A=k; B=k*.577; C=k; PX=160; PY=326; camYaw=0; camZoom=1; activeSkin=skin;
   const glow=g.createRadialGradient(160,316,5,160,316,130); glow.addColorStop(0,'rgba(83,246,255,.3)'); glow.addColorStop(1,'rgba(83,246,255,0)'); g.fillStyle=glow; g.fillRect(0,190,320,170);
   for(let i=0;i<blocks.length;i++) drawFloor(g,blocks[i],i,floorBaseY(blocks,i),floorTopY(blocks,i));
   [A,B,C,PX,PY,camYaw,camZoom,activeSkin]=saved; return c;
 }
 function landmarkComparisonAsset(row,skinIdx) {
   const c=document.createElement('canvas'); c.width=320; c.height=360; const g=c.getContext('2d'), z=viewerZoom;
-  viewerZoom=1.22; drawLandmarkViewer(g,320,360,row,true,skinIdx); viewerZoom=z; return c;
+  viewerZoom=1.22; drawLandmarkViewer(g,320,360,row,true,skinIdx,true); viewerZoom=z; return c;
 }
 function drawComparisonCard(c,row) {
-  const g=c.getContext('2d'), w=c.width, h=c.height, maxM=Math.max(lastRunM,row.score), base=h*.83;
+  const g=c.getContext('2d'), w=c.width, h=c.height, maxM=Math.max(lastRunM,row.score), base=h*.76;
   const bg=g.createLinearGradient(0,0,w,h); bg.addColorStop(0,'#071a3c'); bg.addColorStop(.55,'#17134b'); bg.addColorStop(1,'#320b47'); g.fillStyle=bg; g.fillRect(0,0,w,h);
   const halo=g.createRadialGradient(w*.5,base,0,w*.5,base,w*.65); halo.addColorStop(0,'rgba(83,246,255,.22)'); halo.addColorStop(.5,'rgba(116,79,255,.1)'); halo.addColorStop(1,'rgba(255,70,205,0)'); g.fillStyle=halo; g.fillRect(0,0,w,h);
   g.fillStyle='#fff'; for(let i=0;i<18;i++){ g.globalAlpha=.18+(i%4)*.12; g.fillRect((i*97)%w,24+(i*53)%(h*.58),1+(i%2),1+(i%2)); } g.globalAlpha=1;
-  g.save(); g.shadowColor='#53f6ff'; g.shadowBlur=22; g.fillStyle='#15375e'; g.beginPath(); g.moveTo(-20,base+8); g.quadraticCurveTo(w*.5,base-18,w+20,base+8); g.lineTo(w+20,h); g.lineTo(-20,h); g.closePath(); g.fill(); g.restore();
+  // Both models share this one straight street platform and exact ground line.
+  g.save(); g.shadowColor='#53f6ff'; g.shadowBlur=18;
+  g.fillStyle='#183b5c'; g.beginPath(); g.moveTo(w*.05,base); g.lineTo(w*.95,base); g.lineTo(w*.88,base+31); g.lineTo(w*.12,base+31); g.closePath(); g.fill();
+  g.shadowBlur=0; g.fillStyle='#0b1738'; g.beginPath(); g.moveTo(w*.12,base+31); g.lineTo(w*.88,base+31); g.lineTo(w*.88,base+52); g.lineTo(w*.12,base+52); g.closePath(); g.fill();
+  g.strokeStyle='#53f6ff'; g.lineWidth=2; g.beginPath(); g.moveTo(w*.05,base); g.lineTo(w*.95,base); g.stroke();
+  g.strokeStyle='rgba(255,105,225,.55)'; g.lineWidth=1; g.beginPath(); g.moveTo(w*.12,base+31); g.lineTo(w*.88,base+31); g.stroke(); g.restore();
   const userAsset=towerComparisonAsset(lastRunTower,lastRunSkin), landmarkAsset=landmarkComparisonAsset(row,lastRunSkin);
   const userRatio=Math.max(.055,lastRunM/maxM), landmarkRatio=Math.max(.055,row.score/maxM);
-  const maxH=h*.68, userH=maxH*userRatio, markH=maxH*landmarkRatio;
+  const maxH=h*.72, userH=maxH*userRatio, markH=maxH*landmarkRatio;
   const userW=245*userRatio, markW=245*landmarkRatio;
-  g.drawImage(userAsset,w*.29-userW/2,base-userH,userW,userH);
-  g.drawImage(landmarkAsset,w*.71-markW/2,base-markH,markW,markH);
-  g.fillStyle='#dffcff'; g.font='900 12px Arial'; g.textAlign='center'; g.fillText('YOU · '+formatM(lastRunM)+' m',w*.29,base+25);
-  g.fillStyle='#ff9be9'; g.fillText(formatM(row.score)+' m',w*.71,base+25);
+  g.fillStyle='rgba(0,0,0,.28)'; g.beginPath(); g.ellipse(w*.29,base+4,Math.max(9,userW*.36),Math.max(3,userW*.10),0,0,Math.PI*2); g.fill();
+  g.beginPath(); g.ellipse(w*.71,base+4,Math.max(9,markW*.36),Math.max(3,markW*.10),0,0,Math.PI*2); g.fill();
+  g.drawImage(userAsset,w*.29-userW/2,base-userH*(326/360),userW,userH);
+  g.drawImage(landmarkAsset,w*.71-markW/2,base-markH*.82,markW,markH);
+  g.fillStyle='#dffcff'; g.font='900 12px Arial'; g.textAlign='center'; g.fillText('YOU · '+formatM(lastRunM)+' m',w*.29,base+47);
+  g.fillStyle='#ff9be9'; g.fillText(formatM(row.score)+' m',w*.71,base+47);
 }
 function buildLossComparison() {
   const rail=document.getElementById('compareRail'), title=document.getElementById('compareTitle'), sub=document.getElementById('compareSub');
