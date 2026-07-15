@@ -150,24 +150,33 @@
   @keyframes neonSpin { to { transform: rotate(360deg); } }
   @media (prefers-reduced-motion: reduce) { .brand, .neonBtn::before, .neonBtn::after { animation: none; } }
 
-  /* game-over: a horizontal, true-scale landmark comparison gallery */
+  /* game-over: one live, orbitable WebGL scale-comparison stage */
   #over { z-index:15; justify-content:flex-end; padding:76px 0 4vh; background:linear-gradient(180deg,rgba(3,7,25,.18),rgba(5,5,24,.78) 52%,rgba(7,4,24,.96)); opacity:0; transition:opacity .7s ease; }
   #over.reveal { opacity:1; }
   .compareHead { width:min(92vw,760px); margin:auto auto 8px; text-align:left; padding:0 18px; box-sizing:border-box; }
   .compareKicker { color:#7df8ff; font-size:10px; font-weight:900; letter-spacing:3px; text-transform:uppercase; text-shadow:0 0 12px #53f6ff; }
   #compareTitle { margin:7px 0 4px; font-size:clamp(25px,7vw,46px); line-height:1; text-transform:uppercase; text-shadow:0 0 18px rgba(83,246,255,.65); }
   #compareSub { color:#ffc3f1; font-size:12px; font-weight:800; letter-spacing:1.3px; }
-  #compareRail { pointer-events:auto; display:flex; width:100%; overflow-x:auto; gap:14px; padding:10px max(5vw,calc((100vw - 620px)/2)) 18px; box-sizing:border-box; scroll-snap-type:x mandatory; scrollbar-width:none; touch-action:pan-x; }
-  #compareRail::-webkit-scrollbar { display:none; }
-  .compareCard { position:relative; flex:0 0 min(82vw,620px); height:min(47vh,410px); scroll-snap-align:center; overflow:hidden; border:1px solid rgba(83,246,255,.48); background:linear-gradient(145deg,rgba(9,24,57,.86),rgba(47,8,69,.88)); clip-path:polygon(18px 0,100% 0,100% calc(100% - 18px),calc(100% - 18px) 100%,0 100%,0 18px); box-shadow:inset 0 0 34px rgba(83,246,255,.08),0 0 24px rgba(83,246,255,.16); }
-  .compareCard canvas { width:100%; height:100%; display:block; }
-  .compareLabel { position:absolute; left:14px; right:14px; bottom:12px; display:flex; justify-content:space-between; gap:12px; color:#efffff; font-size:11px; font-weight:900; letter-spacing:1px; text-transform:uppercase; text-shadow:0 2px 8px #02030c; }
-  .compareLabel span:last-child { color:#ff91e8; text-align:right; }
+  #compareStage { pointer-events:auto; position:relative; width:min(94vw,900px); height:min(54vh,520px); min-height:290px; margin:8px auto 14px; overflow:hidden; border:1px solid rgba(83,246,255,.58); background:radial-gradient(circle at 50% 35%,rgba(38,43,113,.72),rgba(7,9,34,.95) 70%); clip-path:polygon(20px 0,100% 0,100% calc(100% - 20px),calc(100% - 20px) 100%,0 100%,0 20px); box-shadow:inset 0 0 42px rgba(83,246,255,.09),0 0 28px rgba(83,246,255,.2); }
+  #compare3d { position:absolute; inset:0; width:100%; height:100%; display:block; touch-action:none; cursor:grab; }
+  #compare3d:active { cursor:grabbing; }
+  .compareLive { position:absolute; z-index:2; top:13px; left:17px; color:#7df8ff; font-size:9px; font-weight:900; letter-spacing:2.3px; text-transform:uppercase; text-shadow:0 0 12px #53f6ff; pointer-events:none; }
+  .compareLive::before { content:''; display:inline-block; width:7px; height:7px; margin-right:7px; border-radius:50%; background:#61ffca; box-shadow:0 0 10px #61ffca; }
+  .compareModelLabel { position:absolute; z-index:2; bottom:14px; width:40%; color:#efffff; text-align:center; text-transform:uppercase; text-shadow:0 2px 9px #02030c; pointer-events:none; }
+  .compareModelLabel.yours { left:7%; }
+  .compareModelLabel.landmark { right:7%; }
+  .compareModelLabel b { display:block; font-size:11px; letter-spacing:1.3px; }
+  .compareModelLabel span { display:block; margin-top:3px; color:#7df8ff; font-size:10px; font-weight:900; letter-spacing:1px; }
+  .compareModelLabel.landmark span { color:#ff91e8; }
+  .compareNav { position:absolute; z-index:3; top:50%; width:42px; height:64px; transform:translateY(-50%); border:1px solid rgba(125,248,255,.72); color:#fff; background:linear-gradient(145deg,rgba(14,47,95,.92),rgba(75,16,99,.92)); font:900 31px/1 Arial; cursor:pointer; box-shadow:0 0 18px rgba(83,246,255,.25); clip-path:polygon(10px 0,100% 0,100% calc(100% - 10px),calc(100% - 10px) 100%,0 100%,0 10px); }
+  #comparePrev { left:10px; } #compareNext { right:10px; }
+  .compareOrbitHint { position:absolute; z-index:2; top:13px; right:16px; color:#b8dfff; font-size:8px; font-weight:800; letter-spacing:1.2px; text-transform:uppercase; pointer-events:none; }
   #over .btnrow { display:flex; flex-direction:column; align-items:center; gap:4px; }
   #over .btn { margin:0; padding:15px 54px; font-size:16px; }
   .continueHint { color:#b8dfff; font-size:9px; font-weight:800; letter-spacing:1.8px; text-transform:uppercase; }
-  #over .compareHead, #over #compareRail, #over .btnrow { opacity:0; transform:translateY(18px); transition:opacity .45s ease,transform .55s cubic-bezier(.2,.8,.2,1); }
-  #over.reveal .compareHead, #over.reveal #compareRail, #over.reveal .btnrow { opacity:1; transform:none; transition-delay:.5s; }
+  #over .compareHead, #over #compareStage, #over .btnrow { opacity:0; transform:translateY(18px); transition:opacity .45s ease,transform .55s cubic-bezier(.2,.8,.2,1); }
+  #over.reveal .compareHead, #over.reveal #compareStage, #over.reveal .btnrow { opacity:1; transform:none; transition-delay:.5s; }
+  @media (max-width:600px) { #compareStage { width:96vw; height:min(51vh,430px); } .compareOrbitHint { top:34px; left:17px; right:auto; } .compareNav { width:36px; height:54px; } }
 
   /* how-to-play modal */
   #howto { background: rgba(6,8,22,.7); backdrop-filter: blur(6px); }
@@ -432,7 +441,15 @@
     <h2 id="compareTitle">See how you measure up</h2>
     <div id="compareSub">Swipe left and right to compare your building</div>
   </div>
-  <div id="compareRail" aria-label="Landmark height comparisons"></div>
+  <div id="compareStage" aria-label="Interactive 3D landmark height comparison">
+    <canvas id="compare3d"></canvas>
+    <div class="compareLive">Live 3D models</div>
+    <div class="compareOrbitHint">Drag to orbit · scroll or pinch to zoom</div>
+    <button id="comparePrev" class="compareNav" aria-label="Previous landmark">‹</button>
+    <button id="compareNext" class="compareNav" aria-label="Next landmark">›</button>
+    <div class="compareModelLabel yours"><b>Your saved tower</b><span id="compareYourM">0 m</span></div>
+    <div class="compareModelLabel landmark"><b id="compareLandmarkName">Landmark</b><span id="compareLandmarkM">0 m</span></div>
+  </div>
   <div class="btnrow">
     <button class="btn ghost" id="retryBtn">New building</button>
     <div class="continueHint">Click next or press Space</div>
@@ -823,6 +840,9 @@ function die() {
   clearMilestones();
   camYaw = 0; camZoom = 1;
   lastRunM = heightM(); lastRunTower = stack.map(b => ({...b})); lastRunSkin = equipped;
+  localStorage.setItem('city_last_run_m',lastRunM);
+  localStorage.setItem('city_last_run_tower',JSON.stringify(lastRunTower));
+  localStorage.setItem('city_last_run_skin',lastRunSkin);
   commitRun();
   const r = moverRect(); debris.push({ ...r, vy: 20, fall: 0 });
   playSfx(audioDeath);
@@ -839,6 +859,7 @@ function checkPendingReveal() {
 function goHome() {
   if (state === S.PLAY) commitRun();
   if (state === S.CITY && window.City3D) window.City3D.exit();
+  if (window.Comparison3D) window.Comparison3D.hide();
   state = S.MENU; sdkStop();
   paused = false; bonusMsgEl.classList.remove('show'); clearMilestones();
   equipped = 0; activeSkin = 0;  // home always shows the default Azure skin
@@ -1030,58 +1051,31 @@ function drawLandmarkViewer(g,w,h,row,isolated=false,skinIdx=null,straightOn=fal
   g.restore();
 }
 
-function towerComparisonAsset(blocks,skin) {
-  const c=document.createElement('canvas'); c.width=320; c.height=360; const g=c.getContext('2d');
-  const saved=[A,B,C,PX,PY,camYaw,camZoom,activeSkin];
-  const worldH=floorTopY(blocks,blocks.length-1), k=Math.min(270/Math.max(worldH,120),.72);
-  A=k; B=k*.577; C=k; PX=160; PY=326; camYaw=0; camZoom=1; activeSkin=skin;
-  const glow=g.createRadialGradient(160,316,5,160,316,130); glow.addColorStop(0,'rgba(83,246,255,.3)'); glow.addColorStop(1,'rgba(83,246,255,0)'); g.fillStyle=glow; g.fillRect(0,190,320,170);
-  for(let i=0;i<blocks.length;i++) drawFloor(g,blocks[i],i,floorBaseY(blocks,i),floorTopY(blocks,i));
-  [A,B,C,PX,PY,camYaw,camZoom,activeSkin]=saved; return c;
-}
-function landmarkComparisonAsset(row,skinIdx) {
-  const c=document.createElement('canvas'); c.width=320; c.height=360; const g=c.getContext('2d'), z=viewerZoom;
-  viewerZoom=1.22; drawLandmarkViewer(g,320,360,row,true,skinIdx,true); viewerZoom=z; return c;
-}
-function drawComparisonCard(c,row) {
-  const g=c.getContext('2d'), w=c.width, h=c.height, maxM=Math.max(lastRunM,row.score), base=h*.76;
-  const bg=g.createLinearGradient(0,0,w,h); bg.addColorStop(0,'#071a3c'); bg.addColorStop(.55,'#17134b'); bg.addColorStop(1,'#320b47'); g.fillStyle=bg; g.fillRect(0,0,w,h);
-  const halo=g.createRadialGradient(w*.5,base,0,w*.5,base,w*.65); halo.addColorStop(0,'rgba(83,246,255,.22)'); halo.addColorStop(.5,'rgba(116,79,255,.1)'); halo.addColorStop(1,'rgba(255,70,205,0)'); g.fillStyle=halo; g.fillRect(0,0,w,h);
-  g.fillStyle='#fff'; for(let i=0;i<18;i++){ g.globalAlpha=.18+(i%4)*.12; g.fillRect((i*97)%w,24+(i*53)%(h*.58),1+(i%2),1+(i%2)); } g.globalAlpha=1;
-  // Both models share this one straight street platform and exact ground line.
-  g.save(); g.shadowColor='#53f6ff'; g.shadowBlur=18;
-  g.fillStyle='#183b5c'; g.beginPath(); g.moveTo(w*.05,base); g.lineTo(w*.95,base); g.lineTo(w*.88,base+31); g.lineTo(w*.12,base+31); g.closePath(); g.fill();
-  g.shadowBlur=0; g.fillStyle='#0b1738'; g.beginPath(); g.moveTo(w*.12,base+31); g.lineTo(w*.88,base+31); g.lineTo(w*.88,base+52); g.lineTo(w*.12,base+52); g.closePath(); g.fill();
-  g.strokeStyle='#53f6ff'; g.lineWidth=2; g.beginPath(); g.moveTo(w*.05,base); g.lineTo(w*.95,base); g.stroke();
-  g.strokeStyle='rgba(255,105,225,.55)'; g.lineWidth=1; g.beginPath(); g.moveTo(w*.12,base+31); g.lineTo(w*.88,base+31); g.stroke(); g.restore();
-  const userAsset=towerComparisonAsset(lastRunTower,lastRunSkin), landmarkAsset=landmarkComparisonAsset(row,lastRunSkin);
-  const userRatio=Math.max(.055,lastRunM/maxM), landmarkRatio=Math.max(.055,row.score/maxM);
-  const maxH=h*.72, userH=maxH*userRatio, markH=maxH*landmarkRatio;
-  const userW=245*userRatio, markW=245*landmarkRatio;
-  g.fillStyle='rgba(0,0,0,.28)'; g.beginPath(); g.ellipse(w*.29,base+4,Math.max(9,userW*.36),Math.max(3,userW*.10),0,0,Math.PI*2); g.fill();
-  g.beginPath(); g.ellipse(w*.71,base+4,Math.max(9,markW*.36),Math.max(3,markW*.10),0,0,Math.PI*2); g.fill();
-  g.drawImage(userAsset,w*.29-userW/2,base-userH*(326/360),userW,userH);
-  g.drawImage(landmarkAsset,w*.71-markW/2,base-markH*.82,markW,markH);
-  g.fillStyle='#dffcff'; g.font='900 12px Arial'; g.textAlign='center'; g.fillText('YOU · '+formatM(lastRunM)+' m',w*.29,base+47);
-  g.fillStyle='#ff9be9'; g.fillText(formatM(row.score)+' m',w*.71,base+47);
+let comparisonRows=[], comparisonIndex=0;
+function showComparisonAt(index) {
+  if (!comparisonRows.length) return;
+  comparisonIndex=(index+comparisonRows.length)%comparisonRows.length;
+  const row=comparisonRows[comparisonIndex];
+  document.getElementById('compareYourM').textContent=formatM(lastRunM)+' m';
+  document.getElementById('compareLandmarkName').textContent=row.name;
+  document.getElementById('compareLandmarkM').textContent=formatM(row.score)+' m';
+  if (window.Comparison3D) window.Comparison3D.show({landmark:row,tower:lastRunTower,userM:lastRunM,skin:lastRunSkin});
 }
 function buildLossComparison() {
-  const rail=document.getElementById('compareRail'), title=document.getElementById('compareTitle'), sub=document.getElementById('compareSub');
+  const title=document.getElementById('compareTitle'), sub=document.getElementById('compareSub');
   const reached=reachedLandmark(lastRunM), next=nextLandmark(lastRunM);
   title.textContent='You built '+formatM(lastRunM)+' m';
   sub.textContent=reached && next ? 'Past '+reached.name+' · next is '+next.name : next ? 'Next landmark: '+next.name : 'You climbed beyond every tower';
-  const rows=LANDMARKS.filter(x=>x.score<=BURJ_M); rail.replaceChildren(...rows.map(row=>{
-    const card=document.createElement('article'); card.className='compareCard';
-    const c=document.createElement('canvas'); c.width=620; c.height=410; c.setAttribute('aria-label','Your tower beside '+row.name);
-    const label=document.createElement('div'); label.className='compareLabel'; label.innerHTML='<span>Your tower</span><span>'+row.name+'</span>';
-    card.append(c,label); requestAnimationFrame(()=>drawComparisonCard(c,row)); return card;
-  }));
-  requestAnimationFrame(()=>{ const found=rows.findIndex(x=>x.score>lastRunM), i=found<0?rows.length-1:found; const card=rail.children[i]; if(card) rail.scrollLeft=card.offsetLeft-(rail.clientWidth-card.clientWidth)/2; });
+  comparisonRows=LANDMARKS.filter(x=>x.score<=BURJ_M);
+  const found=comparisonRows.findIndex(x=>x.score>lastRunM);
+  showComparisonAt(found<0?comparisonRows.length-1:found);
 }
 document.getElementById('statsBtn').addEventListener('click', () => { playSfx(audioNav); openStats(); });
 document.getElementById('statsClose').addEventListener('click', () => { playSfx(audioNav); closeStats(); });
 document.getElementById('viewerClose').addEventListener('click', () => { playSfx(audioNav); closeViewer(); });
-document.getElementById('compareRail').addEventListener('wheel',e=>{ if(Math.abs(e.deltaY)>Math.abs(e.deltaX)){ e.preventDefault(); e.currentTarget.scrollLeft+=e.deltaY; } },{passive:false});
+document.getElementById('comparePrev').addEventListener('click',e=>{ e.stopPropagation(); playSfx(audioNav); showComparisonAt(comparisonIndex-1); });
+document.getElementById('compareNext').addEventListener('click',e=>{ e.stopPropagation(); playSfx(audioNav); showComparisonAt(comparisonIndex+1); });
+window.addEventListener('comparison3dready',()=>{ if(state===S.DEAD) showComparisonAt(comparisonIndex); });
 viewerCanvas.addEventListener('pointerdown', e => { viewerDragging = true; viewerX = e.clientX; viewerCanvas.setPointerCapture(e.pointerId); });
 viewerCanvas.addEventListener('pointermove', e => { if (!viewerDragging) return; viewerYaw += (e.clientX - viewerX) * .009; viewerX = e.clientX; drawViewer(); });
 viewerCanvas.addEventListener('pointerup', () => { viewerDragging = false; });
@@ -1123,6 +1117,7 @@ function drawMiniTower() {
 let toastTimer = 0;
 function toast(msg) { toastEl.textContent = msg; toastEl.style.opacity = 1; toastEl.style.transform = 'scale(1.1)'; clearTimeout(toastTimer); toastTimer = setTimeout(() => { toastEl.style.opacity = 0; toastEl.style.transform = 'scale(1)'; }, 650); }
 function startGame() {
+  if (window.Comparison3D) window.Comparison3D.hide();
   applyGameScale();
   reset(); state = S.PLAY;
   equipped = 0; activeSkin = 0; runStartUnlockIdx = unlockedIdx(bestM);
@@ -1456,6 +1451,138 @@ window.City3D = {
   },
   isReady() { return loaded; },
 };
+
+// Live end-of-run comparison. Both objects are real Three.js meshes on one
+// platform; OrbitControls keeps the scene freely inspectable from every angle.
+(() => {
+  const stage=document.getElementById('compareStage');
+  const compareCanvas=document.getElementById('compare3d');
+  const palette=[
+    {top:0x79edff,side:0x315cff,edge:0x53f6ff,glass:0xbffbff},
+    {top:0xffa24f,side:0xe83b8d,edge:0xff91e8,glass:0xffd08a},
+    {top:0x6affb0,side:0x087b6c,edge:0x61ffca,glass:0xc9ffe3},
+    {top:0x6752ad,side:0x17142f,edge:0xa889ff,glass:0xcabfff},
+    {top:0x63fff3,side:0x5940e8,edge:0xff6fe2,glass:0xf0ffff}
+  ];
+  let r=null,s=null,c=null,ctrl=null,root=null,active=false,frame=0;
+  const shared=[];
+  const profileFns={
+    statue:t=>t<.08?.42:t<.16?.34:t<.60?.18:t<.72?.28:t<.82?.17:t<.91?.08:.025,
+    needle:t=>t<.09?.34:t<.62?.075:t<.70?.12:t<.76?.42:t<.81?.32:t<.87?.07:.018,
+    eiffel:t=>Math.max(.025,.55*Math.pow(1-t,1.75)+(t>.47&&t<.58?.09:0)),
+    empire:t=>t<.62?.36:t<.75?.27:t<.84?.18:t<.91?.10:.025,
+    oneworld:t=>t<.08?.34:.34*(1-(t-.08)/.92)*.83+.035,
+    shanghai:t=>Math.max(.035,.38*(1-t*.77))*(1+.045*Math.sin(t*13)),
+    burj:t=>t<.15?.38:t<.38?.32:t<.58?.25:t<.76?.17:t<.9?.09:.018
+  };
+  profileFns.lattice=profileFns.eiffel;
+  profileFns.spire=profileFns.empire;
+  profileFns.twist=profileFns.shanghai;
+  function initComparison(){
+    r=new THREE.WebGLRenderer({canvas:compareCanvas,antialias:true,alpha:true});
+    r.setPixelRatio(Math.min(devicePixelRatio||1,2)); r.outputColorSpace=THREE.SRGBColorSpace;
+    r.shadowMap.enabled=true; r.shadowMap.type=THREE.PCFSoftShadowMap;
+    s=new THREE.Scene(); s.fog=new THREE.FogExp2(0x090927,.018);
+    c=new THREE.PerspectiveCamera(42,1,.1,250);
+    ctrl=new OrbitControls(c,compareCanvas); ctrl.enableDamping=true; ctrl.dampingFactor=.075;
+    ctrl.minPolarAngle=.16; ctrl.maxPolarAngle=Math.PI*.49; ctrl.enablePan=false;
+    s.add(new THREE.HemisphereLight(0xbfe9ff,0x140622,1.4));
+    const key=new THREE.DirectionalLight(0xffffff,2.2); key.position.set(-12,28,16); key.castShadow=true; s.add(key);
+    const cyan=new THREE.PointLight(0x4bf4ff,28,45); cyan.position.set(-9,7,7); s.add(cyan);
+    const magenta=new THREE.PointLight(0xff44d6,24,45); magenta.position.set(10,11,-4); s.add(magenta);
+    root=new THREE.Group(); s.add(root);
+    shared.push(new THREE.BoxGeometry(22,.72,9.5),new THREE.BoxGeometry(21.4,.05,8.9));
+    resizeComparison();
+  }
+  function resizeComparison(){
+    if(!r)return; const w=Math.max(1,stage.clientWidth),h=Math.max(1,stage.clientHeight);
+    const pr=Math.min(devicePixelRatio||1,2); if(compareCanvas.width!==Math.floor(w*pr)||compareCanvas.height!==Math.floor(h*pr)){
+      r.setSize(w,h,false); c.aspect=w/h; c.updateProjectionMatrix();
+    }
+  }
+  function disposeGroup(group){
+    group.traverse(o=>{ if(o.geometry&&!shared.includes(o.geometry))o.geometry.dispose(); if(o.material){ const ms=Array.isArray(o.material)?o.material:[o.material]; ms.forEach(m=>m.dispose()); } });
+    while(group.children.length)group.remove(group.children[0]);
+  }
+  function neonEdges(mesh,color,threshold=18){
+    const lines=new THREE.LineSegments(new THREE.EdgesGeometry(mesh.geometry,threshold),new THREE.LineBasicMaterial({color,transparent:true,opacity:.72}));
+    lines.position.copy(mesh.position); lines.rotation.copy(mesh.rotation); lines.scale.copy(mesh.scale); mesh.parent.add(lines); return lines;
+  }
+  function addPlatform(p){
+    const base=new THREE.Mesh(shared[0],new THREE.MeshStandardMaterial({color:0x0a1737,metalness:.78,roughness:.32}));
+    base.position.y=0; base.receiveShadow=true; root.add(base);
+    const top=new THREE.Mesh(shared[1],new THREE.MeshStandardMaterial({color:0x183b5c,emissive:p.edge,emissiveIntensity:.08,metalness:.65,roughness:.26}));
+    top.position.y=.385; top.receiveShadow=true; root.add(top);
+    const edge=new THREE.LineSegments(new THREE.EdgesGeometry(shared[0]),new THREE.LineBasicMaterial({color:p.edge,transparent:true,opacity:.85})); edge.position.y=0; root.add(edge);
+    const divider=new THREE.Mesh(new THREE.BoxGeometry(.035,.018,7.8),new THREE.MeshBasicMaterial({color:0xffffff,transparent:true,opacity:.28})); divider.position.set(0,.425,0); root.add(divider);
+    for(const x of[-7.8,-5.8,-3.8,3.8,5.8,7.8]){ const strip=new THREE.Mesh(new THREE.BoxGeometry(.7,.02,.055),new THREE.MeshBasicMaterial({color:0x8defff,transparent:true,opacity:.28})); strip.position.set(x,.43,2.9); root.add(strip); }
+  }
+  function addTower(blocks,height,p){
+    const group=new THREE.Group(); group.position.x=-5.25; root.add(group);
+    const list=(blocks&&blocks.length)?blocks:[{x0:-150,z0:-150,x1:150,z1:150,podium:true}];
+    const rawHeights=list.map((b,i)=>i===0?78:(b.h||56)); const rawTotal=rawHeights.reduce((a,b)=>a+b,0);
+    let y=.43;
+    list.forEach((b,i)=>{
+      const w=Math.max(.12,(b.x1-b.x0)/300*3.7),d=Math.max(.12,(b.z1-b.z0)/300*3.7);
+      const h=Math.max(.12,height*rawHeights[i]/rawTotal),x=((b.x0+b.x1)/2)/300*3.7,z=((b.z0+b.z1)/2)/300*3.7;
+      const geo=new THREE.BoxGeometry(w,h,d), mats=[
+        new THREE.MeshStandardMaterial({color:p.side,emissive:p.side,emissiveIntensity:.12,metalness:.55,roughness:.34}),
+        new THREE.MeshStandardMaterial({color:p.side,emissive:p.side,emissiveIntensity:.12,metalness:.55,roughness:.34}),
+        new THREE.MeshStandardMaterial({color:p.top,emissive:p.top,emissiveIntensity:.12,metalness:.38,roughness:.28}),
+        new THREE.MeshStandardMaterial({color:0x11142e,metalness:.6,roughness:.4}),
+        new THREE.MeshStandardMaterial({color:p.side,emissive:p.side,emissiveIntensity:.1,metalness:.55,roughness:.34}),
+        new THREE.MeshStandardMaterial({color:p.side,emissive:p.side,emissiveIntensity:.1,metalness:.55,roughness:.34})
+      ];
+      const mesh=new THREE.Mesh(geo,mats); mesh.position.set(x,y+h/2,z); mesh.castShadow=true; mesh.receiveShadow=true; group.add(mesh); neonEdges(mesh,p.edge);
+      if(i>0&&h>.18){
+        const cols=Math.max(1,Math.min(6,Math.floor(w/.42))), winW=Math.min(.24,w/(cols+1)*.55), winH=Math.min(.16,h*.35);
+        const glassMat=new THREE.MeshStandardMaterial({color:p.glass,emissive:p.glass,emissiveIntensity:1.25,metalness:.15,roughness:.16});
+        for(let q=0;q<cols;q++){
+          const wx=x-w*.38+(cols===1?0:q*(w*.76/(cols-1)));
+          const front=new THREE.Mesh(new THREE.BoxGeometry(winW,winH,.025),glassMat); front.position.set(wx,y+h*.53,z+d/2+.014); group.add(front);
+        }
+      }
+      y+=h;
+    });
+    return group;
+  }
+  function addLandmark(row,height,p){
+    const group=new THREE.Group(); group.position.x=5.25; root.add(group);
+    const widthAt=profileFns[row.type]||profileFns.burj, steps=36, pts=[];
+    for(let i=0;i<=steps;i++){ const t=i/steps; pts.push(new THREE.Vector2(-widthAt(t),t)); }
+    for(let i=steps;i>=0;i--){ const t=i/steps; pts.push(new THREE.Vector2(widthAt(t),t)); }
+    const shape=new THREE.Shape(pts), geo=new THREE.ExtrudeGeometry(shape,{depth:.92,bevelEnabled:true,bevelSegments:2,bevelSize:.018,bevelThickness:.06});
+    geo.scale(6.2,height,1); geo.translate(0,.43,-.46);
+    const mat=new THREE.MeshStandardMaterial({color:p.side,emissive:p.side,emissiveIntensity:.16,metalness:.68,roughness:.27});
+    const mesh=new THREE.Mesh(geo,mat); mesh.castShadow=true; mesh.receiveShadow=true; group.add(mesh); neonEdges(mesh,p.edge,12);
+    const glass=new THREE.MeshStandardMaterial({color:p.glass,emissive:p.glass,emissiveIntensity:1.35,metalness:.2,roughness:.12});
+    const rows=Math.min(46,Math.max(8,Math.floor(height/.52)));
+    for(let i=1;i<rows;i++){
+      const t=i/rows, half=widthAt(t)*6.2, y=.43+t*height;
+      const cols=Math.max(1,Math.min(5,Math.floor(half*2/.32)));
+      for(let q=0;q<cols;q++){
+        const x=cols===1?0:-half*.66+q*(half*1.32/(cols-1));
+        const win=new THREE.Mesh(new THREE.BoxGeometry(Math.min(.17,half*.3),.105,.025),glass); win.position.set(x,y,.472); group.add(win);
+      }
+    }
+    return group;
+  }
+  function show(data){
+    if(!r)initComparison(); disposeGroup(root);
+    const p=palette[data.skin%palette.length], maxM=Math.max(20,data.userM,data.landmark.score), scale=27/maxM;
+    addPlatform(p); addTower(data.tower,Math.max(.7,data.userM*scale),p); addLandmark(data.landmark,Math.max(.7,data.landmark.score*scale),p);
+    const maxH=Math.max(.7,maxM*scale), distance=Math.max(30,maxH*1.5);
+    c.near=.1; c.far=250; c.position.set(17,maxH*.57+5,distance); ctrl.target.set(0,maxH*.47,0);
+    ctrl.minDistance=Math.max(8,distance*.35); ctrl.maxDistance=Math.max(45,distance*2.6); ctrl.update();
+    active=true; cancelAnimationFrame(frame); loop();
+  }
+  function hide(){ active=false; cancelAnimationFrame(frame); }
+  function loop(){
+    if(!active)return; frame=requestAnimationFrame(loop); resizeComparison(); ctrl.update(); r.render(s,c);
+  }
+  window.Comparison3D={show,hide};
+  window.dispatchEvent(new Event('comparison3dready'));
+})();
 </script>
 </body>
 </html>
