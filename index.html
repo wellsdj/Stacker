@@ -601,11 +601,11 @@ function applyGameScale() {
 }
 window.addEventListener('resize', resize);
 
-// ---------- mute (single toggle: silences music + all sound effects) ----------
+// ---------- sound (starts on by default; mute remains available in-game) ----------
 const storedVolume = clamp(+(localStorage.getItem('city_volume') || 100) / 100,0,1);
-let muted = localStorage.getItem('city_muted') === '1' || storedVolume === 0;
 let lastAudibleVolume = clamp(+(localStorage.getItem('city_last_volume') || Math.round((storedVolume || .7) * 100)) / 100,.01,1);
-let masterVolume = muted ? 0 : storedVolume;
+let muted = false;
+let masterVolume = storedVolume > 0 ? storedVolume : lastAudibleVolume;
 if(masterVolume>0)lastAudibleVolume=masterVolume;
 
 // ---------- audio effects ----------
