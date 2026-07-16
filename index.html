@@ -95,6 +95,7 @@
   .volumePopover { position:absolute; left:36px; top:2px; width:172px; height:42px; padding:0 12px 0 22px; display:flex; align-items:center; box-sizing:border-box; opacity:0; visibility:hidden; transform:translateX(-9px) scaleX(.9); transform-origin:left; transition:opacity .18s ease,transform .2s ease,visibility .18s; background:linear-gradient(100deg,rgba(7,31,66,.97),rgba(63,15,94,.97)); border:1px solid rgba(83,246,255,.6); clip-path:polygon(8px 0,100% 0,100% calc(100% - 8px),calc(100% - 8px) 100%,0 100%,0 8px); box-shadow:0 0 18px rgba(83,246,255,.3); }
   #volumeControl.open .volumePopover, #volumeControl:hover .volumePopover { opacity:1; visibility:visible; transform:none; }
   #volumeControl.closing .volumePopover { opacity:0; visibility:visible; transform:translateX(-9px) scaleX(.9); transition-duration:.5s; }
+  #volumeControl.dismissed .volumePopover { opacity:0; visibility:hidden; transform:translateX(-9px) scaleX(.9); }
   #volumeSlider { width:136px; accent-color:#53f6ff; cursor:pointer; }
 
   /* ---------- home screen ---------- */
@@ -1142,19 +1143,33 @@ const volumeSlider=document.getElementById('volumeSlider');
 const powerUpEl=document.getElementById('powerUp'), powerIconEl=document.getElementById('powerIcon'), powerNameEl=document.getElementById('powerName'), powerRangeEl=document.getElementById('powerRange'), powerStatusEl=document.getElementById('powerStatus');
 const powerEffectEl=document.getElementById('powerEffect'), powerEffectLabelEl=document.getElementById('powerEffectLabel');
 const mysteryUnboxEl=document.getElementById('mysteryUnbox'), unboxedOrbEl=document.getElementById('unboxedOrb'), unboxedNameEl=document.getElementById('unboxedName'), unboxedCopyEl=document.getElementById('unboxedCopy');
-let volumeCloseTimer=0;
-function openVolumeControl(){ clearTimeout(volumeCloseTimer); volumeControlEl.classList.remove('closing'); volumeControlEl.classList.add('open'); }
+let volumeCloseTimer=0,volumeIdleTimer=0;
+function armVolumeIdleTimer(){
+  clearTimeout(volumeIdleTimer);
+  if(volumeControlEl.classList.contains('open'))volumeIdleTimer=setTimeout(scheduleVolumeClose,5000);
+}
+function openVolumeControl(){
+  clearTimeout(volumeCloseTimer);
+  volumeControlEl.classList.remove('closing','dismissed');
+  volumeControlEl.classList.add('open');
+  armVolumeIdleTimer();
+}
 function scheduleVolumeClose(){
+  clearTimeout(volumeIdleTimer);
   clearTimeout(volumeCloseTimer);
   if(!volumeControlEl.classList.contains('open'))return;
   volumeControlEl.classList.add('closing');
-  volumeCloseTimer=setTimeout(()=>volumeControlEl.classList.remove('open','closing'),500);
+  volumeCloseTimer=setTimeout(()=>{
+    volumeControlEl.classList.remove('open','closing');
+    volumeControlEl.classList.add('dismissed');
+  },500);
 }
 volumeControlEl.addEventListener('mouseenter',openVolumeControl);
 volumeControlEl.addEventListener('pointerenter',openVolumeControl);
 volumeControlEl.addEventListener('focusin',openVolumeControl);
 document.addEventListener('pointerdown',e=>{ if(volumeControlEl.contains(e.target))openVolumeControl(); else scheduleVolumeClose(); },true);
 document.addEventListener('focusin',e=>{ if(!volumeControlEl.contains(e.target))scheduleVolumeClose(); });
+window.addEventListener('keydown',e=>{ if(e.code==='Space')scheduleVolumeClose(); });
 muteBtn.textContent = muted ? '🔇' : '🔊';
 muteBtn.addEventListener('click', () => { openVolumeControl(); toggleMute(); });
 volumeSlider.value=Math.round(masterVolume*100);
