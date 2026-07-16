@@ -83,7 +83,7 @@
   }
   #homeBtn:active { transform: translateY(2px); }
 
-  /* persistent volume control — JS keeps the slider open for five seconds after leaving */
+  /* persistent volume control — opens on hover/click, fades after an outside click */
   #volumeControl { position:fixed; top:16px; left:16px; z-index:21; pointer-events:auto; display:flex; align-items:center; }
   #muteBtn {
     position: relative; z-index:2; pointer-events: auto;
@@ -93,7 +93,8 @@
   }
   #muteBtn:active { transform: translateY(2px); }
   .volumePopover { position:absolute; left:36px; top:2px; width:172px; height:42px; padding:0 12px 0 22px; display:flex; align-items:center; box-sizing:border-box; opacity:0; visibility:hidden; transform:translateX(-9px) scaleX(.9); transform-origin:left; transition:opacity .18s ease,transform .2s ease,visibility .18s; background:linear-gradient(100deg,rgba(7,31,66,.97),rgba(63,15,94,.97)); border:1px solid rgba(83,246,255,.6); clip-path:polygon(8px 0,100% 0,100% calc(100% - 8px),calc(100% - 8px) 100%,0 100%,0 8px); box-shadow:0 0 18px rgba(83,246,255,.3); }
-  #volumeControl.open .volumePopover { opacity:1; visibility:visible; transform:none; }
+  #volumeControl.open .volumePopover, #volumeControl:hover .volumePopover { opacity:1; visibility:visible; transform:none; }
+  #volumeControl.closing .volumePopover { opacity:0; visibility:visible; transform:translateX(-9px) scaleX(.9); transition-duration:.5s; }
   #volumeSlider { width:136px; accent-color:#53f6ff; cursor:pointer; }
 
   /* ---------- home screen ---------- */
@@ -570,8 +571,11 @@ function applyGameScale() {
 window.addEventListener('resize', resize);
 
 // ---------- mute (single toggle: silences music + all sound effects) ----------
-let muted = localStorage.getItem('city_muted') === '1';
-let masterVolume = clamp(+(localStorage.getItem('city_volume') || 100) / 100,0,1);
+const storedVolume = clamp(+(localStorage.getItem('city_volume') || 100) / 100,0,1);
+let muted = localStorage.getItem('city_muted') === '1' || storedVolume === 0;
+let lastAudibleVolume = clamp(+(localStorage.getItem('city_last_volume') || Math.round((storedVolume || .7) * 100)) / 100,.01,1);
+let masterVolume = muted ? 0 : storedVolume;
+if(masterVolume>0)lastAudibleVolume=masterVolume;
 
 // ---------- audio effects ----------
 let audioPlace = null, audioDeath = null, audioNav = null, audioSkin = null;
@@ -621,11 +625,19 @@ function armMusicAutostart() {
 window.addEventListener('pointerdown', armMusicAutostart, { once: true });
 window.addEventListener('keydown', armMusicAutostart, { once: true });
 function toggleMute() {
-  muted = !muted;
-  localStorage.setItem('city_muted', muted ? '1' : '0');
-  muteBtn.textContent = muted ? '🔇' : '🔊';
-  if (muted) { if (currentMusic) currentMusic.pause(); }
-  else if (currentMusic && musicStarted) { currentMusic.play().catch(() => {}); }
+  if(muted||masterVolume===0){
+    masterVolume=lastAudibleVolume; muted=false;
+    if(currentMusic&&musicStarted)currentMusic.play().catch(()=>{});
+  }else{
+    lastAudibleVolume=masterVolume; masterVolume=0; muted=true;
+    if(currentMusic)currentMusic.pause();
+  }
+  applyVolumes(); if(musicMenu)musicMenu.volume=.22*masterVolume;
+  localStorage.setItem('city_volume',Math.round(masterVolume*100));
+  localStorage.setItem('city_last_volume',Math.round(lastAudibleVolume*100));
+  localStorage.setItem('city_muted',muted?'1':'0');
+  if(typeof volumeSlider!=='undefined')volumeSlider.value=Math.round(masterVolume*100);
+  if(typeof muteBtn!=='undefined')muteBtn.textContent=muted?'🔇':'🔊';
 }
 
 // ---------- CrazyGames SDK (graceful fallback) ----------
@@ -1090,21 +1102,32 @@ const volumeSlider=document.getElementById('volumeSlider');
 const powerUpEl=document.getElementById('powerUp'), powerIconEl=document.getElementById('powerIcon'), powerNameEl=document.getElementById('powerName'), powerRangeEl=document.getElementById('powerRange'), powerStatusEl=document.getElementById('powerStatus');
 const powerEffectEl=document.getElementById('powerEffect'), powerEffectLabelEl=document.getElementById('powerEffectLabel');
 let volumeCloseTimer=0;
-function openVolumeControl(){ clearTimeout(volumeCloseTimer); volumeControlEl.classList.add('open'); }
-function scheduleVolumeClose(){ clearTimeout(volumeCloseTimer); volumeCloseTimer=setTimeout(()=>volumeControlEl.classList.remove('open'),5000); }
+function openVolumeControl(){ clearTimeout(volumeCloseTimer); volumeControlEl.classList.remove('closing'); volumeControlEl.classList.add('open'); }
+function scheduleVolumeClose(){
+  clearTimeout(volumeCloseTimer);
+  if(!volumeControlEl.classList.contains('open'))return;
+  volumeControlEl.classList.add('closing');
+  volumeCloseTimer=setTimeout(()=>volumeControlEl.classList.remove('open','closing'),500);
+}
 volumeControlEl.addEventListener('mouseenter',openVolumeControl);
-volumeControlEl.addEventListener('mouseleave',scheduleVolumeClose);
+volumeControlEl.addEventListener('pointerenter',openVolumeControl);
 volumeControlEl.addEventListener('focusin',openVolumeControl);
-volumeControlEl.addEventListener('focusout',scheduleVolumeClose);
+document.addEventListener('pointerdown',e=>{ if(volumeControlEl.contains(e.target))openVolumeControl(); else scheduleVolumeClose(); },true);
+document.addEventListener('focusin',e=>{ if(!volumeControlEl.contains(e.target))scheduleVolumeClose(); });
 muteBtn.textContent = muted ? '🔇' : '🔊';
-muteBtn.addEventListener('click', () => { openVolumeControl(); toggleMute(); scheduleVolumeClose(); });
+muteBtn.addEventListener('click', () => { openVolumeControl(); toggleMute(); });
 volumeSlider.value=Math.round(masterVolume*100);
 volumeSlider.addEventListener('input',()=>{
-  openVolumeControl(); scheduleVolumeClose();
-  masterVolume=clamp(+volumeSlider.value/100,0,1); localStorage.setItem('city_volume',Math.round(masterVolume*100)); applyVolumes();
+  openVolumeControl();
+  const nextVolume=clamp(+volumeSlider.value/100,0,1), wasMuted=muted;
+  if(nextVolume>0)lastAudibleVolume=nextVolume;
+  masterVolume=nextVolume; muted=masterVolume===0;
+  localStorage.setItem('city_volume',Math.round(masterVolume*100));
+  localStorage.setItem('city_last_volume',Math.round(lastAudibleVolume*100));
+  applyVolumes();
   if(musicMenu) musicMenu.volume=.22*masterVolume;
   if(masterVolume===0){ muted=true; if(currentMusic)currentMusic.pause(); }
-  else { const wasMuted=muted; muted=false; if(wasMuted&&currentMusic&&musicStarted)currentMusic.play().catch(()=>{}); }
+  else if(wasMuted&&currentMusic&&musicStarted)currentMusic.play().catch(()=>{});
   localStorage.setItem('city_muted',muted?'1':'0'); muteBtn.textContent=muted?'🔇':'🔊';
 });
 const bonusMsgEl = document.getElementById('bonusMsg');
