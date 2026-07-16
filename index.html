@@ -510,7 +510,7 @@
     <p>Line it up dead-center for a <b>perfect</b> drop — perfects keep the full width, and five in a row starts 30 seconds of Hype Mode.</p>
     <p>Pass the Statue of Liberty, Space Needle, Eiffel Tower, Empire State Building, One World Trade Center, Shanghai Tower and Burj Khalifa — then keep climbing all the way to the atmosphere at 100,000 m.</p>
     <p>Every landmark you pass is celebrated again with its spinning 3D model. The game waits until you press Space to keep building.</p>
-    <p>Every 100 m still unlocks a new tower skin. In Hype Mode, every placed floor is visibly 15× taller and counts toward the Burj.</p>
+    <p>Every 100 m still unlocks a new tower skin. In Hype Mode, every placed floor is visibly 3× taller and counts toward the Burj.</p>
     <p>The spinning mystery core charges after each landmark celebration. Click it to reveal a random power-up.</p>
     <button class="neonBtn secondary" id="howtoClose"><span class="label">Got it</span></button>
   </div>
@@ -553,7 +553,7 @@
 
 <div id="bonusMsg">
   <div class="bonusbig">5 PERFECT<br>IN A ROW!</div>
-  <div class="bonussub">30 seconds of <b>15× tower floors</b></div>
+  <div class="bonussub">30 seconds of <b>3× tower floors</b></div>
 </div>
 
 <div id="milestoneMsg" aria-live="polite" aria-hidden="true">
@@ -710,6 +710,7 @@ function hash3(a, b, c) { const x = Math.sin(a * 127.1 + b * 311.7 + c * 74.7) *
 const SIZE = 300, BH = 56, PODIUM_H = 78;
 const PERF = 11;                 // perfect tolerance (tighter = harder)
 const BASE_M = 10, STEP_M = 5;   // first floor 10 m, each floor +5 m
+const TALL_MULT = 3, HYPE_MULT = 3;
 const BURJ_M = 828;
 const ATMOSPHERE_M = 100000;
 const FINAL_M = ATMOSPHERE_M;
@@ -825,7 +826,7 @@ const POWERUPS=[
   {id:'freeze',icon:POWER_ICONS.freeze,name:'Freeze',copy:'20 sec · slow only over tower'},
   {id:'magnet',icon:POWER_ICONS.magnet,name:'Magnet',copy:'20 sec · gentle centre pull'},
   {id:'double',icon:POWER_ICONS.double,name:'Double Stack',copy:'30 sec · perfect adds a second floor'},
-  {id:'tall',icon:POWER_ICONS.tall,name:'Tall Block',copy:'next floor · 4× tower height'}
+  {id:'tall',icon:POWER_ICONS.tall,name:'Tall Block',copy:'one floor only · 3× height'}
 ];
 let currentPower=null,powerHideTimer=0,powerRevealTimer=0,powerPopTimer=0,powerEffectTimer=0,powerRevealed=false,freezeTimer=0,magnetTimer=0,doubleTimer=0,hypeTimer=0,tallReady=false,mysteryCharged=false,towerGrowth=1;
 bestM = +(localStorage.getItem('city_best_m') || 0);
@@ -869,8 +870,11 @@ function newMover() {
   const spd = Math.min(300 + score * 3.2, 540);
   const w = top.x1 - top.x0, d = top.z1 - top.z0;
   const naturalLen=axis === 'x' ? w : d;
-  mover = { axis, spd, len: naturalLen, h:tallReady ? BH*4 : BH, dir: Math.random() < 0.5 ? 1 : -1, wob: Math.random() * 6 };
-  tallReady=false;
+  // Tall Block is one placement only and waits until Hype ends, so the two
+  // height bonuses can never multiply into an enormous floor.
+  const useTall=tallReady&&hypeTimer<=0;
+  mover = { axis, spd, len: naturalLen, h:useTall ? BH*TALL_MULT : BH, dir: Math.random() < 0.5 ? 1 : -1, wob: Math.random() * 6 };
+  if(useTall)tallReady=false;
   mover.off = mover.dir > 0 ? -430 : 430;
 }
 function moverRect() {
@@ -911,7 +915,8 @@ function drop(skipMagnet=false) {
   }
   block.w = block.x1 - block.x0; block.d = block.z1 - block.z0;
   block.h=mover.h || BH;
-  if(hypeTimer>0)block.h*=15;
+  // Hype replaces the normal height; it never stacks with Tall Block.
+  if(hypeTimer>0)block.h=BH*HYPE_MULT;
   stack.push(block); score++;
   if (perfect && doubleTimer>0) { const extra={...block,h:BH}; stack.push(extra); score++; toast('DOUBLE STACK'); }
   camYT = Math.max(0, floorTopY(stack,stack.length-1) - (0.42 * H) / C);
@@ -939,7 +944,7 @@ function checkLiveSkinUnlock() {
 function boostExtra() { let e = 0; for (let k = 1; k < stack.length; k++) if (stack[k].h) e += stack[k].h - BH; return e; }
 function updatePowerStatus(){
   const active=[];
-  if(hypeTimer>0)active.push('Hype Mode · '+Math.ceil(hypeTimer)+'s · 15× floors');
+  if(hypeTimer>0)active.push('Hype Mode · '+Math.ceil(hypeTimer)+'s · 3× floors');
   if(freezeTimer>0)active.push('Freeze · '+Math.ceil(freezeTimer)+'s · tower slow');
   if(magnetTimer>0)active.push('Magnet · '+Math.ceil(magnetTimer)+'s');
   if(doubleTimer>0)active.push('Double Stack · '+Math.ceil(doubleTimer)+'s');
@@ -1006,7 +1011,7 @@ function activatePower(){
   runPowerEffect(power);
   playSfx(audioPerfect5); toast(power.name.toUpperCase()+' ACTIVE'); updatePowerStatus(); updateHud();
 }
-// Five perfects starts a 30-second mode where every placed floor is visibly 15× taller.
+// Five perfects starts a balanced 30-second mode where every floor is visibly 3× taller.
 function triggerPerfectBonus() {
   hypeTimer = 30;
   perfectStreak = 0;
@@ -1370,7 +1375,7 @@ function updateBuildMeter(m) {
   meterFillEl.style.height = (progress * 100).toFixed(1) + '%';
   const boosted = stack && stack.length > 1 && (stack[stack.length - 1].h || BH) > BH;
   buildMeterEl.classList.toggle('boost', !!boosted);
-  meterMetersEl.innerHTML = formatM(m) + ' / ' + formatM(FINAL_M) + ' m <span id="meterBoost">15× HYPE</span>';
+  meterMetersEl.innerHTML = formatM(m) + ' / ' + formatM(FINAL_M) + ' m <span id="meterBoost">3× HYPE</span>';
   drawMiniTower();
 }
 
