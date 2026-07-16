@@ -839,7 +839,9 @@ function formatM(m) { return Number(m).toLocaleString('en-GB'); }
 function reachedLandmark(m) { return [...LANDMARKS].reverse().find(x => m >= x.score) || null; }
 function nextLandmark(m) { return LANDMARKS.find(x => m < x.score) || null; }
 function landmarkLadder() {
-  const rows = LANDMARKS.map(x => ({ ...x }));
+  // The ladder is deliberately forward-looking: passed landmarks belong to
+  // the celebration history, while ranks show only the towers still to beat.
+  const rows = LANDMARKS.filter(x => x.score > bestM).map(x => ({ ...x }));
   if (bestM > 0) rows.push({ name:'Your best tower', score:bestM, tower:bestTower, you:true, type:'yours' });
   return rows.sort((a,b) => b.score - a.score || (a.you ? -1 : 1)).map((r,i) => ({ ...r, rank:i + 1 }));
 }
@@ -1232,7 +1234,7 @@ function openStats() { menuEl.classList.add('hidden'); statsEl.classList.remove(
 function closeStats() { statsEl.classList.add('hidden'); menuEl.classList.remove('hidden'); }
 function renderLeaderboard() {
   const rows = landmarkLadder(), reached = reachedLandmark(bestM), next = nextLandmark(bestM);
-  rankSummaryEl.textContent = bestM ? 'Your best: ' + formatM(bestM) + ' m' + (reached ? ' · Passed ' + reached.name : '') + (next ? ' · Next ' + next.name : ' · Atmosphere reached') : 'Build once to place your tower beside the world’s landmarks.';
+  rankSummaryEl.textContent = bestM ? 'Your best: ' + formatM(bestM) + ' m' + (next ? ' · Remaining targets begin with ' + next.name : ' · Atmosphere reached') : 'Build once to see the landmarks still ahead of your tower.';
   leaderRowsEl.replaceChildren(...rows.map(row => {
     const b = document.createElement('button'); b.className = 'leaderRow' + (row.you ? ' you' : '');
     b.innerHTML = '<span class="rank">#' + row.rank + '</span><span class="landmarkGlyph ' + row.type + '"></span><span>' + row.name + (row.you ? ' · highest achieved' : '') + '</span><span class="meters">' + formatM(row.score) + ' m</span>';
