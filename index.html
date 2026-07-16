@@ -516,10 +516,10 @@
   <div class="howtocard">
     <div class="howtotitle">How to play</div>
     <p>Tap or press Space to drop the moving block onto the tower.</p>
-    <p>Line it up dead-center for a <b>perfect</b> drop — perfects keep the full width, and five in a row starts 30 seconds of Hype Mode.</p>
+    <p>Line it up dead-center for a <b>perfect</b> drop — perfects keep the full width, and five in a row makes your next block five storeys tall.</p>
     <p>Pass the Statue of Liberty, Space Needle, Eiffel Tower, Empire State Building, One World Trade Center, Shanghai Tower and Burj Khalifa — then keep climbing all the way to the atmosphere at 100,000 m.</p>
     <p>Every landmark you pass is celebrated again with its spinning 3D model. The game waits until you press Space to keep building.</p>
-    <p>Every 100 m still unlocks a new tower skin. In Hype Mode, every placed floor is visibly 3× taller and counts toward the Burj.</p>
+    <p>Every 100 m still unlocks a new tower skin. The five-perfect reward applies once to the very next block, then building returns to normal.</p>
     <p>Dismiss a landmark celebration with Space and its spinning mystery cube opens automatically. Your revealed Super activates after three more successful placements.</p>
     <button class="neonBtn secondary" id="howtoClose"><span class="label">Got it</span></button>
   </div>
@@ -562,7 +562,7 @@
 
 <div id="bonusMsg">
   <div class="bonusbig">5 PERFECT<br>IN A ROW!</div>
-  <div class="bonussub">30 seconds of <b>3× tower floors</b></div>
+  <div class="bonussub">Your next block is <b>5 storeys tall</b></div>
 </div>
 
 <div id="milestoneMsg" aria-live="polite" aria-hidden="true">
@@ -719,7 +719,7 @@ function hash3(a, b, c) { const x = Math.sin(a * 127.1 + b * 311.7 + c * 74.7) *
 const SIZE = 300, BH = 56, PODIUM_H = 78;
 const PERF = 11;                 // perfect tolerance (tighter = harder)
 const BASE_M = 10, STEP_M = 5;   // first floor 10 m, each floor +5 m
-const TALL_MULT = 3, HYPE_MULT = 3;
+const TALL_MULT = 3, HYPE_MULT = 5;
 const BURJ_M = 828;
 const ATMOSPHERE_M = 100000;
 const FINAL_M = ATMOSPHERE_M;
@@ -837,7 +837,7 @@ const POWERUPS=[
   {id:'double',icon:POWER_ICONS.double,name:'Double Stack',copy:'30 sec · perfect adds a second floor'},
   {id:'tall',icon:POWER_ICONS.tall,name:'Tall Block',copy:'one floor only · 3× height'}
 ];
-let currentPower=null,powerHideTimer=0,powerRevealTimer=0,powerPopTimer=0,powerEffectTimer=0,powerRevealed=false,superMoves=0,freezeTimer=0,magnetTimer=0,doubleTimer=0,hypeTimer=0,tallReady=false,mysteryCharged=false,towerGrowth=1;
+let currentPower=null,powerHideTimer=0,powerRevealTimer=0,powerPopTimer=0,powerEffectTimer=0,powerRevealed=false,superMoves=0,freezeTimer=0,magnetTimer=0,doubleTimer=0,hypeReady=false,tallReady=false,mysteryCharged=false,towerGrowth=1;
 bestM = +(localStorage.getItem('city_best_m') || 0);
 let bestTower = [];
 try { bestTower = JSON.parse(localStorage.getItem('city_best_tower') || '[]'); } catch (e) { bestTower = []; }
@@ -863,7 +863,7 @@ function reset() {
   score = 0; camY = 0; camYT = 0; shake = 0; endT = 0;
   perfectStreak = 0; paused = false; pauseT = 0;
   milestoneQueue = []; milestoneActive = false; milestoneT = 0;
-  currentPower=null; powerRevealed=false; superMoves=0; freezeTimer=0; magnetTimer=0; doubleTimer=0; hypeTimer=0; tallReady=false; mysteryCharged=false;
+  currentPower=null; powerRevealed=false; superMoves=0; freezeTimer=0; magnetTimer=0; doubleTimer=0; hypeReady=false; tallReady=false; mysteryCharged=false;
   clearTimeout(powerHideTimer); clearTimeout(powerRevealTimer); clearTimeout(powerPopTimer); clearTimeout(powerEffectTimer);
   if(typeof powerUpEl!=='undefined'){ if(state===S.PLAY)setMysteryCore(); else powerUpEl.className='hidden'; powerStatusEl.textContent=''; }
   if(typeof mysteryUnboxEl!=='undefined'){ mysteryUnboxEl.className=''; mysteryUnboxEl.setAttribute('aria-hidden','true'); }
@@ -880,12 +880,14 @@ function newMover() {
   const spd = Math.min(300 + score * 3.2, 540);
   const w = top.x1 - top.x0, d = top.z1 - top.z0;
   const naturalLen=axis === 'x' ? w : d;
-  // Tall Block is one placement only and waits until Hype ends, so the two
-  // height bonuses can never multiply into an enormous floor.
-  const useTall=tallReady&&hypeTimer<=0;
-  mover = { axis, spd, len: naturalLen, h:useTall ? BH*TALL_MULT : BH, dir: Math.random() < 0.5 ? 1 : -1, wob: Math.random() * 6 };
+  // Five perfects changes exactly the next moving block into five storeys.
+  // If Tall Block is also queued, it waits for the following placement.
+  const useHype=hypeReady, useTall=tallReady&&!useHype;
+  mover = { axis, spd, len: naturalLen, h:useHype ? BH*HYPE_MULT : useTall ? BH*TALL_MULT : BH, boost:useHype?'hype':useTall?'tall':'', dir: Math.random() < 0.5 ? 1 : -1, wob: Math.random() * 6 };
+  if(useHype)hypeReady=false;
   if(useTall)tallReady=false;
   mover.off = mover.dir > 0 ? -430 : 430;
+  if(typeof powerStatusEl!=='undefined')updatePowerStatus();
 }
 function moverRect() {
   const top = stack[stack.length - 1];
@@ -925,13 +927,11 @@ function drop(skipMagnet=false) {
   }
   block.w = block.x1 - block.x0; block.d = block.z1 - block.z0;
   block.h=mover.h || BH;
-  // Hype replaces the normal height; it never stacks with Tall Block.
-  if(hypeTimer>0)block.h=BH*HYPE_MULT;
   stack.push(block); score++;
   if (perfect && doubleTimer>0) { const extra={...block,h:BH}; stack.push(extra); score++; toast('DOUBLE STACK'); }
   camYT = Math.max(0, floorTopY(stack,stack.length-1) - (0.42 * H) / C);
   if (perfect) {
-    if (perfectStreak >= 5 && hypeTimer<=0) { triggerPerfectBonus(); }
+    if (perfectStreak >= 5) { triggerPerfectBonus(); }
     else { toast('PERFECT ×' + perfectStreak); playSfx(audioPerfectSeq[perfectStreak - 1]); }
   } else {
     playSfx(audioPlace);
@@ -955,7 +955,7 @@ function checkLiveSkinUnlock() {
 function boostExtra() { let e = 0; for (let k = 1; k < stack.length; k++) if (stack[k].h) e += stack[k].h - BH; return e; }
 function updatePowerStatus(){
   const active=[];
-  if(hypeTimer>0)active.push('Hype Mode · '+Math.ceil(hypeTimer)+'s · 3× floors');
+  if(hypeReady||mover?.boost==='hype')active.push('Five-storey block · next placement only');
   if(freezeTimer>0)active.push('Freeze · '+Math.ceil(freezeTimer)+'s · tower slow');
   if(magnetTimer>0)active.push('Magnet · '+Math.ceil(magnetTimer)+'s');
   if(doubleTimer>0)active.push('Double Stack · '+Math.ceil(doubleTimer)+'s');
@@ -1032,16 +1032,15 @@ function activatePower(queuedPower=currentPower){
   runPowerEffect(power);
   playSfx(audioPerfect5); toast(power.name.toUpperCase()+' ACTIVE'); updatePowerStatus(); updateHud();
 }
-// Five perfects starts a balanced 30-second mode where every floor is visibly 3× taller.
+// Five perfects queues one five-storey block. It is consumed by newMover().
 function triggerPerfectBonus() {
-  hypeTimer = 30;
+  hypeReady = true;
   perfectStreak = 0;
   paused = true; pauseT = 1.9;
   shake = 8;
-  musicMenu.playbackRate=1.12;
   playSfx(audioPerfect5);
   updatePowerStatus();
-  runPowerEffect({id:'hype',name:'Hype mode'});
+  runPowerEffect({id:'hype',name:'Five-storey block'});
   bonusMsgEl.classList.add('show');
 }
 function queueCrossedLandmarks(fromM,toM) {
@@ -1395,9 +1394,11 @@ function updateHud() {
 function updateBuildMeter(m) {
   const progress = clamp(Math.log10(Math.max(BASE_M,m)/BASE_M) / Math.log10(FINAL_M/BASE_M), .012, 1);
   meterFillEl.style.height = (progress * 100).toFixed(1) + '%';
-  const boosted = stack && stack.length > 1 && (stack[stack.length - 1].h || BH) > BH;
+  const lastHeight=stack&&stack.length>1?(stack[stack.length-1].h||BH):BH;
+  const boosted = lastHeight > BH;
   buildMeterEl.classList.toggle('boost', !!boosted);
-  meterMetersEl.innerHTML = formatM(m) + ' / ' + formatM(FINAL_M) + ' m <span id="meterBoost">3× HYPE</span>';
+  const boostCopy=lastHeight>=BH*HYPE_MULT?'5-STOREY PERFECT':lastHeight>BH?'TALL BLOCK':'';
+  meterMetersEl.innerHTML = formatM(m) + ' / ' + formatM(FINAL_M) + ' m <span id="meterBoost">'+boostCopy+'</span>';
   drawMiniTower();
 }
 
@@ -1511,10 +1512,8 @@ function update(dt, t) {
   if (shake > 0) shake = Math.max(0, shake - dt * 26);
   if (state === S.DEAD) endT = Math.min(1, endT + dt * 1.8);
   if (paused) { pauseT -= dt; if (pauseT <= 0) { paused = false; bonusMsgEl.classList.remove('show'); showNextMilestone(); } }
-  if(state===S.PLAY&&(freezeTimer>0||magnetTimer>0||doubleTimer>0||hypeTimer>0)){
-    const hypeWasActive=hypeTimer>0;
-    freezeTimer=Math.max(0,freezeTimer-dt); magnetTimer=Math.max(0,magnetTimer-dt); doubleTimer=Math.max(0,doubleTimer-dt); hypeTimer=Math.max(0,hypeTimer-dt);
-    if(hypeWasActive&&hypeTimer===0)musicMenu.playbackRate=1;
+  if(state===S.PLAY&&(freezeTimer>0||magnetTimer>0||doubleTimer>0)){
+    freezeTimer=Math.max(0,freezeTimer-dt); magnetTimer=Math.max(0,magnetTimer-dt); doubleTimer=Math.max(0,doubleTimer-dt);
     updatePowerStatus();
   }
   if (state === S.PLAY && mover && !paused && !milestoneActive) {
