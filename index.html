@@ -349,7 +349,7 @@
   .undoIcon { display:grid; place-items:center; width:31px; height:31px; color:#071225; font-size:19px; background:linear-gradient(135deg,#bfffff,#53f6ff 50%,#ac77ff); clip-path:polygon(8px 0,100% 0,100% calc(100% - 8px),calc(100% - 8px) 100%,0 100%,0 8px); box-shadow:0 0 14px rgba(83,246,255,.75); }
   .undoCopy { display:flex; flex-direction:column; gap:5px; text-align:left; }
   .undoCopy small { color:#ff8ce8; font-size:8px; letter-spacing:1.2px; }
-  #powerUp { position:fixed; top:82px; right:18px; z-index:10; width:122px; min-height:112px; border:1px solid rgba(83,246,255,.72); padding:10px 9px 9px; color:#fff; cursor:pointer; pointer-events:auto; background:linear-gradient(145deg,rgba(6,34,74,.96),rgba(61,12,91,.96)); clip-path:polygon(12px 0,100% 0,100% calc(100% - 12px),calc(100% - 12px) 100%,0 100%,0 12px); box-shadow:inset 0 0 20px rgba(83,246,255,.12),0 0 18px rgba(83,246,255,.38); transition:filter .2s ease,box-shadow .2s ease; }
+  #powerUp { position:fixed; top:82px; right:18px; z-index:10; width:122px; min-height:112px; border:1px solid rgba(83,246,255,.72); padding:10px 9px 9px; color:#fff; cursor:default; pointer-events:none; background:linear-gradient(145deg,rgba(6,34,74,.96),rgba(61,12,91,.96)); clip-path:polygon(12px 0,100% 0,100% calc(100% - 12px),calc(100% - 12px) 100%,0 100%,0 12px); box-shadow:inset 0 0 20px rgba(83,246,255,.12),0 0 18px rgba(83,246,255,.38); transition:filter .2s ease,box-shadow .2s ease; }
   #powerUp.hidden { display:none; }
   #powerUp:disabled { cursor:default; }
   .powerCube { position:relative; display:grid; place-items:center; width:52px; height:52px; margin:0 auto 8px; color:#fff; background:linear-gradient(135deg,#eaffff,#53f6ff 48%,#a855ff); border-radius:50%; box-shadow:0 0 14px #53f6ff; }
@@ -477,9 +477,9 @@
   <button id="muteBtn" aria-label="Mute">🔊</button>
   <div class="volumePopover"><input id="volumeSlider" type="range" min="0" max="100" value="70" aria-label="Game volume"></div>
 </div>
-<button id="powerUp" class="hidden" type="button" aria-label="Activate power-up">
-  <span class="powerCube" id="powerIcon">?</span><span class="powerName" id="powerName">Mystery block</span><span class="powerRange" id="powerRange">Opening…</span>
-</button>
+<div id="powerUp" class="hidden" role="status" aria-live="polite" aria-label="Automatic power-up core">
+  <span class="powerCube" id="powerIcon">?</span><span class="powerName" id="powerName">Auto mystery core</span><span class="powerRange" id="powerRange">Opens automatically</span>
+</div>
 <div id="powerStatus" aria-live="polite"></div>
 <div id="mysteryUnbox" aria-hidden="true">
   <div class="mysteryStage"><div class="mysteryCube3d">
@@ -972,9 +972,9 @@ function setMysteryCore(){
   currentPower=null; powerRevealed=false;
   powerUpEl.disabled=true;
   powerUpEl.className='mystery';
-  powerIconEl.textContent=''; powerNameEl.textContent='Mystery core';
-  powerRangeEl.textContent='Clear a landmark to charge';
-  powerUpEl.setAttribute('aria-label','Mystery core: clear a landmark to charge');
+  powerIconEl.textContent=''; powerNameEl.textContent='Auto mystery core';
+  powerRangeEl.textContent='Landmark reward · opens automatically';
+  powerUpEl.setAttribute('aria-label','Automatic mystery core: clear a landmark to charge');
 }
 function openMysteryCore(){
   if(!mysteryCharged||state!==S.PLAY||currentPower||milestoneActive)return;
@@ -1375,7 +1375,6 @@ document.getElementById('viewerClose').addEventListener('click', () => { playSfx
 document.getElementById('comparePrev').addEventListener('click',e=>{ e.stopPropagation(); playSfx(audioNav); showComparisonAt(comparisonIndex-1); });
 document.getElementById('compareNext').addEventListener('click',e=>{ e.stopPropagation(); playSfx(audioNav); showComparisonAt(comparisonIndex+1); });
 window.addEventListener('comparison3dready',()=>{ if(state===S.DEAD) showComparisonAt(comparisonIndex); });
-powerUpEl.addEventListener('click',e=>e.stopPropagation());
 viewerCanvas.addEventListener('pointerdown', e => { viewerDragging = true; viewerX = e.clientX; viewerCanvas.setPointerCapture(e.pointerId); });
 viewerCanvas.addEventListener('pointermove', e => { if (!viewerDragging) return; viewerYaw += (e.clientX - viewerX) * .009; viewerX = e.clientX; drawViewer(); });
 viewerCanvas.addEventListener('pointerup', () => { viewerDragging = false; });
